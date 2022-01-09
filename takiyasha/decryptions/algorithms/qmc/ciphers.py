@@ -1,3 +1,4 @@
+import logging
 import struct
 from abc import ABCMeta, abstractmethod
 from typing import Final, Generator, Optional
@@ -6,6 +7,9 @@ from ....exceptions import CipherGenerationError
 from ....typehints import BytesType, BytesType_tuple
 
 BE_Uint32 = struct.Struct('>L')
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 class Cipher(metaclass=ABCMeta):
@@ -19,10 +23,14 @@ class Cipher(metaclass=ABCMeta):
     def __init__(self, key: Optional[BytesType]):
         """Initialize self. See help(type(self)) for accurate signature."""
         if key is None:
-            pass
-        elif not isinstance(key, BytesType_tuple):
+            logger.debug('no key specified')
+            self._key: Optional[bytes] = None
+        elif isinstance(key, BytesType_tuple):
+            logger.debug(f'key content (as human-readable): {list(key)}')
+            self._key: Optional[bytes] = bytes(key)
+        else:
+            logger.error(f"'key' must be byte or bytearray, not {type(key).__name__}")
             raise TypeError(f"'key' must be byte or bytearray, not {type(key).__name__}")
-        self._key: Optional[bytes] = bytes(key) if key is not None else None
     
     @property
     def key(self) -> Optional[bytes]:
@@ -30,7 +38,11 @@ class Cipher(metaclass=ABCMeta):
     
     @property
     def key_length(self) -> Optional[int]:
-        return len(self._key) if self._key is not None else None
+        if self._key is not None:
+            key_len: Optional[int] = len(self._key)
+        else:
+            key_len: Optional[int] = None
+        return key_len
     
     @abstractmethod
     def decrypt(self, src_data: BytesType, /):
@@ -47,18 +59,24 @@ class TEACipher(Cipher):
                  magic_number: int = 0x9e3779b9
                  ):
         """Initialize self. See help(type(self)) for accurate signature."""
+        logger.info('Initializing TEA Cipher')
         if key is None:
             raise TypeError(f"'key' must be byte or bytearray, not None")
         super().__init__(key)
         
+        logger.debug('block size: 8')
         self._block_size: Final[int] = 8
+        logger.debug(f'delta (from magic_number): {magic_number}')
         self._delta: int = magic_number
         
         if self.key_length != 16:
-            raise CipherGenerationError(f'incorrect key size {self.key_length} (should be 16)')
+            logger.error(f'incorrect key length {self.key_length} (should be 16)')
+            raise CipherGenerationError(f'incorrect key length {self.key_length} (should be 16)')
         if rounds & 1:
+            logger.error(f'even number of rounds required (got {rounds})')
             raise CipherGenerationError(f'even number of rounds required (got {rounds})')
         
+        logger.debug(f'rounds: {rounds}')
         self._rounds: int = rounds
     
     @property
@@ -93,33 +111,49 @@ class TEACipher(Cipher):
     def decrypt(self, src_data: BytesType, /) -> bytearray:
         v0, v1, k0, k1, k2, k3 = self._get_values_from_src_data(src_data)
         
-        ciphersum: int = (self.delta * (self.rounds // 2)) & 0xffffffff
+        delta: int = self.delta
+        rounds: int = self.rounds
         
-        for i in range(self.rounds // 2):
+        ciphersum: int = (delta * (rounds // 2)) & 0xffffffff
+        logger.debug(f'cipher sum (as uint32): {ciphersum}')
+        
+        for i in range(rounds // 2):
             v1 -= ((v0 << 4) + k2) ^ (v0 + ciphersum) ^ ((v0 >> 5) + k3)
             v1 &= 0xffffffff
             v0 -= ((v1 << 4) + k0) ^ (v1 + ciphersum) ^ ((v1 >> 5) + k1)
             v0 &= 0xffffffff
-            ciphersum -= self.delta
+            ciphersum -= delta
             ciphersum &= 0xffffffff
         
-        return self._put_uint32(v0) + self._put_uint32(v1)
+        logger.debug(f'cipher sum (after operation, as uint32): {ciphersum}')
+        
+        ret = self._put_uint32(v0) + self._put_uint32(v1)
+        logger.debug(f'decrypted data content (as human-readable): {list(ret)}')
+        return ret
     
     def encrypt(self, src_data: BytesType, /) -> bytearray:
         """Accept plain src_data and return the encrypted data."""
         v0, v1, k0, k1, k2, k3 = self._get_values_from_src_data(src_data)
         
-        ciphersum: int = 0 & 0xffffffff
+        delta: int = self.delta
+        rounds: int = self.rounds
         
-        for i in range(self.rounds // 2):
-            ciphersum += self.delta
+        ciphersum: int = 0 & 0xffffffff
+        logger.debug(f'cipher sum (as uint32): {ciphersum}')
+        
+        for i in range(rounds // 2):
+            ciphersum += delta
             ciphersum &= 0xffffffff
             v0 += ((v1 << 4) + k0) ^ (v1 + ciphersum) ^ ((v1 >> 5) + k1)
             v0 &= 0xffffffff
             v1 += ((v0 << 4) + k2) ^ (v0 + ciphersum) ^ ((v0 >> 5) + k3)
             v1 &= 0xffffffff
         
-        return self._put_uint32(v0) + self._put_uint32(v1)
+        logger.debug(f'cipher sum (after operation, as uint32): {ciphersum}')
+        
+        ret = self._put_uint32(v0) + self._put_uint32(v1)
+        logger.debug(f'encrypted data content (as human-readable): {list(ret)}')
+        return ret
 
 
 class StaticCipher(Cipher):
@@ -127,6 +161,7 @@ class StaticCipher(Cipher):
     
     def __init__(self):
         """Initialize self. See help(type(self)) for accurate signature."""
+        logger.info('Initializing StaticCipher')
         super().__init__(key=None)
         
         self.__static_cipher_box: Final[bytes] = bytes(
@@ -176,14 +211,22 @@ class StaticCipher(Cipher):
         """Iterates over the encrypted src_data, and yield the decrypted data byte by byte.
         
         Returns an integer between [0, 255] for each iteration."""
+        logger.debug('start to yield decrypted data')
         for i in range(len(src_data)):
-            yield src_data[i] ^ self._get_mask(offset=offset + i)
+            y = src_data[i] ^ self._get_mask(offset=offset + i)
+            if i < 16:
+                logger.debug(f'yield integer {i}/(only first 16 integers): {y}')
+            yield y
+        logger.debug('all decrypted data yielded')
     
     def decrypt(self, src_data: BytesType, /, offset: int = 0) -> bytes:
         """Accept encrypted src_data and return the decrypted data.
         
         This method is equal to `bytes(self.iter_decrypt(src_data, offset=offset))`."""
-        return bytes(self.iter_decrypt(src_data, offset=offset))
+        logger.info('Start to decrypt data')
+        ret = bytes(self.iter_decrypt(src_data, offset=offset))
+        logger.info('Decrypt finished')
+        return ret
 
 
 class MapCipher(Cipher):
@@ -192,6 +235,8 @@ class MapCipher(Cipher):
     This cipher should be used if the key size is between [0, 300]."""
     
     def __init__(self, key: BytesType):
+        """Initialize self. See help(type(self)) for accurate signature."""
+        logger.info('Initializing MapCipher')
         if key is None:
             raise TypeError(f"'key' must be byte or bytearray, not None")
         super().__init__(key)
@@ -212,11 +257,22 @@ class MapCipher(Cipher):
         """Iterates over the encrypted src_data, and yield the decrypted data byte by byte.
 
         Returns an integer between [0, 255] for each iteration."""
+        logger.debug('start to yield decrypted data')
         for i in range(len(src_data)):
-            yield src_data[i] ^ self._get_mask(offset=offset + i)
+            y = src_data[i] ^ self._get_mask(offset=offset + i)
+            if i < 16:
+                logger.debug(f'yield integer {i}/(only first 16 integers): {y}')
+            yield y
+        logger.debug('all decrypted data yielded')
     
     def decrypt(self, src_data: BytesType, /, offset: int = 0) -> bytes:
-        return bytes(self.iter_decrypt(src_data, offset=offset))
+        """Accept encrypted src_data and return the decrypted data.
+
+        This method is equal to `bytes(self.iter_decrypt(src_data, offset=offset))`."""
+        logger.info('Start to decrypt data')
+        ret = bytes(self.iter_decrypt(src_data, offset=offset))
+        logger.info('Decrypt finished')
+        return ret
 
 
 class RC4Cipher:
