@@ -156,7 +156,7 @@ class TEACipher(Cipher):
         return ret
 
 
-class StaticCipher(Cipher):
+class StaticMapCipher(Cipher):
     """A cipher that implemented decryption of the map-based QMCv1 encryption algorithm."""
     
     def __init__(self):
