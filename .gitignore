@@ -410,6 +410,7 @@ cython_debug/
 *.flac
 *.ogg
 *.m4a
+*.decrypted
 
 # encrypted audio files
 *.ncm
