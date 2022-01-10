@@ -1,6 +1,6 @@
 import struct
 from abc import ABCMeta, abstractmethod
-from typing import Final, Generator, Optional
+from typing import Final, Optional
 
 from ...exceptions import CipherGenerationError
 from ...typehints import BytesType, BytesType_tuple
@@ -185,19 +185,9 @@ class StaticMapCipher(Cipher):
         idx: int = (offset ** 2 + 27) & 0xff
         return self.__static_cipher_box[idx]
     
-    def iter_decrypt(self, src_data: BytesType, /, offset: int = 0) -> Generator[int, None, None]:
-        """Iterates over the encrypted src_data, and yield the decrypted data byte by byte.
-        
-        Returns an integer between [0, 255] for each iteration."""
-        for i in range(len(src_data)):
-            y = src_data[i] ^ self._get_mask(offset=offset + i)
-            yield y
-    
     def decrypt(self, src_data: BytesType, /, offset: int = 0) -> bytes:
-        """Accept encrypted src_data and return the decrypted data.
-        
-        This method is equal to `bytes(self.iter_decrypt(src_data, offset=offset))`."""
-        ret = bytes(self.iter_decrypt(src_data, offset=offset))
+        """Accept encrypted src_data and return the decrypted data."""
+        ret = bytes(src_data[i] ^ self._get_mask(offset=offset + i) for i in range(len(src_data)))
         return ret
 
 
@@ -224,19 +214,9 @@ class MapCipher(Cipher):
         idx: int = (offset ** 2 + 71214) % self.key_length
         return self._rotate(value=self.key[idx], bits=idx & 7)
     
-    def iter_decrypt(self, src_data: BytesType, /, offset: int = 0) -> Generator[int, None, None]:
-        """Iterates over the encrypted src_data, and yield the decrypted data byte by byte.
-
-        Returns an integer between [0, 255] for each iteration."""
-        for i in range(len(src_data)):
-            y = src_data[i] ^ self._get_mask(offset=offset + i)
-            yield y
-    
     def decrypt(self, src_data: BytesType, /, offset: int = 0) -> bytes:
-        """Accept encrypted src_data and return the decrypted data.
-
-        This method is equal to `bytes(self.iter_decrypt(src_data, offset=offset))`."""
-        ret = bytes(self.iter_decrypt(src_data, offset=offset))
+        """Accept encrypted src_data and return the decrypted data."""
+        ret = bytes(src_data[i] ^ self._get_mask(offset=offset + i) for i in range(len(src_data)))
         return ret
 
 
@@ -313,6 +293,7 @@ class RC4Cipher(Cipher):
         return buf
     
     def decrypt(self, src_data: BytesType, /, offset: int = 0) -> Optional[bytes]:
+        """Accept encrypted src_data and return the decrypted data."""
         src: bytearray = bytearray(src_data)
         pending: int = len(src_data)
         done: int = 0
