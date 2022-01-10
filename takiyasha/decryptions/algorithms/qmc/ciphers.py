@@ -240,17 +240,116 @@ class MapCipher(Cipher):
         return ret
 
 
-class RC4Cipher:
+class RC4Cipher(Cipher):
     """A cipher that implemented decryption of the RC4-based QMCv2 encryption algorithm.
 
-    This cipher should be used if the key size is bigger than 300.
-    
-    This cipher is not implemented yet. You can only get
-    NotImplementedError exception when called."""
+    This cipher should be used if the key size is bigger than 300."""
     
     def __init__(self, key: BytesType):
-        """Initialize self. But the cipher is not implemented yet,
-        so you can only get NotImplementedError exception when called."""
+        """Initialize self. See help(type(self)) for accurate signature."""
         if key is None:
             raise TypeError(f"'key' must be byte or bytearray, not None")
-        raise NotImplementedError('coming soon')
+        super().__init__(key)
+        
+        self.__rc4_first_segment_size: Final[int] = 128
+        self.__rc4_segment_size: Final[int] = 5120
+        
+        if self.key_length == 0:
+            raise CipherGenerationError('invalid key size')
+        
+        # create and initialize S-box
+        self._box: bytearray = bytearray(i % 256 for i in range(self.key_length))
+        
+        j: int = 0
+        for i in range(self.key_length):
+            j = (j + self._box[i] + key[i % self.key_length]) % self.key_length
+            self._box[i], self._box[j] = self._box[j], self._box[i]
+        
+        self._hash: int = self._get_hash_base()
+    
+    @property
+    def box(self) -> bytearray:
+        return self._box
+    
+    @property
+    def hash(self) -> int:
+        return self._hash
+    
+    def _get_hash_base(self) -> int:
+        hash_base = 1
+        for i in range(self.key_length):
+            v: int = self.key[i]
+            if v == 0:
+                continue
+            next_hash: int = (hash_base * v) & 0xffffffff
+            if next_hash == 0 or next_hash <= hash_base:
+                break
+            hash_base = next_hash
+        return hash_base
+    
+    def _get_segment_skip(self, v: int) -> int:
+        seed: int = self.key[v % self.key_length]
+        idx: int = int(self.hash / ((v + 1) * seed) * 100)
+        return idx % self.key_length
+    
+    def _enc_1st_segment(self, buf: BytesType, offset: int) -> bytearray:
+        buf: bytearray = bytearray(buf)
+        for i in range(len(buf)):
+            buf[i] ^= self.key[self._get_segment_skip(offset + i)]
+        return buf
+    
+    def _enc_another_segment(self, buf: BytesType, offset: int) -> bytearray:
+        buf: bytearray = bytearray(buf)
+        box: bytearray = self.box.copy()
+        j, k = 0, 0
+        
+        skip_len: int = (offset % self.__rc4_segment_size) + self._get_segment_skip(offset // self.__rc4_segment_size)
+        for i in range(-skip_len, len(buf)):
+            j = (j + 1) % self.key_length
+            k = (box[j] + k) % self.key_length
+            box[j], box[k] = box[k], box[j]
+            if i >= 0:
+                buf[i] ^= box[(box[j] + box[k]) % self.key_length]
+        return buf
+    
+    def decrypt(self, src_data: BytesType, /, offset: int = 0) -> Optional[bytes]:
+        src: bytearray = bytearray(src_data)
+        pending: int = len(src_data)
+        done: int = 0
+        
+        def mark_process(p: int) -> bool:
+            nonlocal offset, pending, done
+            offset += p
+            pending -= p
+            done += p
+            return pending == 0
+        
+        if offset < self.__rc4_first_segment_size:
+            blksize: int = pending
+            if blksize > self.__rc4_first_segment_size - offset:
+                blksize: int = self.__rc4_first_segment_size - offset
+            target_slice: slice = slice(blksize)
+            src[target_slice] = self._enc_1st_segment(src[target_slice], offset)
+            pending_is_0: bool = mark_process(blksize)
+            if pending_is_0:
+                return src
+        
+        if offset % self.__rc4_segment_size != 0:
+            blksize: int = pending
+            if blksize > self.__rc4_segment_size - (offset % self.__rc4_segment_size):
+                blksize: int = self.__rc4_segment_size - (offset % self.__rc4_segment_size)
+            target_slice: slice = slice(done, done + blksize)
+            src[target_slice] = self._enc_another_segment(src[target_slice], offset)
+            pending_is_0: bool = mark_process(blksize)
+            if pending_is_0:
+                return src
+        
+        while pending > self.__rc4_segment_size:
+            target_slice: slice = slice(done, done + self.__rc4_segment_size)
+            src[target_slice] = self._enc_another_segment(src[target_slice], offset)
+            mark_process(self.__rc4_segment_size)
+        
+        if pending > 0:
+            src[done:] = self._enc_another_segment(src[done:], offset)
+        
+        return bytes(src)
