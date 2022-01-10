@@ -5,8 +5,8 @@ from typing import Final
 from Cryptodome.Util.strxor import strxor
 
 from .ciphers import TEACipher
-from ....exceptions import DecryptionError
-from ....typehints import BytesType
+from ...exceptions import DecryptionError
+from ...typehints import BytesType
 
 
 def simple_make_key(salt: int, length: int) -> bytearray:

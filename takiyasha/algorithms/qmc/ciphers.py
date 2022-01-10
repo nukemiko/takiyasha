@@ -2,8 +2,8 @@ import struct
 from abc import ABCMeta, abstractmethod
 from typing import Final, Generator, Optional
 
-from ....exceptions import CipherGenerationError
-from ....typehints import BytesType, BytesType_tuple
+from ...exceptions import CipherGenerationError
+from ...typehints import BytesType, BytesType_tuple
 
 BE_Uint32 = struct.Struct('>L')
 

@@ -3,8 +3,8 @@ from typing import IO, Optional, Union
 
 from .ciphers import MapCipher, RC4Cipher, StaticMapCipher
 from .key import decrypt_key
-from ....exceptions import DecryptFailed, DecryptionError
-from ....utils import get_file_ext_by_header
+from ...exceptions import DecryptFailed, DecryptionError
+from ...utils import get_file_ext_by_header
 
 LE_Uint32 = struct.Struct('<L')
 BE_Uint32 = struct.Struct('>L')
