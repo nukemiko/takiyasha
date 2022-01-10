@@ -1,5 +1,5 @@
 import struct
-from typing import Generator, IO, Optional, Union
+from typing import IO, Optional, Union
 
 from .ciphers import MapCipher, RC4Cipher, StaticMapCipher
 from .key import decrypt_key
@@ -45,20 +45,16 @@ class QMCDecrypter:
     def raw_metadata_extra(self):
         return self._raw_metadata_extra
     
-    @property
-    def format(self):
-        return self.validate()
-    
-    def iter_decrypt(self) -> Generator[int, None, None]:
-        self.buffer.seek(0, 0)
-        return self.cipher.iter_decrypt(self.buffer.read())
-    
     def decrypt(self) -> bytes:
         self.buffer.seek(0, 0)
-        return bytes(self.iter_decrypt())
+        return self.cipher.decrypt(self.buffer.read(self.audio_length))
     
-    def validate(self) -> str:
-        """Raise the DecryptFailed exception while failed to recongize audio format."""
+    @property
+    def audio_format(self) -> str:
+        """Return the format of decrypted audio data.
+        
+        :raise DecryptFailed: failed to recongize audio format.
+        :return: audio format string"""
         self.buffer.seek(0, 0)
         test_data: bytes = self.buffer.read(32)
         
@@ -120,8 +116,7 @@ class QMCDecrypter:
             if 0 < key_length <= 300:
                 cipher = MapCipher(decrypted_key)
             else:
-                raise DecryptionError('RC4-based QMCv2 decryption is not support yet')
-                # cipher = RC4Cipher(decrypted_key)
+                cipher = RC4Cipher(decrypted_key)
         
         file.seek(0, 0)
         
