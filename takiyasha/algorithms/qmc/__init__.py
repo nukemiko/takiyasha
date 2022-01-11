@@ -19,6 +19,16 @@ class QMCDecrypter:
                  decrypted_key: bytes = None,
                  raw_metadata_extra: tuple[int, int] = None
                  ):
+        # check whether the object is a file object
+        readfunc = file.read
+        seekfunc = file.seek
+        if not readfunc:
+            raise TypeError(f"'file' must be file object, not {type(file)}")
+        elif not seekfunc:
+            raise ValueError('file object is not seekable')
+    
+        file.seek(0, 0)  # ensure offset is 0
+        
         self._buffer = file
         self._cipher = cipher
         self._audio_length = audio_length
@@ -75,6 +85,8 @@ class QMCDecrypter:
             raise TypeError(f"'file' must be file object, not {type(file)}")
         elif not seekfunc:
             raise ValueError('file object is not seekable')
+        
+        file.seek(0, 0)  # ensure offset is 0
         
         # search and decrypt key
         file_size_without_end_4bytes: int = file.seek(-4, 2)
