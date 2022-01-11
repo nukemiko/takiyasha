@@ -26,7 +26,7 @@ class QMCDecrypter:
             raise TypeError(f"'file' must be file object, not {type(file)}")
         elif not seekfunc:
             raise ValueError('file object is not seekable')
-    
+        
         file.seek(0, 0)  # ensure offset is 0
         
         self._buffer = file
