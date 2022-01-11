@@ -7,6 +7,8 @@ from Cryptodome.Cipher import AES
 from Cryptodome.Util.Padding import unpad
 
 from .ciphers import CacheCipher, RC4Cipher
+from ...exceptions import DecryptFailed
+from ...utils import get_file_ext_by_header
 
 LE_Uint32: struct.Struct = struct.Struct('<I')
 
@@ -53,6 +55,23 @@ class NCMDecrypter:
         return self._audio_start
     
     @property
+    def audio_format(self) -> str:
+        """Return the format of decrypted audio data.
+
+        :raise DecryptFailed: failed to recongize audio format.
+        :return: audio format string"""
+        self.buffer.seek(self.audio_start, 0)
+        test_data: bytes = self.buffer.read(16)
+        
+        decrypted_data: bytes = self.cipher.decrypt(test_data)
+        fmt = get_file_ext_by_header(decrypted_data)
+        
+        if not fmt:
+            raise DecryptFailed('failed to recongize decrypted audio format')
+        else:
+            return fmt
+    
+    @property
     def key(self):
         return self._key
     
@@ -69,7 +88,7 @@ class NCMDecrypter:
         return self._cover_data
     
     def decrypt(self):
-        self.buffer.seek(self.audio_start)
+        self.buffer.seek(self.audio_start, 0)
         return self.cipher.decrypt(self.buffer.read())
     
     @classmethod
