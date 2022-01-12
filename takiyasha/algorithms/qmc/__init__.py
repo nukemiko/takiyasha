@@ -19,13 +19,14 @@ class QMCDecrypter:
                  decrypted_key: bytes = None,
                  raw_metadata_extra: tuple[int, int] = None
                  ):
-        # check whether the object is a file object
-        readfunc = file.read
-        seekfunc = file.seek
-        if not readfunc:
-            raise TypeError(f"'file' must be file object, not {type(file)}")
-        elif not seekfunc:
-            raise ValueError('file object is not seekable')
+        # check whether file is readable and seekable
+        try:
+            if not (file.readable() and file.read):
+                raise OSError('file is not readable')
+            if not (file.seekable() and file.seek):
+                raise OSError('file is not seekable')
+        except AttributeError:
+            raise TypeError(f"'file' must be readable and seekable file object, not {type(file).__name__}")
         
         file.seek(0, 0)  # ensure offset is 0
         
@@ -78,13 +79,14 @@ class QMCDecrypter:
     
     @classmethod
     def generate(cls, file: IO[bytes]):
-        # check whether the object is a file object
-        readfunc = file.read
-        seekfunc = file.seek
-        if not readfunc:
-            raise TypeError(f"'file' must be file object, not {type(file)}")
-        elif not seekfunc:
-            raise ValueError('file object is not seekable')
+        # check whether file is readable and seekable
+        try:
+            if not (file.readable() and file.read):
+                raise OSError('file is not readable')
+            if not (file.seekable() and file.seek):
+                raise OSError('file is not seekable')
+        except AttributeError:
+            raise TypeError(f"'file' must be readable and seekable file object, not {type(file).__name__}")
         
         file.seek(0, 0)  # ensure offset is 0
         
