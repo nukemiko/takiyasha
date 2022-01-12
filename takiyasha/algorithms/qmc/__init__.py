@@ -50,7 +50,7 @@ class QMCDecrypter:
     
     @property
     def decrypted_key(self):
-        return self.decrypted_key
+        return self._decrypted_key
     
     @property
     def raw_metadata_extra(self):
