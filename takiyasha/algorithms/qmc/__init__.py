@@ -58,15 +58,30 @@ class QMCDecrypter:
         return self._raw_metadata_extra
     
     def speedtest(self, test_size: int = 1048576):
+        """Calculate the time required to decrypt data of the `test_size` specified size.
+
+        :return: Calculated result, the unit is second"""
         self.buffer.seek(0, 0)
         first_data: bytes = self.buffer.read(test_size)
         
         stmt = """self.cipher.decrypt(first_data)"""
         return timeit(stmt, globals=locals(), number=1)
     
-    def decrypt(self) -> bytes:
+    def decrypt(self, write_to: IO[bytes] = None) -> Union[bytes, IO[bytes]]:
+        """Decrypt the data from self.buffer, and return the decrypted data.
+
+        If parameter `write_to` is specified, the decrypted data
+        will be written to the file object pointed to `write_to`.
+        Then, the file object will be returned.
+
+        :return: Decrypted data or file object"""
         self.buffer.seek(0, 0)
-        return self.cipher.decrypt(self.buffer.read(self.audio_length))
+        data = self.cipher.decrypt(self.buffer.read())
+        if write_to:
+            write_to.write(data)
+            return write_to
+        else:
+            return data
     
     @property
     def audio_format(self) -> str:
