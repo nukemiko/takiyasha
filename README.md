@@ -1,4 +1,4 @@
-# Takiyasha
+# Takiyasha ![](https://img.shields.io/badge/python-3.8+-green)
 
 The Takiyasha is an unlocker for DRM protected music file.
 
@@ -66,6 +66,8 @@ with open('test.' + audiofmt, 'wb') as f:
 ```
 
 ## Install
+
+- **Required Python interpreter version: 3.8+**
 
 - Install as a module using pip: `pip install git+https://github.com/nukemiko/takiyasha`
     - **Warning: Existing repositories are in an unstable state of continuous updates, and the content of modules you download may become outdated at any time.**
