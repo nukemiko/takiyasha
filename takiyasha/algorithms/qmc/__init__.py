@@ -75,7 +75,7 @@ class QMCDecrypter:
         :raise DecryptFailed: failed to recongize audio format.
         :return: audio format string"""
         self.buffer.seek(0, 0)
-        test_data: bytes = self.buffer.read(32)
+        test_data: bytes = self.buffer.read(16)
         
         decrypted_data: bytes = self.cipher.decrypt(test_data)
         fmt = get_file_ext_by_header(decrypted_data)
