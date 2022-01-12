@@ -1,6 +1,7 @@
 import json
 import struct
 from base64 import b64decode
+from timeit import timeit
 from typing import IO, Optional, Union
 
 from Cryptodome.Cipher import AES
@@ -87,6 +88,13 @@ class NCMDecrypter:
     @property
     def cover_data(self):
         return self._cover_data
+    
+    def speedtest(self, test_size: int = 1048576):
+        self.buffer.seek(self.audio_start, 0)
+        first_data: bytes = self.buffer.read(test_size)
+        
+        stmt = """self.cipher.decrypt(first_data)"""
+        return timeit(stmt, globals=locals(), number=1)
     
     def decrypt(self):
         self.buffer.seek(self.audio_start, 0)

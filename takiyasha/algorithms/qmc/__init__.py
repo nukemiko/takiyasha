@@ -1,4 +1,5 @@
 import struct
+from timeit import timeit
 from typing import IO, Optional, Union
 
 from .ciphers import MapCipher, RC4Cipher, StaticMapCipher
@@ -55,6 +56,13 @@ class QMCDecrypter:
     @property
     def raw_metadata_extra(self):
         return self._raw_metadata_extra
+    
+    def speedtest(self, test_size: int = 1048576):
+        self.buffer.seek(0, 0)
+        first_data: bytes = self.buffer.read(test_size)
+        
+        stmt = """self.cipher.decrypt(first_data)"""
+        return timeit(stmt, globals=locals(), number=1)
     
     def decrypt(self) -> bytes:
         self.buffer.seek(0, 0)
