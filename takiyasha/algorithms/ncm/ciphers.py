@@ -24,9 +24,9 @@ class RC4Cipher(Cipher):
         
         self._box: bytearray = final_box
     
-    def decrypt(self, src_data: BytesType, /) -> bytes:
+    def decrypt(self, src_data: BytesType, /, offset: int = 0) -> bytes:
         src_data_len: int = len(src_data)
-        return bytes(self._box[i & 0xff] ^ src_data[i] for i in range(src_data_len))
+        return bytes(self._box[(offset + i) & 0xff] ^ src_data[i] for i in range(src_data_len))
 
 
 class CacheCipher(Cipher):
