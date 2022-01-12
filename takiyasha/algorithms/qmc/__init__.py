@@ -16,7 +16,7 @@ class QMCDecrypter:
                  *,
                  audio_length: int,
                  cipher: Union[MapCipher, RC4Cipher, StaticMapCipher],
-                 decrypted_key: bytes = None,
+                 master_key: bytes = None,
                  raw_metadata_extra: tuple[int, int] = None
                  ):
         # check whether file is readable and seekable
@@ -33,7 +33,7 @@ class QMCDecrypter:
         self._buffer = file
         self._cipher = cipher
         self._audio_length = audio_length
-        self._decrypted_key = decrypted_key
+        self._master_key = master_key
         self._raw_metadata_extra = raw_metadata_extra
     
     @property
@@ -49,8 +49,8 @@ class QMCDecrypter:
         return self._audio_length
     
     @property
-    def decrypted_key(self):
-        return self._decrypted_key
+    def master_key(self):
+        return self._master_key
     
     @property
     def raw_metadata_extra(self):
@@ -108,7 +108,7 @@ class QMCDecrypter:
             if len(items) != 3:
                 raise DecryptionError('invalid raw metadata')
             
-            decrypted_key: bytes = decrypt_key(items[0])
+            master_key: bytes = decrypt_key(items[0])
             
             raw_meta_extra1: int = int(items[1])
             raw_meta_extra2: int = int(items[2])
@@ -118,26 +118,26 @@ class QMCDecrypter:
             if 0 < size < 0x300:
                 audio_length: int = file.seek(-(4 + size), 2)
                 raw_key_data: bytes = file.read(size)
-                decrypted_key: bytes = decrypt_key(raw_key_data)
+                master_key: bytes = decrypt_key(raw_key_data)
             else:
                 audio_length = file_size_without_end_4bytes + 4
-                decrypted_key: Optional[bytes] = None
+                master_key: Optional[bytes] = None
         
-        if decrypted_key is None:
+        if master_key is None:
             cipher = StaticMapCipher()
         else:
-            key_length: int = len(decrypted_key)
+            key_length: int = len(master_key)
             if 0 < key_length <= 300:
-                cipher = MapCipher(decrypted_key)
+                cipher = MapCipher(master_key)
             else:
-                cipher = RC4Cipher(decrypted_key)
+                cipher = RC4Cipher(master_key)
         
         file.seek(0, 0)
         
         return cls(
             file,
             audio_length=audio_length,
-            decrypted_key=decrypted_key,
+            master_key=master_key,
             cipher=cipher,
             raw_metadata_extra=raw_meta_extra
         )

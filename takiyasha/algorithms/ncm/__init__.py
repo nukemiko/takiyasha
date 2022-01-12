@@ -19,7 +19,7 @@ class NCMDecrypter:
                  *,
                  cipher: Union[RC4Cipher, CacheCipher],
                  audio_start: int,
-                 key: bytes = None,
+                 master_key: bytes = None,
                  metadata: dict = None,
                  metadata_identifier: str = None,
                  cover_data: bytes = None
@@ -35,13 +35,13 @@ class NCMDecrypter:
         
         file.seek(0, 0)  # ensure offset is 0
         
-        self._buffer = file
-        self._cipher = cipher
-        self._audio_start = audio_start
-        self._key = key
-        self._metadata = metadata
-        self._metadata_identifier = metadata_identifier
-        self._cover_data = cover_data
+        self._buffer: IO[bytes] = file
+        self._cipher: Union[RC4Cipher, CacheCipher] = cipher
+        self._audio_start: int = audio_start
+        self._master_key: bytes = master_key
+        self._metadata: dict = metadata
+        self._metadata_identifier: str = metadata_identifier
+        self._cover_data: bytes = cover_data
     
     @property
     def buffer(self):
@@ -73,8 +73,8 @@ class NCMDecrypter:
             return fmt
     
     @property
-    def key(self):
-        return self._key
+    def master_key(self):
+        return self._master_key
     
     @property
     def metadata(self):
@@ -115,7 +115,7 @@ class NCMDecrypter:
             raw_master_key_data: bytes = bytes(b ^ 100 for b in file.read(raw_master_key_len))
             aes_crypter = AES.new(b'hzHRAmso5kInbaxW', AES.MODE_ECB)
             master_key_data: bytes = unpad(aes_crypter.decrypt(raw_master_key_data), 16)[17:]
-            key: Optional[bytes] = master_key_data
+            master_key: Optional[bytes] = master_key_data
             
             # generate RC4Cipher use master key
             cipher: Union[RC4Cipher, CacheCipher] = RC4Cipher(master_key_data)
@@ -149,13 +149,13 @@ class NCMDecrypter:
             metadata: dict = {}
             metadata_identifier: str = ''
             cover_data: Optional[bytes] = None
-            key: Optional[bytes] = None
+            master_key: Optional[bytes] = None
         
         return cls(
             file,
             cipher=cipher,
             audio_start=audio_start,
-            key=key,
+            master_key=master_key,
             metadata=metadata.copy(),
             metadata_identifier=metadata_identifier,
             cover_data=cover_data
