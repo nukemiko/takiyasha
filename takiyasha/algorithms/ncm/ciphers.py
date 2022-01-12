@@ -1,4 +1,4 @@
-from takiyasha.algorithms.qmc.ciphers import Cipher
+from ..common import Cipher
 from ...typehints import BytesType
 
 
