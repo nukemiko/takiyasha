@@ -278,7 +278,7 @@ class RC4Cipher(Cipher):
             src[target_slice] = self._enc_1st_segment(src[target_slice], offset)
             pending_is_0: bool = mark_process(blksize)
             if pending_is_0:
-                return src
+                return bytes(src)
         
         if offset % self.__rc4_segment_size != 0:
             blksize: int = pending
@@ -288,7 +288,7 @@ class RC4Cipher(Cipher):
             src[target_slice] = self._enc_another_segment(src[target_slice], offset)
             pending_is_0: bool = mark_process(blksize)
             if pending_is_0:
-                return src
+                return bytes(src)
         
         while pending > self.__rc4_segment_size:
             target_slice: slice = slice(done, done + self.__rc4_segment_size)
