@@ -47,8 +47,6 @@ class Decrypter(metaclass=ABCMeta):
         self._audio_start: int = kwargs.pop('audio_start')
         self._audio_length: int = kwargs.pop('audio_length')
         
-        self._parameters: dict[str, ...] = kwargs.copy()
-        
         self._buffer.seek(0, 0)
     
     @property
