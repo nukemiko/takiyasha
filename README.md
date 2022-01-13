@@ -6,13 +6,10 @@ The QMC decryption is partly derived from this project: [Unlock Music 音乐解�
 
 ## Supported encryption format
 
-- NCM (.ncm) file
-- QMCv1 (.qmc0/.qmc2/.qmc3/.qmcflac/.qmcogg)
-- QMCv2 (.mflac/.mgg/.mflac0/.mgg1/.mggl)
-- Some files that require your luck
-    - Moo Music format (.bkcmp3/.bkcflac/...)
-    - QQMusic Tm format (.tm0/.tm2/.tm3/.tm6)
-    - QQMusic oversea / JOOX Music (.ofl_en)
+- NCM files (.ncm)
+- QMCv1 files (.qmc*)
+- QMCv2 files (.mflac/.mflac*/.mgg/.mgg*)
+- Moo Music format files (.bkc*)
 
 ## Usage
 
@@ -22,14 +19,19 @@ The QMC decryption is partly derived from this project: [Unlock Music 音乐解�
 
   **WARNING: The command line has no function now. Please wait for future updates.**
     ```
-  Usage: python -m takiyasha [OPTIONS] <PATH TO INPUT>
-
+    Usage: python -m takiyasha [OPTIONS] <PATHS TO INPUT...>
+    
     Options:
       -o, --output <PATH>             Path to output file or dir.  [default: (current directory)]
-      -s, --source, --source-platform [cloudmusic|qqmusic]
-                                      The name of the platform you downloaded the file from (cloudmusic, qqmusic, ...)
-      --supported-ext, --supported-format
-                                      Show supported file extensions and exit
+      -r, --recursive                 If there is a directory in <PATHS TO
+                                      INPUT...>, recursively process the supported
+                                      files in the directory.
+                                      
+                                      Enabled by default when there is only one
+                                      directory in <PATHS TO INPUT...>.  [default:
+                                      (False)]
+      --supported-exts, --supported-formats
+                                      Show supported file extensions and exit.
       -V, --version
       -h, --help                      Show this message and exit.
     ```
@@ -83,7 +85,7 @@ with open('test.' + audiofmt, 'wb') as f:
 
 - **Required Python interpreter version: 3.8+**
 
-- Dependencies: 
+- Dependencies:
     - [click](https://pypi.org/project/click/) - CLI support
     - [mutagen](https://pypi.org/project/mutagen/) - Write metadata to audio file
     - [pycryptodomex](https://pypi.org/project/pycryptodomex/) - Decryption support
