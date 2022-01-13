@@ -81,7 +81,7 @@ class Decrypter(metaclass=ABCMeta):
     @property
     def audio_length(self) -> int:
         """The length of the audio data."""
-        return self._audio_start
+        return self._audio_length
     
     @property
     def audio_format(self) -> Optional[str]:
@@ -114,7 +114,12 @@ class Decrypter(metaclass=ABCMeta):
         
         `self.reset_buffer_offset()` should be called before calling this method,
         otherwise incorrect data may be returned."""
-        offset: int = self.buffer.tell()
+        if size < 0:
+            size = self.audio_length
+        
+        offset: int = self.buffer.tell() - self.audio_start
+        if offset < 0:
+            offset = 0
         data: bytes = self.buffer.read(size)
         
         return self.cipher.decrypt(data, offset=offset)
