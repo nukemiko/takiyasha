@@ -20,3 +20,11 @@ class CipherGenerationException(CipherException):
 
 class CipherGenerationError(CipherGenerationException):
     pass
+
+
+class CLIException(Exception):
+    pass
+
+
+class CLIError(CLIException):
+    pass
