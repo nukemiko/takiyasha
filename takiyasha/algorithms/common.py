@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from timeit import timeit
 from typing import IO, Optional
 
 from ..typehints import BytesType, BytesType_tuple
@@ -89,7 +90,7 @@ class Decrypter(metaclass=ABCMeta):
         
         Returns `None` when the audio format is unrecognized."""
         offset_orig: int = self.buffer.tell()
-        self.buffer.seek(self.audio_start, 0)
+        self.reset_buffer_offset()
         
         decrypted: bytes = self.cipher.decrypt(self.buffer.read(16))
         
@@ -104,6 +105,20 @@ class Decrypter(metaclass=ABCMeta):
         The offset of the starting position of the audio data
         is given by `self.audio_start`."""
         return self.buffer.seek(self.audio_start, 0)
+
+    def benchmark(self, test_size: int = 1048576) -> float:
+        """Calculate the time required to decrypt data of the `test_size` specified size.
+
+        The default value of `test_size` is 1048576 - 1 MiB."""
+        offset_orig: int = self.buffer.tell()
+        self.reset_buffer_offset()
+        
+        stmt: str = """self.read(test_size)"""
+        result: float = timeit(stmt, globals=locals(), number=1)
+    
+        self.buffer.seek(offset_orig, 0)
+    
+        return result
     
     def read(self, size: int = -1, /) -> bytes:
         """Read up to size bytes from `self.buffer`
