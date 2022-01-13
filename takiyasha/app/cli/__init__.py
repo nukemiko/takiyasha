@@ -3,22 +3,19 @@ import sys
 
 import click
 
-from .. import VERSION
+from .files import get_input_paths, get_output_path
+from ... import VERSION
 
 
 def _print_supported_format(ctx, param, value):
     if not value or ctx.resilient_parsing:
         return
-    click.echo('Supported encryption format:')
+    click.echo('Supported encryption formats:')
     click.echo(
-        """
-        - NCM file (.ncm)
-        - QMCv1 (.qmc0/.qmc2/.qmc3/.qmcflac/.qmcogg)
-        - QMCv2 (.mflac/.mgg/.mflac0/.mgg1/.mggl)
-        - Some files that require your luck
-            - Moo Music format (.bkcmp3/.bkcflac/...)
-            - QQMusic Tm format (.tm0/.tm2/.tm3/.tm6)
-            - QQMusic oversea / JOOX Music (.ofl_en)"""
+        """\u3000\u3000- NCM files (.ncm)
+\u3000\u3000- QMCv1 files (.qmcflac/.qmcogg/.qmc0/.qmc2/.qmc3/.qmc4/.qmc6/.qmc8)
+\u3000\u3000- QMCv2 files (.mflac/.mflac0/.mgg/.mgg0/.mgg1/.mggl)
+\u3000\u3000- Moo Music format files (.bkcmp3/.bkcflac/.bkc*/...)"""
     )
     ctx.exit()
 
@@ -26,7 +23,8 @@ def _print_supported_format(ctx, param, value):
 def _print_version(ctx, param, value):
     if not value or ctx.resilient_parsing:
         return
-    click.echo(f'Takiyasha version {VERSION} (Running on Python {sys.version})')
+    click.echo(f'Takiyasha version {VERSION} (Python {sys.version} on {sys.platform})')
+    click.echo(f"Use '--support-exts' or '--support-formats' to see support encryption formats.")
     ctx.exit()
 
 
@@ -34,27 +32,26 @@ def _print_version(ctx, param, value):
 @click.option(
     '-o', '--output', 'path_to_output', metavar='<PATH>', default=os.getcwd(),
     type=click.Path(exists=True),
-    show_default='current directory',
+    show_default=os.getcwd(),
     help="""\b
     Path to output file or dir."""
 )
 @click.option(
-    '-s', '--source', '--source-platform', 'source_platform', type=click.Choice(
-        ['cloudmusic', 'qqmusic'], case_sensitive=False
-    ),
-    help="""\b
-    The name of the platform you downloaded the file from (cloudmusic, qqmusic, ...)"""
+    '-r', '--recursive', is_flag=True, show_default='False',
+    help="""If there is a directory in <PATHS TO INPUT...>, recursively process the supported files in the directory.
+    
+    Enabled by default when there is only one directory in <PATHS TO INPUT...>."""
 )
 @click.option(
-    '--supported-ext', '--supported-format', is_flag=True, callback=_print_supported_format,
+    '--supported-exts', '--supported-formats', is_flag=True, callback=_print_supported_format,
     expose_value=False, is_eager=True,
-    help="""Show supported file extensions and exit"""
+    help="""Show supported file extensions and exit."""
 )
 @click.option(
     '-V', '--version', is_flag=True, callback=_print_version,
     expose_value=False, is_eager=True
 )
-@click.argument('path_to_input', metavar='<PATH TO INPUT>', type=click.Path(exists=True))
+@click.argument('path_to_input', metavar='<PATHS TO INPUT...>', type=click.Path(exists=True), nargs=-1)
 def main(**params):
     """\b
     Takiyasha - Unlock DRM protected music file(s).
