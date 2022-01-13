@@ -18,7 +18,21 @@ The QMC decryption is partly derived from this project: [Unlock Music 音乐解�
 
 ### CLI
 
-*Not implemented, coming soon*
+- Directly execute the module with `python -m`:
+
+    **WARNING: The command line has no function now. Please wait for future updates.**
+    ```
+  Usage: python -m takiyasha [OPTIONS] <PATH TO INPUT>
+
+    Options:
+      -o, --output <PATH>             Path to output file or dir.  [default: (current directory)]
+      -s, --source, --source-platform [cloudmusic|qqmusic]
+                                      The name of the platform you downloaded the file from (cloudmusic, qqmusic, ...)
+      --supported-ext, --supported-format
+                                      Show supported file extensions and exit
+      -V, --version
+      -h, --help                      Show this message and exit.
+    ```
 
 ### As a python module
 
