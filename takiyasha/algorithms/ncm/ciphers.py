@@ -33,5 +33,5 @@ class CacheCipher(Cipher):
     def __init__(self):
         super().__init__(key=None)
     
-    def decrypt(self, src_data: BytesType, /) -> bytes:
+    def decrypt(self, src_data: BytesType, /, offset: int = 0) -> bytes:
         return bytes(b ^ 163 for b in src_data)

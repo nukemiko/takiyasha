@@ -60,7 +60,7 @@ class TEACipher(Cipher):
         k3: int = BE_Uint32.unpack(self._key[12:])[0]
         return v0, v1, k0, k1, k2, k3
     
-    def decrypt(self, src_data: BytesType, /) -> bytearray:
+    def decrypt(self, src_data: BytesType, /, offset: int = 0) -> bytearray:
         v0, v1, k0, k1, k2, k3 = self._get_values_from_src_data(src_data)
         
         delta: int = self.delta

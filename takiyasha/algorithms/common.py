@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Optional
+from typing import IO, Optional
 
 from takiyasha.typehints import BytesType, BytesType_tuple
 
@@ -34,6 +34,57 @@ class Cipher(metaclass=ABCMeta):
         return key_len
     
     @abstractmethod
-    def decrypt(self, src_data: BytesType, /):
+    def decrypt(self, src_data: BytesType, /, offset: int = 0):
         """Accept encrypted src_data and return the decrypted data."""
+        pass
+
+
+class Decrypter(metaclass=ABCMeta):
+    def __init__(self, **kwargs):
+        self._buffer: IO[bytes] = kwargs.pop('buffer')
+        self._cipher: Cipher = kwargs.pop('cipher')
+        self._master_key: bytes = kwargs.pop('master_key')
+        self._audio_start: int = kwargs.pop('audio_start')
+        self._audio_length: int = kwargs.pop('audio_length')
+        
+        self._parameters: dict[str, ...] = kwargs.copy()
+        
+        self._buffer.seek(0, 0)
+    
+    @property
+    def buffer(self) -> IO[bytes]:
+        return self._buffer
+    
+    @property
+    def cipher(self) -> Cipher:
+        return self._cipher
+    
+    @property
+    def master_key(self) -> bytes:
+        return self._master_key
+    
+    @property
+    def audio_start(self) -> int:
+        return self._audio_start
+    
+    @property
+    def audio_length(self) -> int:
+        return self._audio_start
+    
+    @abstractmethod
+    @property
+    def audio_format(self) -> str:
+        pass
+    
+    def reset_buffer_offset(self) -> int:
+        return self.buffer.seek(self.audio_start, 0)
+    
+    def read(self, size: int = -1, /) -> bytes:
+        offset: int = self.buffer.tell()
+        data: bytes = self.buffer.read(size)
+        return self.cipher.decrypt(data, offset=offset)
+    
+    @classmethod
+    @abstractmethod
+    def generate(cls, file: IO[bytes]):
         pass
