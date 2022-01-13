@@ -84,9 +84,9 @@ with open('test.' + audiofmt, 'wb') as f:
 - **Required Python interpreter version: 3.8+**
 
 - Dependencies: 
-    - [click](https://pypi.org/project/click/)
-    - [mutagen](https://pypi.org/project/mutagen/)
-    - [pycryptodomex](https://pypi.org/project/pycryptodomex/)
+    - [click](https://pypi.org/project/click/) - CLI support
+    - [mutagen](https://pypi.org/project/mutagen/) - Write metadata to audio file
+    - [pycryptodomex](https://pypi.org/project/pycryptodomex/) - Decryption support
 
 - Install as a module using pip: `pip install git+https://github.com/nukemiko/takiyasha`
     - **Warning: Existing repositories are in an unstable state of continuous updates, and the content of modules you download may become outdated at any time.**
