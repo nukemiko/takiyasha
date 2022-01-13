@@ -1,107 +1,27 @@
 import struct
-from timeit import timeit
-from typing import IO, Optional, Union
+from typing import IO, Optional
 
 from .ciphers import MapCipher, RC4Cipher, StaticMapCipher
 from .key import decrypt_key
-from ...exceptions import DecryptFailed, DecryptionError
-from ...utils import get_file_ext_by_header
+from ..common import Decrypter
+from ...exceptions import DecryptionError
 
 LE_Uint32 = struct.Struct('<L')
 BE_Uint32 = struct.Struct('>L')
 
 
-class QMCDecrypter:
-    def __init__(self,
-                 file: IO[bytes],
-                 *,
-                 audio_length: int,
-                 cipher: Union[MapCipher, RC4Cipher, StaticMapCipher],
-                 master_key: bytes = None,
-                 raw_metadata_extra: tuple[int, int] = None
-                 ):
-        # check whether file is readable and seekable
-        try:
-            if not (file.readable() and file.read):
-                raise OSError('file is not readable')
-            if not (file.seekable() and file.seek):
-                raise OSError('file is not seekable')
-        except AttributeError:
-            raise TypeError(f"'file' must be readable and seekable file object, not {type(file).__name__}")
+class QMCDecrypter(Decrypter):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         
-        file.seek(0, 0)  # ensure offset is 0
-        
-        self._buffer = file
-        self._cipher = cipher
-        self._audio_length = audio_length
-        self._master_key = master_key
-        self._raw_metadata_extra = raw_metadata_extra
+        self._raw_metadata_extra: Optional[tuple[int, int]] = kwargs.pop('raw_metadata_extra')
     
     @property
-    def buffer(self):
-        return self._buffer
-    
-    @property
-    def cipher(self):
-        return self._cipher
-    
-    @property
-    def audio_length(self):
-        return self._audio_length
-    
-    @property
-    def master_key(self):
-        return self._master_key
-    
-    @property
-    def raw_metadata_extra(self):
+    def raw_metadata_extra(self) -> Optional[tuple[int, int]]:
         return self._raw_metadata_extra
     
-    def speedtest(self, test_size: int = 1048576):
-        """Calculate the time required to decrypt data of the `test_size` specified size.
-
-        :return: Calculated result, the unit is second"""
-        self.buffer.seek(0, 0)
-        first_data: bytes = self.buffer.read(test_size)
-        
-        stmt = """self.cipher.decrypt(first_data)"""
-        return timeit(stmt, globals=locals(), number=1)
-    
-    def decrypt(self, write_to: IO[bytes] = None) -> Union[bytes, IO[bytes]]:
-        """Decrypt the data from self.buffer, and return the decrypted data.
-
-        If parameter `write_to` is specified, the decrypted data
-        will be written to the file object pointed to `write_to`.
-        Then, the file object will be returned.
-
-        :return: Decrypted data or file object"""
-        self.buffer.seek(0, 0)
-        data = self.cipher.decrypt(self.buffer.read())
-        if write_to:
-            write_to.write(data)
-            return write_to
-        else:
-            return data
-    
-    @property
-    def audio_format(self) -> str:
-        """Return the format of decrypted audio data.
-        
-        :raise DecryptFailed: failed to recongize audio format.
-        :return: audio format string"""
-        self.buffer.seek(0, 0)
-        test_data: bytes = self.buffer.read(16)
-        
-        decrypted_data: bytes = self.cipher.decrypt(test_data)
-        fmt = get_file_ext_by_header(decrypted_data)
-        
-        if not fmt:
-            raise DecryptFailed('failed to recongize decrypted audio format')
-        else:
-            return fmt
-    
     @classmethod
-    def generate(cls, file: IO[bytes]):
+    def new(cls, file: IO[bytes]):
         # check whether file is readable and seekable
         try:
             if not (file.readable() and file.read):
@@ -155,12 +75,15 @@ class QMCDecrypter:
             else:
                 cipher = RC4Cipher(master_key)
         
+        audio_start: int = 0
+        
         file.seek(0, 0)
         
         return cls(
-            file,
-            audio_length=audio_length,
-            master_key=master_key,
+            buffer=file,
             cipher=cipher,
+            master_key=master_key,
+            audio_start=audio_start,
+            audio_length=audio_length,
             raw_metadata_extra=raw_meta_extra
         )
