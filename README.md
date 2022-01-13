@@ -20,7 +20,7 @@ The QMC decryption is partly derived from this project: [Unlock Music 音乐解�
 
 - Directly execute the module with `python -m`:
 
-    **WARNING: The command line has no function now. Please wait for future updates.**
+  **WARNING: The command line has no function now. Please wait for future updates.**
     ```
   Usage: python -m takiyasha [OPTIONS] <PATH TO INPUT>
 
@@ -82,6 +82,11 @@ with open('test.' + audiofmt, 'wb') as f:
 ## Install
 
 - **Required Python interpreter version: 3.8+**
+
+- Dependencies: 
+    - [click](https://pypi.org/project/click/)
+    - [mutagen](https://pypi.org/project/mutagen/)
+    - [pycryptodomex](https://pypi.org/project/pycryptodomex/)
 
 - Install as a module using pip: `pip install git+https://github.com/nukemiko/takiyasha`
     - **Warning: Existing repositories are in an unstable state of continuous updates, and the content of modules you download may become outdated at any time.**
