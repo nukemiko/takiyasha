@@ -105,7 +105,7 @@ class Decrypter(metaclass=ABCMeta):
         The offset of the starting position of the audio data
         is given by `self.audio_start`."""
         return self.buffer.seek(self.audio_start, 0)
-
+    
     def benchmark(self, test_size: int = 1048576) -> float:
         """Calculate the time required to decrypt data of the `test_size` specified size.
 
@@ -115,9 +115,9 @@ class Decrypter(metaclass=ABCMeta):
         
         stmt: str = """self.read(test_size)"""
         result: float = timeit(stmt, globals=locals(), number=1)
-    
+        
         self.buffer.seek(offset_orig, 0)
-    
+        
         return result
     
     def read(self, size: int = -1, /) -> bytes:
