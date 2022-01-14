@@ -32,7 +32,7 @@ The QMC decryption is partly derived from this project: [Unlock Music 音乐解�
 
 - Directly execute the module with `python -m`:
 
-    **WARNING: The command line has no function now, and the output need to update. Please wait for future version.**
+    **WARNING: Since the cli module has been removed, the tool is now unavailable from the command line.**
 
     ```
     Usage: python -m takiyasha [OPTIONS] <PATHS TO INPUT...>
