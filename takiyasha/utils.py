@@ -31,8 +31,6 @@ def get_file_ext_by_header(data: BytesType) -> Optional[str]:
     for header, fmt in FILE_HEADER_FORMAT_MAP.items():
         if data.startswith(header):
             return fmt
-    else:
-        return None
 
 
 def get_header_by_file_fmt(fmt: str) -> Optional[bytes]:
