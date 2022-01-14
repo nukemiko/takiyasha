@@ -92,7 +92,7 @@ class Decrypter(metaclass=ABCMeta):
         offset_orig: int = self.buffer.tell()
         self.reset_buffer_offset()
         
-        decrypted: bytes = self.cipher.decrypt(self.buffer.read(16))
+        decrypted: bytes = self.cipher.decrypt(self.buffer.read(32))
         
         self.buffer.seek(offset_orig, 0)
         
