@@ -28,16 +28,14 @@ The QMC decryption is partly derived from this project: [Unlock Music 音乐解�
 
 ## Usage
 
-### CLI
+### In Terminal / CMD / Powershell
 
-- Directly execute the module with `python -m`:
+- Directly execute the command: `takiyasha [OPTIONS] [/PATH/TO/INPUT]...`
+- Run the module: `python -m takiyasha [OPTIONS] [/PATH/TO/INPUT]...`
 
     ```
-    $ > python -m takiyasha --help
-    Usage: python -m takiyasha [OPTIONS] [/PATH/TO/INPUT]...
-
-        Takiyasha - DRM protected music file unlocker, written by python
-        Support the project: https://github.com/nukemiko/takiyasha
+    Argument:
+        [PATHS/TO/INPUT]          Paths to input file or directory.
     
     Options:
         -o, --output PATH         Path to output file or dir.  [default: (current directory)]
@@ -51,7 +49,7 @@ The QMC decryption is partly derived from this project: [Unlock Music 音乐解�
         -h, --help                Show this message and exit.
     ```
 
-### As a python module
+### Import and use it as a python module
 
 - General usage
 
