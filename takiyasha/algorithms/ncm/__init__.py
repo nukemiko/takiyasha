@@ -30,7 +30,7 @@ class NCMDecrypter(Decrypter):
         return self._identifier
     
     @property
-    def cover_data(self) -> Optional[str]:
+    def cover_data(self) -> Optional[bytes]:
         return self._cover_data
     
     @classmethod
