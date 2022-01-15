@@ -6,11 +6,6 @@ from .algorithms.qmc import QMCDecrypter
 from .typehints import PathType, PathType_tuple
 from .utils import get_encryption_format, SUPPORTED_FORMATS_PATTERNS
 
-
-def version() -> str:
-    return '0.2.0'
-
-
 _ENCTYPE_DECRYPTER_MAP = {
     'NCM': NCMDecrypter,
     'QMC': QMCDecrypter
