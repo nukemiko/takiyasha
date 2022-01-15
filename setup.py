@@ -9,7 +9,7 @@ dependencies = dependencies.strip().splitlines()
 
 setup(
     name='takiyasha',
-    version='0.1.0',
+    version='0.2.0',
     packages=['takiyasha', 'takiyasha.app', 'takiyasha.algorithms', 'takiyasha.algorithms.ncm', 'takiyasha.algorithms.qmc'],
     url='https://github.com/nukemiko/takiyasha',
     license='MIT',
@@ -18,5 +18,10 @@ setup(
     description='DRM protected music unlocker',
     long_description=readme,
     python_requires='>=3.8',
-    install_requires=dependencies
+    install_requires=dependencies,
+    entry_points={
+        'console_scripts': [
+            'takiyasha = takiyasha.app.cli:main'
+        ]
+    }
 )
