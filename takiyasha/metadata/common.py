@@ -29,6 +29,55 @@ class TagProxy(metaclass=ABCMeta):
         return self._filething_seekable
     
     @property
+    @abstractmethod
+    def title(self):
+        pass
+    
+    @title.setter
+    @abstractmethod
+    def title(self, value):
+        pass
+    
+    @property
+    @abstractmethod
+    def artist(self):
+        pass
+    
+    @artist.setter
+    @abstractmethod
+    def artist(self, value):
+        pass
+    
+    @property
+    @abstractmethod
+    def album(self):
+        pass
+    
+    @album.setter
+    @abstractmethod
+    def album(self, value):
+        pass
+    
+    @property
+    @abstractmethod
+    def comment(self):
+        pass
+    
+    @comment.setter
+    @abstractmethod
+    def comment(self, value: str):
+        pass
+    
+    @property
+    @abstractmethod
+    def cover(self):
+        pass
+    
+    @abstractmethod
+    def set_cover(self, cover_data: bytes, content_type: int = 3):
+        pass
+    
+    @property
     def real_tag(self):
         return self._real_tag
     
