@@ -32,24 +32,23 @@ The QMC decryption is partly derived from this project: [Unlock Music 音乐解�
 
 - Directly execute the module with `python -m`:
 
-    **WARNING: Since the cli module has been removed, the tool is now unavailable from the command line.**
-
     ```
-    Usage: python -m takiyasha [OPTIONS] <PATHS TO INPUT...>
+    $ > python -m takiyasha --help
+    Usage: python -m takiyasha [OPTIONS] [/PATH/TO/INPUT]...
+
+        Takiyasha - DRM protected music file unlocker, written by python
+        Support the project: https://github.com/nukemiko/takiyasha
     
     Options:
-      -o, --output <PATH>             Path to output file or dir.  [default: (current directory)]
-      -r, --recursive                 If there is a directory in <PATHS TO
-                                      INPUT...>, recursively process the supported
-                                      files in the directory.
-                                      
-                                      Enabled by default when there is only one
-                                      directory in <PATHS TO INPUT...>.  [default:
-                                      (False)]
-      --supported-exts, --supported-formats
-                                      Show supported file extensions and exit.
-      -V, --version
-      -h, --help                      Show this message and exit.
+        -o, --output PATH         Path to output file or dir.  [default: (current directory)]
+        -r, --recursive           Also unlock supported files in subdirectories
+                                  during unlocking.  [default: False]
+        -n, --without-metadata    Do not embed metadata found in the source file
+                                  into the unlocked file.  [default: False]
+        -q, --quiet               Don't print OK for each unlocked file.  [default: False]
+        --exts, --supported-exts  Show supported file extensions and exit.
+        -V, --version             Show the version information and exit.
+        -h, --help                Show this message and exit.
     ```
 
 ### As a python module
