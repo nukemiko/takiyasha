@@ -422,3 +422,7 @@ cython_debug/
 
 # miscellaneous
 /miscellaneous
+
+# Nutika generated directories
+/*.build
+/*.dist
