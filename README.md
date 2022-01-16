@@ -1,4 +1,4 @@
-# Takiyasha ![](https://img.shields.io/badge/python-3.8+-green)
+# Takiyasha v0.2.0 ![](https://img.shields.io/badge/python-3.8+-green)
 
 The Takiyasha is an unlocker for DRM protected music file.
 
@@ -22,9 +22,11 @@ The QMC decryption is partly derived from this project: [Unlock Music 音乐解�
         - [mutagen](https://pypi.org/project/mutagen/) - Write metadata to audio file
         - [pycryptodomex](https://pypi.org/project/pycryptodomex/) - Decryption support
 
-- Install as a module using pip: `pip install -U git+https://github.com/nukemiko/takiyasha`
+- Install Takiyasha from this repository: `pip install -U git+https://github.com/nukemiko/takiyasha`
 
-    **WARNING: Existing repositories are in an unstable state of continuous updates, and the content of modules you download may become outdated at any time.**
+    **WARNING: Existing repositories are in an unstable state of continuous updates, and the content of modules you download may become outdated at any time. If you need to use a certain version continuously, please select the version on the [release page](https://github.com/nukemiko/takiyasha/releases) and install it as follows.**
+
+- Install Takiyasha via wheel (.whl) package: [Go to the release page](https://github.com/nukemiko/takiyasha/releases), choose a version, and follow the instructions to install.
 
 ## Usage
 
