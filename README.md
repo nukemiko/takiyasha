@@ -22,11 +22,15 @@ The QMC decryption is partly derived from this project: [Unlock Music 音乐解�
         - [mutagen](https://pypi.org/project/mutagen/) - Write metadata to audio file
         - [pycryptodomex](https://pypi.org/project/pycryptodomex/) - Decryption support
 
-- Install Takiyasha from this repository: `pip install -U git+https://github.com/nukemiko/takiyasha`
+- Install Takiyasha from this repository:
+    - `pip install -U git+https://github.com/nukemiko/takiyasha`
 
     **WARNING: Existing repositories are in an unstable state of continuous updates, and the content of modules you download may become outdated at any time. If you need to use a certain version continuously, please select the version on the [release page](https://github.com/nukemiko/takiyasha/releases) and install it as follows.**
 
-- Install Takiyasha via wheel (.whl) package: [Go to the release page](https://github.com/nukemiko/takiyasha/releases), choose a version, and follow the instructions to install.
+- Install Takiyasha via wheel (.whl) package:
+    - [Go to the release page](https://github.com/nukemiko/takiyasha/releases).
+    - Choose a version that you need.
+    - And follow the instructions to install.
 
 ## Usage
 
