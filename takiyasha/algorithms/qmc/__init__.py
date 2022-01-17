@@ -1,7 +1,7 @@
 import struct
 from typing import IO, Optional
 
-from .ciphers import MapCipher, RC4Cipher, StaticMapCipher
+from .ciphers import QMCv2_DynamicMapCipher, QMCv2_RC4Cipher, QMCv1_StaticMapCipher
 from .key import decrypt_key
 from ..common import Decrypter
 from ...exceptions import DecryptionError
@@ -11,7 +11,9 @@ BE_Uint32 = struct.Struct('>L')
 
 
 class QMCDecrypter(Decrypter):
+    """The decrypter of QQMusic QMCv1 and QMCv2 encrypted file."""
     def __init__(self, **kwargs):
+        """Initialize self. See help(type(self)) for accurate signature."""
         super().__init__(**kwargs)
         
         self._raw_metadata_extra: Optional[tuple[int, int]] = kwargs.pop('raw_metadata_extra')
@@ -67,13 +69,13 @@ class QMCDecrypter(Decrypter):
                 master_key: Optional[bytes] = None
         
         if master_key is None:
-            cipher = StaticMapCipher()
+            cipher = QMCv1_StaticMapCipher()
         else:
             key_length: int = len(master_key)
             if 0 < key_length <= 300:
-                cipher = MapCipher(master_key)
+                cipher = QMCv2_DynamicMapCipher(master_key)
             else:
-                cipher = RC4Cipher(master_key)
+                cipher = QMCv2_RC4Cipher(master_key)
         
         audio_start: int = 0
         

@@ -7,14 +7,17 @@ from typing import IO, Optional, Union
 from Cryptodome.Cipher import AES
 from Cryptodome.Util.Padding import unpad
 
-from .ciphers import CacheCipher, RC4Cipher
+from .ciphers import NCM_RC4Cipher, NCM_XOROnlyCipher
 from ..common import Decrypter
 
 LE_Uint32: struct.Struct = struct.Struct('<I')
 
 
 class NCMDecrypter(Decrypter):
+    """The decrypter of Cloudmusic NCM encrypted container format."""
+    
     def __init__(self, **kwargs):
+        """Initialize self. See help(type(self)) for accurate signature."""
         super().__init__(**kwargs)
         
         self._metadata: dict[str, Union[str, list]] = kwargs.pop('metadata')
@@ -59,7 +62,7 @@ class NCMDecrypter(Decrypter):
             master_key: Optional[bytes] = master_key_data
             
             # generate RC4Cipher use master key
-            cipher: Union[RC4Cipher, CacheCipher] = RC4Cipher(master_key_data)
+            cipher: Union[NCM_RC4Cipher, NCM_XOROnlyCipher] = NCM_RC4Cipher(master_key_data)
             
             # read and decrypt metadata
             raw_metadada_len: int = LE_Uint32.unpack(file.read(4))[0]
@@ -85,7 +88,7 @@ class NCMDecrypter(Decrypter):
             audio_start: int = file.tell()
         else:
             # is encrypted Cloudmusic cache file
-            cipher: Union[RC4Cipher, CacheCipher] = CacheCipher()
+            cipher: Union[NCM_RC4Cipher, NCM_XOROnlyCipher] = NCM_XOROnlyCipher()
             audio_start: int = 0
             metadata: dict = {}
             identifier: str = ''

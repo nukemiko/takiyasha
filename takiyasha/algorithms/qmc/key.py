@@ -4,7 +4,7 @@ from typing import Final
 
 from Cryptodome.Util.strxor import strxor
 
-from .ciphers import TEACipher
+from .ciphers import QMC_TEACipher
 from ...exceptions import DecryptionError
 from ...typehints import BytesType
 
@@ -32,7 +32,7 @@ def decrypt_tc_tea(input_data: BytesType, key: BytesType) -> bytearray:
     if input_data_len < 16:
         raise DecryptionError('input buffer size too small')
     
-    cipher: TEACipher = TEACipher(key=key, rounds=32)
+    cipher: QMC_TEACipher = QMC_TEACipher(key=key, rounds=32)
     
     dest_data: bytearray = cipher.decrypt(input_data)
     pad_len: int = dest_data[0] & 7

@@ -8,11 +8,12 @@ from ...typehints import BytesType
 BE_Uint32 = struct.Struct('>L')
 
 
-class TEACipher(Cipher):
+class QMC_TEACipher(Cipher):
     """A cipher that implemented encryption and decryption of the Tiny Encryption Algorithm (TEA)."""
     
     def __init__(self,
                  key: BytesType,
+                 *,
                  rounds: int = 64,
                  magic_number: int = 0x9e3779b9
                  ):
@@ -100,8 +101,10 @@ class TEACipher(Cipher):
         return ret
 
 
-class StaticMapCipher(Cipher):
-    """A cipher that implemented decryption of the map-based QMCv1 encryption algorithm."""
+class QMCv1_StaticMapCipher(Cipher):
+    """A cipher that implemented decryption of the map-based QMCv1 encryption algorithm.
+    
+    If the extension of the file is starts with ".qmc" or ".tkm", this cipher should be used."""
     
     def __init__(self):
         """Initialize self. See help(type(self)) for accurate signature."""
@@ -156,10 +159,11 @@ class StaticMapCipher(Cipher):
         return ret
 
 
-class MapCipher(Cipher):
+class QMCv2_DynamicMapCipher(Cipher):
     """A cipher that implemented decryption of the map-based QMCv2 encryption algorithm.
     
-    This cipher should be used if the key size is between [0, 300]."""
+    If the extension of the file is starts with ".mflac" or ".mgg",
+    and the key size is between (0, 300], this cipher should be used."""
     
     def __init__(self, key: BytesType):
         """Initialize self. See help(type(self)) for accurate signature."""
@@ -185,10 +189,11 @@ class MapCipher(Cipher):
         return ret
 
 
-class RC4Cipher(Cipher):
+class QMCv2_RC4Cipher(Cipher):
     """A cipher that implemented decryption of the RC4-based QMCv2 encryption algorithm.
 
-    This cipher should be used if the key size is bigger than 300."""
+    If the extension of the file is starts with ".mflac" or ".mgg",
+    and the key size is bigger than 300, this cipher should be used."""
     
     def __init__(self, key: BytesType):
         """Initialize self. See help(type(self)) for accurate signature."""
