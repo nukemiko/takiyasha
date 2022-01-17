@@ -1,4 +1,4 @@
-# Takiyasha v0.2.0 ![](https://img.shields.io/badge/python-3.8+-green)
+# Takiyasha v0.2.1 ![](https://img.shields.io/badge/python-3.8+-green)
 
 The Takiyasha is an unlocker for DRM protected music file.
 
