@@ -9,8 +9,16 @@ dependencies = dependencies.strip().splitlines()
 
 setup(
     name='takiyasha',
-    version='0.2.0',
-    packages=['takiyasha', 'takiyasha.app', 'takiyasha.algorithms', 'takiyasha.algorithms.ncm', 'takiyasha.algorithms.qmc'],
+    version='0.2.1',
+    packages=[
+        'takiyasha',
+        'takiyasha.app',
+        'takiyasha.app.cli',
+        'takiyasha.algorithms',
+        'takiyasha.algorithms.ncm',
+        'takiyasha.algorithms.qmc',
+        'takiyasha.metadata'
+    ],
     url='https://github.com/nukemiko/takiyasha',
     license='MIT',
     author='nukemiko',
