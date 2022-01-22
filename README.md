@@ -1,105 +1,108 @@
 # Takiyasha v0.2.1 ![](https://img.shields.io/badge/python-3.8+-green)
 
-The Takiyasha is an unlocker for DRM protected music file.
+简体中文 | [English](README_EN.md)
 
-The QMC decryption is partly derived from this project: [Unlock Music 音乐解锁](https://github.com/unlock-music/unlock-music)
+Takiyasha 是用来解锁被加密的音乐文件的工具，支持 .qmc、.mflac 等多种格式。
 
-## Supported encryption format
+Takiyasha 解锁 QMC 加密文件的能力，来源于此项目：[Unlock Music 音乐解锁](https://github.com/unlock-music/unlock-music)
 
-- NCM files (.ncm)
-- QMCv1 files (.qmc*)
-- QMCv2 files (.mflac/.mflac*/.mgg/.mgg*)
-- Moo Music format files (.bkc*)
+## 特性
 
-## Install
+- Takiyasha 使用 Python 3 编写
+- 只要电脑/手机上可以运行 Python 3 和使用 pip，就可以安装和使用 Takiyasha
 
-- Dependencies:
+### 支持的加密格式
 
-    - Python version: At least Python 3.8 or above
+- 老版 QMC 加密格式 (.qmc*)
+- 新版 QMC 加密格式 (.mflac/.mflac*/.mgg/.mgg*)
+- Moo Music 加密格式 (.bkc*)
+- NCM 加密格式 (.ncm)
 
-    - Required Python packages:
-        - [click](https://pypi.org/project/click/) - CLI support
-        - [mutagen](https://pypi.org/project/mutagen/) - Write metadata to audio file
-        - [pycryptodomex](https://pypi.org/project/pycryptodomex/) - Decryption support
+### 适用人群
 
-- Install Takiyasha from this repository:
-    - `pip install -U git+https://github.com/nukemiko/takiyasha`
+- 经常批量下载和解锁加密格式的用户
+- 不在乎解锁速度的用户
+  - 因为 Python 的语言特性，解锁过程很慢
 
-    **WARNING: Existing repositories are in an unstable state of continuous updates, and the content of modules you download may become outdated at any time. If you need to use a certain version continuously, please select the version on the [release page](https://github.com/nukemiko/takiyasha/releases) and install it as follows.**
+## 如何安装
 
-- Install Takiyasha via wheel (.whl) package:
-    - [Go to the release page](https://github.com/nukemiko/takiyasha/releases).
-    - Choose a version that you need.
-    - And follow the instructions to install.
+- 所需运行环境
+  - Python 版本：大于或等于 3.8
+- 所需依赖
+  - Python 包：[click](https://pypi.org/project/click/) - 提供命令行界面
+  - Python 包：[mutagen](https://pypi.org/project/mutagen/) - 向输出文件写入歌曲信息
+  - Python 包：[pycryptodomex](https://pypi.org/project/pycryptodomex/) - 部分加密格式的解锁支持
 
-## Usage
+### 从本仓库直接安装 Takiyasha
 
-### In Terminal / CMD / Powershell
+使用命令：`pip install -U git+https://github.com/nukemiko/takiyasha`
 
-- Directly execute the command: `takiyasha [OPTIONS] [/PATH/TO/INPUT]...`
-- Run the module: `python -m takiyasha [OPTIONS] [/PATH/TO/INPUT]...`
+**警告：仓库的状态目前并不稳定，模块/类/方法的名字和行为随时会发生改变。如果需要稳定版本，请到[发布页面](https://github.com/nukemiko/takiyasha/releases)下载你需要的版本。**
 
+### 通过在发布页下载 wheel (.whl) 安装文件安装 Takiyasha
+
+- [前往发布页面](https://github.com/nukemiko/takiyasha/releases)
+- 找到你需要的版本
+- 按照发布说明进行下载和安装
+
+## 如何使用
+
+### 在命令行（CMD/Powershell/Terminal 等）中使用
+
+- 直接执行命令：`takiyasha file1.qmcflac file2.mflac ...`
+- 作为模块运行：`python -m takiyasha file3.mgg file4.ncm ...`
+
+无论怎样运行，都可以使用 `-h/--help` 选项获得详尽的帮助信息。
+
+### 作为 Python 模块导入并使用
+
+1. 创建一个 Decrypter 实例
+
+    ```python
+    from takiyasha import new_decrypter
+
+    qmcflac_dec = new_decrypter('test.qmcflac')
+    mflac_dec = new_decrypter('test.mflac')
+    ncm_dec = new_decrypter('test.ncm')
+
+    print(qmcflac_dec, mflac_dec, ncm_dec, end='\n')
     ```
-    Argument:
-        [PATHS/TO/INPUT]          Paths to input file or directory.
-    
-    Options:
-        -o, --output PATH         Path to output file or dir.  [default: (current directory)]
-        -r, --recursive           Also unlock supported files in subdirectories
-                                  during unlocking.  [default: False]
-        -n, --without-metadata    Do not embed metadata found in the source file
-                                  into the unlocked file.  [default: False]
-        -q, --quiet               Don't print OK for each unlocked file.  [default: False]
-        --exts, --supported-exts  Show supported file extensions and exit.
-        -V, --version             Show the version information and exit.
-        -h, --help                Show this message and exit.
+
+    输出:
+
+    ```text
+    <takiyasha.algorithms.qmc.QMCDecrypter object at 0x7f013116f670>
+    <takiyasha.algorithms.qmc.QMCDecrypter object at 0x7f01311c0b80>
+    <takiyasha.algorithms.ncm.NCMDecrypter object at 0x7f01311c0fd0>
     ```
 
-### Import and use it as a python module
+2. 执行解锁操作并保存到文件
 
-- General usage
+    ```python
+    for idx, decrypter in enumerate([qmcflac_dec, mflac_dec, ncm_dec]):
+        audio_format = decrypter.audio_format
+        save_filename = f'test{idx}.{audio_format}'
 
-    1. Create a Decrypter instance by file encryption type
+        with open(save_filename, 'wb') as f:
+            decrypter.reset_buffer_offset()
+            f.write(decrypter.read())
 
-        ```python
-        from takiyasha import new_decrypter
-        
-        qmcflac_dec = new_decrypter('test.qmcflac')
-        mflac_dec = new_decrypter('test.mflac')
-        ncm_dec = new_decrypter('test.ncm')
+            print(save_filename)
+    ```
 
-        print(qmcflac_dec, mflac_dec, ncm_dec)
-        ```
-        Output:
-        ```
-        <takiyasha.algorithms.qmc.QMCDecrypter object at 0x7f013116f670>
-        <takiyasha.algorithms.qmc.QMCDecrypter object at 0x7f01311c0b80>
-        <takiyasha.algorithms.ncm.NCMDecrypter object at 0x7f01311c0fd0>
-        ```
+    输出：
 
-    2. Decrypt and save data to file
+    ```text
+    test0.flac
+    test1.flac
+    test2.flac
+    ```
 
-        ```python
-        for idx, decrypter in enumerate([qmcflac_dec, mflac_dec, ncm_dec]):
-            audio_format = decrypter.audio_format
-            save_filename = f'test{idx}.{audio_format}'
+    使用 `file` 命令验证输出文件是否正确：
 
-            with open(save_filename, 'wb') as f:
-                decrypter.reset_buffer_offset()
-                f.write(decrypter.read())
-
-                print(save_filename)
-        ```
-        Output:
-        ```
-        test0.flac
-        test1.flac
-        test2.flac
-        ```
-        Use the shell command `file` to verify that the output file is correct:
-        ```
-        > file test0.flac test1.flac test2.flac
-        test0.flac: FLAC audio bitstream data, 16 bit, stereo, 44.1 kHz, 14232044 samples
-        test1.flac: FLAC audio bitstream data, 16 bit, stereo, 44.1 kHz, 11501280 samples
-        test2.flac: FLAC audio bitstream data, 16 bit, stereo, 44.1 kHz, 9907800 samples
-        ```
+    ```text
+    > file test0.flac test1.flac test2.flac
+    test0.flac: FLAC audio bitstream data, 16 bit, stereo, 44.1 kHz, 14232044 samples
+    test1.flac: FLAC audio bitstream data, 16 bit, stereo, 44.1 kHz, 11501280 samples
+    test2.flac: FLAC audio bitstream data, 16 bit, stereo, 44.1 kHz, 9907800 samples
+    ```
