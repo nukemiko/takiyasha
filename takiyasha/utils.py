@@ -1,6 +1,6 @@
 import os
 from fnmatch import fnmatch
-from typing import Optional
+from typing import IO, Optional
 
 from .typehints import BytesType, PathType
 
@@ -47,3 +47,49 @@ def get_encryption_format(name: PathType) -> Optional[str]:
         for pattern in patterns:
             if fnmatch(name, pattern):
                 return enctype
+
+
+def is_fileobj(fileobj: IO[bytes]) -> bool:
+    return not isinstance(fileobj, (str, bytes)) and not hasattr(fileobj, "__fspath__")
+
+
+def raise_while_not_fileobj(
+        fileobj: IO[bytes],
+        *,
+        readable=True,
+        seekable=True,
+        writable=False
+) -> None:
+    if readable:
+        try:
+            data = fileobj.read(0)
+        except Exception:
+            if not hasattr(fileobj, "read"):
+                raise ValueError(f"{fileobj} not a valid file object")
+            raise ValueError(f"cannot read from file object {fileobj}")
+
+        if not isinstance(data, bytes):
+            raise ValueError(f"file object {fileobj} not opened in binary mode")
+
+    if seekable:
+        try:
+            fileobj.seek(0, os.SEEK_END)
+        except Exception:
+            if not hasattr(fileobj, "seek"):
+                raise ValueError(f"{fileobj} not a valid file object")
+            raise ValueError(f"cannot seek in file object {fileobj}")
+
+    if writable:
+        try:
+            fileobj.write(b"")
+        except Exception:
+            if not hasattr(fileobj, "write"):
+                raise ValueError(f"{fileobj} not a valid file object")
+            raise ValueError(f"cannot write to file object {fileobj}")
+
+
+def get_file_name_from_fileobj(fileobj: IO[bytes]):
+    name = getattr(fileobj, 'name', '')
+    if not isinstance(name, (str, bytes)):
+        return str(name)
+    return name
