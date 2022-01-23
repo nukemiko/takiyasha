@@ -12,6 +12,7 @@ from ..typehints import (
 )
 from ..utils import (
     get_file_ext_by_header,
+    get_file_name_from_fileobj,
     is_fileobj,
     raise_while_not_fileobj
 )
@@ -322,8 +323,9 @@ class Decoder(BufferedIOBase, BinaryIO, metaclass=ABCMeta):
             file: IO[bytes] = open(filething, 'rb')
 
         raw_audio_data, cipher, misc = cls._pre_create_instance(file)
+        file_name: str = get_file_name_from_fileobj(file)
 
-        return cls(raw_audio_data, cipher, misc)
+        return cls(raw_audio_data, cipher, misc, file_name)
 
     @classmethod
     @abstractmethod
@@ -341,7 +343,8 @@ class Decoder(BufferedIOBase, BinaryIO, metaclass=ABCMeta):
             self,
             raw_audio_data: bytes,
             cipher: CipherTypeVar,
-            misc: dict[str, ...] = None,
+            misc: dict[str, ...],
+            filename: str
     ):
         """根据加密音频数据、密码实例和其他信息（如果有）初始化并返回一个解码器实例。
 
@@ -352,8 +355,9 @@ class Decoder(BufferedIOBase, BinaryIO, metaclass=ABCMeta):
         self._offset: int = 0
         self._raw_audio_data: bytes = raw_audio_data
         self._audio_length: int = len(raw_audio_data)
+        self._filename: str = filename
         self._cipher: CipherTypeVar = cipher
-        self._misc: Optional[dict[str, ...]] = misc
+        self._misc: dict[str, ...] = misc
 
     def get_raw_audio_data(self) -> bytes:
         """以字节的形式返回原始的加密音频数据。
@@ -501,7 +505,18 @@ class Decoder(BufferedIOBase, BinaryIO, metaclass=ABCMeta):
 
     def _raise_while_closed(self):
         if not hasattr(self, '_raw_audio_data'):
-            raise ValueError('I/O operation on closed file.')
+            raise ValueError('I/O operation on closed Decoder.')
+
+    @property
+    def name(self) -> Optional[str]:
+        return self._filename if self._filename else None
+
+    def __repr__(self):
+        ret = f"<{self.__class__.__name__} at {hex(id(self))}"
+        if self.name:
+            ret += f" name='{self.name}'"
+        ret += '>'
+        return ret
 
 
 class NoOperationDecoder(Decoder):
