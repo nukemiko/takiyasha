@@ -93,3 +93,10 @@ def get_file_name_from_fileobj(fileobj: IO[bytes]):
     if not isinstance(name, (str, bytes)):
         return str(name)
     return name
+
+
+def xor_bytestrings(term1: BytesType, term2: BytesType) -> bytes:
+    if len(term1) != len(term2):
+        raise ValueError('Only byte strings of equal length can be xored')
+
+    return bytes(b1 ^ b2 for b1, b2 in zip(term1, term2))
