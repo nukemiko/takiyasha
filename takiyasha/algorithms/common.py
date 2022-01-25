@@ -7,8 +7,8 @@ from ..typehints import (
     BytesType,
     BytesType_tuple,
     PathType,
-    WriteableBuffer,
-    WriteableBuffer_tuple
+    WritableBuffer,
+    WritableBuffer_tuple
 )
 from ..utils import (
     get_file_ext_by_header,
@@ -445,12 +445,12 @@ class Decoder(BufferedIOBase, BinaryIO, metaclass=ABCMeta):
 
         return True
 
-    def readinto(self, buffer: WriteableBuffer, /) -> int:
+    def readinto(self, buffer: WritableBuffer, /) -> int:
         """将字节数据读入预先分配的、可写的类似字节的对象 `buffer`（例如，bytearray）中，
         并返回所读取的字节数。"""
         self._raise_while_closed()
 
-        if not isinstance(buffer, WriteableBuffer_tuple):
+        if not isinstance(buffer, WritableBuffer_tuple):
             raise TypeError(f'readinto() argument must be read-write bytes-like object, not {type(buffer).__name__}')
         buf_len: int = len(buffer)
         data: bytes = self.read(buf_len)
@@ -463,7 +463,7 @@ class Decoder(BufferedIOBase, BinaryIO, metaclass=ABCMeta):
 
         return data_len
 
-    def readinto1(self, buffer: WriteableBuffer, /) -> int:
+    def readinto1(self, buffer: WritableBuffer, /) -> int:
         """这个方法的存在是为了兼容性考虑，其行为与 `readinto()` 相同。"""
         self._raise_while_closed()
 

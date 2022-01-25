@@ -9,5 +9,5 @@ BytesType_tuple = bytes, bytearray
 PathType = Union[str, bytes, PathLike[str, bytes]]
 PathType_tuple = str, bytes, PathLike
 
-WriteableBuffer = Union[bytearray, memoryview, array, mmap]
-WriteableBuffer_tuple = bytearray, memoryview, array, mmap
+WritableBuffer = Union[bytearray, memoryview, array, mmap]
+WritableBuffer_tuple = bytearray, memoryview, array, mmap
