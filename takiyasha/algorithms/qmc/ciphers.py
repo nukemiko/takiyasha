@@ -388,12 +388,12 @@ class TC_ModifiedTEACipher(BlockCipher):
         pad_len: int = dest_data[0] & 7
         out_buffer_len: int = src_len - pad_len - self._salt_len - self._zero_len - 1
         if pad_len + self._salt_len != 8:
-            raise DecryptionError(f'invalid pad len {pad_len + self._salt_len} (should be 8)')
+            raise DecryptionError(f'invalid pad len {pad_len} (should be 6)')
         out_buffer: bytearray = bytearray(out_buffer_len)
 
         src_pos: int = 8
-        iv_prev: bytes = b''
-        iv_cur: bytes = b''
+        iv_prev: bytearray = bytearray(8)
+        iv_cur: bytearray = bytearray(src[:8])
         dest_idx: int = pad_len + 1
 
         def crypt_block():
