@@ -310,7 +310,7 @@ class QMCv2_RC4Cipher(Cipher):
         return bytes(src)
 
 
-class TC_TEACipher(BlockCipher):
+class TC_ModifiedTEACipher(BlockCipher):
     def __init__(self, key: BytesType, rounds: int = 64, magic_number: int = 0x9e3779b9):
         if not isinstance(key, BytesType_tuple):
             raise TypeError(f"'key' must be bytes or bytearray, not {type(key).__name__}")
