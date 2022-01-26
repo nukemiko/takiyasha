@@ -99,7 +99,7 @@ class QMCDecrypter(Decrypter):
         )
 
 
-class QMCDecoder(Decoder):
+class QMCFormatDecoder(Decoder):
     @classmethod
     def _pre_create_instance(cls, file: IO[bytes]) -> tuple[bytes, CipherTypeVar, dict[str, ...]]:
         file.seek(0, 0)
