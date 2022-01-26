@@ -35,14 +35,17 @@ Takiyasha 解锁 QMC 加密文件的能力，来源于此项目：[Unlock Music 
 
 ### 从本仓库直接安装 Takiyasha
 
+**警告：仓库中的文件正在快速迭代，“如何使用”一节的内容现在仅适用于[发布页面](https://github.com/nukemiko/takiyasha/releases)中的[最新版本](https://github.com/nukemiko/takiyasha/releases/tag/v0.2.1)。**
+
+**如果您需要解锁文件，请到[发布页面](https://github.com/nukemiko/takiyasha/releases)下载您需要的版本，而不是直接从本仓库安装。**
+
 使用命令：`pip install -U git+https://github.com/nukemiko/takiyasha`
 
-**警告：仓库的状态目前并不稳定，模块/类/方法的名字和行为随时会发生改变。如果需要稳定版本，请到[发布页面](https://github.com/nukemiko/takiyasha/releases)下载你需要的版本。**
-
-### 通过在发布页下载 wheel (.whl) 安装文件安装 Takiyasha
+### 通过已发布的 wheel (.whl) 软件包文件安装 Takiyasha
 
 - [前往发布页面](https://github.com/nukemiko/takiyasha/releases)
 - 找到你需要的版本
+  - 当前最新的稳定版本：[v0.2.1 Build 2022-01-17](https://github.com/nukemiko/takiyasha/releases/tag/v0.2.1)
 - 按照发布说明进行下载和安装
 
 ## 如何使用
