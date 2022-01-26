@@ -107,7 +107,7 @@ class QMC_TEACipher(Cipher):
 
 class QMCv1_StaticMapCipher(Cipher):
     """A cipher that implemented decryption of the map-based QMCv1 encryption algorithm.
-    
+
     If the extension of the file is starts with ".qmc" or ".tkm", this cipher should be used."""
 
     def __init__(self):
@@ -165,7 +165,7 @@ class QMCv1_StaticMapCipher(Cipher):
 
 class QMCv2_DynamicMapCipher(Cipher):
     """A cipher that implemented decryption of the map-based QMCv2 encryption algorithm.
-    
+
     If the extension of the file is starts with ".mflac" or ".mgg",
     and the key size is between (0, 300], this cipher should be used."""
 
@@ -431,7 +431,7 @@ class TC_TEACipher(BlockCipher):
         return bytes(out_buffer)
 
 
-class QMCv1_NewStaticMapCipher(StreamCipher):
+class QMCv1_ImprovedStaticMapCipher(StreamCipher):
     def __init__(self, key: BytesType = None):
         super().__init__(key)
 
@@ -486,7 +486,7 @@ class QMCv1_NewStaticMapCipher(StreamCipher):
         return xor_bytestrings(stream, src)
 
 
-class QMCv2_NewDynamicMapCipher(StreamCipher):
+class QMCv2_ImprovedDynamicMapCipher(StreamCipher):
     def __init__(self, key: Optional[bytes]):
         if not isinstance(key, BytesType_tuple):
             raise TypeError(f"'key' must be bytes or bytearray, not {type(key).__name__}")
@@ -510,7 +510,7 @@ class QMCv2_NewDynamicMapCipher(StreamCipher):
         return xor_bytestrings(stream, src)
 
 
-class QMCv2_NewRC4Cipher(StreamCipher):
+class QMCv2_ImprovedRC4Cipher(StreamCipher):
     def __init__(self, key: BytesType):
         if not isinstance(key, BytesType_tuple):
             raise TypeError(f"'key' must be bytes or bytearray, not {type(key).__name__}")

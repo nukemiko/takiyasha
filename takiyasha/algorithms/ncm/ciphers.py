@@ -7,7 +7,7 @@ from ...utils import xor_bytestrings
 
 class NCM_RC4Cipher(Cipher):
     """A cipher that implemented decryption of the NCM encrypted container format.
-    
+
     If the first 8 bytes of the file is equal to bytestring "CTENFDAM", this cipher should be used."""
 
     def __init__(self, key: BytesType):
@@ -42,7 +42,7 @@ class NCM_RC4Cipher(Cipher):
 
 class NCM_XOROnlyCipher(Cipher):
     """A cipher that implemented decryption of the Cloudmusic encrypted and cached music file.
-    
+
     If the file format is not recognized and the file does not begin with the byte string "CTENFDAM",
     but you are sure it was downloaded from Cloudmusic, this cipher should be used."""
 
@@ -53,7 +53,7 @@ class NCM_XOROnlyCipher(Cipher):
         return bytes(b ^ 163 for b in src_data)
 
 
-class NCM_NewRC4Cipher(StreamCipher):
+class NCM_ImprovedRC4Cipher(StreamCipher):
     def __init__(self, key: BytesType):
         if not isinstance(key, BytesType_tuple):
             raise TypeError(f"'key' must be bytes or bytearray, not {type(key).__name__}")
@@ -90,7 +90,7 @@ class NCM_NewRC4Cipher(StreamCipher):
         return xor_bytestrings(stream, src)
 
 
-class NCM_NewXORCipher(StreamCipher):
+class NCM_ImprovedXORCipher(StreamCipher):
     def __init__(self, key: BytesType = None):
         super().__init__(key)
 

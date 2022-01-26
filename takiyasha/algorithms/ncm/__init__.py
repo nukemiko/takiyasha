@@ -8,8 +8,8 @@ from Cryptodome.Cipher import AES
 from Cryptodome.Util.Padding import unpad
 
 from .ciphers import (
-    NCM_NewRC4Cipher,
-    NCM_NewXORCipher,
+    NCM_ImprovedRC4Cipher,
+    NCM_ImprovedXORCipher,
     NCM_RC4Cipher,
     NCM_XOROnlyCipher
 )
@@ -139,7 +139,7 @@ class NCMFormatDecoder(Decoder):
             master_key: bytes = unpad(aes_crypter.decrypt(raw_master_key_data), 16)[17:]
 
             # 使用 master_key 创建 RC4Cipher
-            cipher: CipherTypeVar = NCM_NewRC4Cipher(master_key)
+            cipher: CipherTypeVar = NCM_ImprovedRC4Cipher(master_key)
 
             # 读取和解密元数据
             raw_metadada_len: int = LE_Uint32.unpack(file.read(4))[0]
@@ -172,7 +172,7 @@ class NCMFormatDecoder(Decoder):
             # 文件或许是网易云音乐的加密缓存
             file.seek(0, 0)
 
-            cipher: CipherTypeVar = NCM_NewXORCipher()
+            cipher: CipherTypeVar = NCM_ImprovedXORCipher()
             metadata: dict[str, Union[str, list[Union[str, list[str]]], bytes]] = {}
 
             # 验证文件是否被网易云音乐加密
