@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from io import BufferedIOBase
+from io import BufferedIOBase, BytesIO
 from timeit import timeit
 from typing import BinaryIO, IO, Optional, TypeVar, Union
 
@@ -287,15 +287,15 @@ class Decoder(BufferedIOBase, BinaryIO, metaclass=ABCMeta):
     在读取时返回解密的数据。"""
 
     @classmethod
-    def new(cls, filething: Union[PathType, IO[bytes]]):
-        """创建并返回一个新的解码器实例。
+    def from_file(cls, filething: Union[PathType, IO[bytes]]):
+        """从一个文件或文件对象中读取数据，创建并返回一个新的解码器实例。
 
         Args:
             filething: 文件路径或文件对象。
                        若为路径，指向的必须是可读取的文件；
                        若为文件对象，必须可读取且支持从任意位置读取。
         Returns:
-            新的解码器实例。"""
+            新的解码器实例"""
         if is_fileobj(filething):
             raise_while_not_fileobj(filething, seekable=True, readable=True)
             file: IO[bytes] = filething
@@ -304,6 +304,19 @@ class Decoder(BufferedIOBase, BinaryIO, metaclass=ABCMeta):
 
         raw_audio_data, cipher, misc = cls._pre_create_instance(file)
         file_name: str = get_file_name_from_fileobj(file)
+
+        return cls(raw_audio_data, cipher, misc, file_name)
+
+    @classmethod
+    def from_bytes(cls, src: BytesType):
+        """使用 `src`中的数据，创建并返回一个新的解码器实例。
+
+        Args:
+            src: 需要解码的数据，可以为 bytes 或 bytearray。
+        Returns:
+            新的解码器实例"""
+        raw_audio_data, cipher, misc = cls._pre_create_instance(BytesIO(src))
+        file_name: str = ''
 
         return cls(raw_audio_data, cipher, misc, file_name)
 
@@ -483,12 +496,13 @@ class Decoder(BufferedIOBase, BinaryIO, metaclass=ABCMeta):
         """如果解码器已经关闭，返回 True。"""
         return not hasattr(self, '_raw_audio_data')
 
-    def _raise_while_closed(self):
+    def _raise_while_closed(self) -> None:
         if not hasattr(self, '_raw_audio_data'):
-            raise ValueError('I/O operation on closed Decoder.')
+            raise ValueError('I/O operation on closed Decoder')
 
     @property
     def name(self) -> Optional[str]:
+        """作为解码器数据来源的文件名。若数据不是来源于文件，则为空。"""
         return self._filename if self._filename else None
 
     def __repr__(self):
