@@ -358,6 +358,24 @@ class TC_ModifiedTEACipher(BlockCipher):
         k3: int = BE_Uint32.unpack(self._key[12:])[0]
         return v0, v1, k0, k1, k2, k3
 
+    def original_tea_encrypt(self, src: bytes) -> bytes:
+        v0, v1, k0, k1, k2, k3 = self._get_values_from_src_data(src)
+
+        delta: int = self.delta
+        rounds: int = self.rounds
+
+        ciphersum: int = 0 & 0xffffffff
+
+        for i in range(rounds // 2):
+            ciphersum += delta
+            ciphersum &= 0xffffffff
+            v0 += ((v1 << 4) + k0) ^ (v1 + ciphersum) ^ ((v1 >> 5) + k1)
+            v0 &= 0xffffffff
+            v1 += ((v0 << 4) + k2) ^ (v0 + ciphersum) ^ ((v0 >> 5) + k3)
+            v1 &= 0xffffffff
+
+        return self._put_uint32(v0) + self._put_uint32(v1)
+
     def original_tea_decrypt(self, src: bytes) -> bytes:
         v0, v1, k0, k1, k2, k3 = self._get_values_from_src_data(src)
 
