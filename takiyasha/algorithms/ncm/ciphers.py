@@ -1,7 +1,8 @@
-from Cryptodome.Util.strxor import strxor
+from typing import Generator
 
 from ..common import Cipher, StreamCipher
 from ...typehints import BytesType, BytesType_tuple
+from ...utils import xor_bytestrings
 
 
 class NCM_RC4Cipher(Cipher):
@@ -77,17 +78,22 @@ class NCM_NewRC4Cipher(StreamCipher):
     def box(self) -> bytes:
         return self._box
 
-    def decrypt(self, src: bytes, offset: int = 0) -> bytes:
-        stream: bytes = bytes(self._box[(offset + i) & 0xff] for i in range(len(src)))
+    def _yield_stream(self, buffer_len: int, offset: int) -> Generator[int, None, None]:
+        box: bytes = self.box
 
-        return strxor(stream, src)
+        for i in range(offset, offset + buffer_len):
+            yield box[i & 0xff]
+
+    def decrypt(self, src: bytes, offset: int = 0) -> bytes:
+        # stream: bytes = bytes(box[(offset + i) & 0xff] for i in range(len(src)))
+        stream: bytes = bytes(self._yield_stream(len(src), offset))
+        return xor_bytestrings(stream, src)
 
 
 class NCM_NewXORCipher(StreamCipher):
-    def __init__(self):
-        super().__init__(key=None)
+    def __init__(self, key: BytesType = None):
+        super().__init__(key)
 
     def decrypt(self, src: bytes, offset: int = 0) -> bytes:
         stream: bytes = bytes([163]) * len(src)
-
-        return strxor(stream, src)
+        return xor_bytestrings(stream, src)
