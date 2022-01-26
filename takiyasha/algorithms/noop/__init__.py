@@ -1,7 +1,7 @@
 from typing import IO
 
 from .ciphers import NoOperationStreamCipher
-from ..common import CipherTypeVar, Decoder
+from ..common import Cipher, Decoder
 
 
 class NoOperationDecoder(Decoder):
@@ -12,6 +12,6 @@ class NoOperationDecoder(Decoder):
     应当在源文件无需处理、但又需要保持接口一致性时使用。"""
 
     @classmethod
-    def _pre_create_instance(cls, file: IO[bytes]) -> tuple[bytes, CipherTypeVar, dict[str, ...]]:
+    def _pre_create_instance(cls, file: IO[bytes]) -> tuple[bytes, Cipher, dict[str, ...]]:
         file.seek(0, 0)
         return file.read(), NoOperationStreamCipher(), {}

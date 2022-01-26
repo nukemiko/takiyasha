@@ -5,14 +5,14 @@ from typing import IO, Optional
 from .typehints import BytesType, PathType
 
 SUPPORTED_FORMATS_PATTERNS: dict[str, list[str]] = {
-    'NCM': ['*.ncm'],
-    'QMC': ['*.qmc[023468]', '*.qmcflac', '*.qmcogg',
+    'ncm': ['*.ncm'],
+    'qmc': ['*.qmc[023468]', '*.qmcflac', '*.qmcogg',
             '*.tkm',
             '*.mflac', '*.mflac[0]', '*.mgg', '*.mgg[01l]',
             '*.bkcmp3', '*.bkcm4a', '*.bkcflac', '*.bkcwav', '*.bkcape', '*.bkcogg', '*.bkcwma']
 }
 
-FILE_HEADER_FORMAT_MAP: dict[bytes, str] = {
+AUDIO_FILE_HEADER_FORMAT_MAP: dict[bytes, str] = {
     b'fLaC': 'flac',
     b'ID3': 'mp3',
     b'OggS': 'ogg',
@@ -22,20 +22,20 @@ FILE_HEADER_FORMAT_MAP: dict[bytes, str] = {
     b'\xff\xf1': 'aac',
     b'FRM8': 'dff'
 }
-FILE_FORMAT_HEADER_MAP: dict[str, bytes] = {
-    v: k for k, v in FILE_HEADER_FORMAT_MAP.items()
+AUDIO_FILE_FORMAT_HEADER_MAP: dict[str, bytes] = {
+    v: k for k, v in AUDIO_FILE_HEADER_FORMAT_MAP.items()
 }
 
 
 def get_file_ext_by_header(data: BytesType) -> Optional[str]:
-    for header, fmt in FILE_HEADER_FORMAT_MAP.items():
+    for header, fmt in AUDIO_FILE_HEADER_FORMAT_MAP.items():
         if data.startswith(header):
             return fmt
 
 
 def get_header_by_file_fmt(fmt: str) -> Optional[bytes]:
     fmt: str = fmt.removeprefix('.')
-    return FILE_FORMAT_HEADER_MAP.get(fmt)
+    return AUDIO_FILE_FORMAT_HEADER_MAP.get(fmt)
 
 
 def get_file_ext(name: PathType) -> str:
