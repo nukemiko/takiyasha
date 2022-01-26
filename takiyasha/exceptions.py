@@ -10,6 +10,10 @@ class DecryptionError(DecryptionException):
     pass
 
 
+class ValidateFailed(DecryptionException):
+    pass
+
+
 class CipherException(Exception):
     pass
 

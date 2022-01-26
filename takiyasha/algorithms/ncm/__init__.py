@@ -14,7 +14,7 @@ from ..common import (
     Cipher,
     Decoder
 )
-from ...exceptions import DecryptionError
+from ...exceptions import ValidateFailed
 from ...utils import (
     get_file_ext_by_header, get_file_name_from_fileobj
 )
@@ -78,7 +78,7 @@ class NCMFormatDecoder(Decoder):
             # 验证文件是否被网易云音乐加密
             decrypted_header_data: bytes = cipher.decrypt(file.read(32))
             if not get_file_ext_by_header(decrypted_header_data):
-                raise DecryptionError(
+                raise ValidateFailed(
                     f"file '{get_file_name_from_fileobj(file)}' "
                     f"is not encrypted by Cloudmusic"
                 )

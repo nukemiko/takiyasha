@@ -4,7 +4,7 @@ from .common import Decoder
 from .ncm import NCMFormatDecoder
 from .noop import NoOperationDecoder
 from .qmc import QMCFormatDecoder
-from ..exceptions import DecryptionError
+from ..exceptions import ValidateFailed
 from ..typehints import PathType
 from ..utils import (
     get_encryption_format,
@@ -34,7 +34,7 @@ def new_decoder(filething: Union[PathType, IO[bytes]], enable_noop_decoder=False
     - 输入文件并非音频文件
     - 参数 `enable_noop_decoder` 设置为 `False`
 
-    则会抛出 DecryptionError 异常。
+    则会抛出 `ValidateFailed` 异常。
 
     Args:
         filething: 文件路径或文件对象。
@@ -44,7 +44,7 @@ def new_decoder(filething: Union[PathType, IO[bytes]], enable_noop_decoder=False
     Returns:
         和文件加密格式对应的解码器
     Raises:
-        DecryptionError: 无法判断输入文件的加密格式、输入文件并非音频文件，且参数 `enable_noop_decoder` 设置为 `False`"""
+        ValidateFailed: 无法判断输入文件的加密格式、输入文件并非音频文件，且参数 `enable_noop_decoder` 设置为 `False`"""
     if is_fileobj(filething):
         file_name: Optional[str] = get_file_name_from_fileobj(filething)
         encryption: Optional[str] = get_encryption_format(file_name)
@@ -63,13 +63,13 @@ def new_decoder(filething: Union[PathType, IO[bytes]], enable_noop_decoder=False
             for decoder_class in _ENCRYPTIONS_DECODERS.values():
                 try:
                     decoder: Decoder = decoder_class.from_file(filething)
-                except DecryptionError:
+                except ValidateFailed:
                     pass
                 else:
                     break
             else:
                 if not enable_noop_decoder:
-                    raise DecryptionError(
+                    raise ValidateFailed(
                         f"file '{file_name}' is in an unrecongized format"
                     )
                 decoder: Decoder = NoOperationDecoder.from_file(filething)
