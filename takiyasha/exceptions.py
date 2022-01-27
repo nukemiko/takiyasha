@@ -2,10 +2,6 @@ class DecryptionException(Exception):
     pass
 
 
-class DecryptFailed(DecryptionException):
-    pass
-
-
 class DecryptionError(DecryptionException):
     pass
 
@@ -23,12 +19,4 @@ class CipherGenerationException(CipherException):
 
 
 class CipherGenerationError(CipherGenerationException):
-    pass
-
-
-class CLIException(Exception):
-    pass
-
-
-class CLIError(CLIException):
     pass
