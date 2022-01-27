@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from io import BufferedIOBase, BytesIO
+from io import BufferedIOBase, BytesIO, DEFAULT_BUFFER_SIZE
 from typing import BinaryIO, IO, Optional, TypeVar, Union
 
 from ..typehints import (
@@ -176,6 +176,34 @@ class Decoder(BufferedIOBase, BinaryIO, metaclass=ABCMeta):
         self._filename: str = filename
         self._cipher: Cipher = cipher
         self._misc: dict[str, ...] = misc
+
+        self._iter_blocksize: int = DEFAULT_BUFFER_SIZE
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        bytestring: bytes = self.read(self._iter_blocksize)
+        if bytestring == b'':
+            raise StopIteration
+
+        return bytestring
+
+    @property
+    def iter_blocksize(self) -> int:
+        """迭代解码器对象时，每次迭代所返回的字节大小。
+
+        默认值由 `io.DEFAULT_BUFFER_SIZE` 决定，可以重新设置为一个非零正整数。"""
+        return self._iter_blocksize
+
+    @iter_blocksize.setter
+    def iter_blocksize(self, value: int) -> None:
+        if not isinstance(value, int):
+            raise TypeError(f"'{type(value).__name__}' object cannot be interpreted as an integer")
+        if value <= 0:
+            raise ValueError(f"a non-zero positive integer required (got {value})")
+
+        self._iter_blocksize = value
 
     def get_raw_audio_data(self) -> bytes:
         """以字节的形式返回原始的加密音频数据。
