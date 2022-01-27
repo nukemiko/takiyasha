@@ -1,4 +1,4 @@
-# Takiyasha v0.2.1 ![](https://img.shields.io/badge/python-3.8+-green)
+# Takiyasha v0.3.0rc1 ![](https://img.shields.io/badge/python-3.8+-green)
 
 [简体中文](README.md) | English
 
@@ -27,8 +27,6 @@ The QMC decryption is partly derived from this project: [Unlock Music 音乐解�
 - Install Takiyasha from this repository:
     - `pip install -U git+https://github.com/nukemiko/takiyasha`
 
-    **WARNING: Existing repositories are in an unstable state of continuous updates, and the content of modules you download may become outdated at any time. If you need to use a certain version continuously, please select the version on the [release page](https://github.com/nukemiko/takiyasha/releases) and install it as follows.**
-
 - Install Takiyasha via wheel (.whl) package:
     - [Go to the release page](https://github.com/nukemiko/takiyasha/releases).
     - Choose a version that you need.
@@ -36,72 +34,60 @@ The QMC decryption is partly derived from this project: [Unlock Music 音乐解�
 
 ## Usage
 
-### In Terminal / CMD / Powershell
+### In the commandline (Terminal / CMD / Powershell, etc.)
 
-- Directly execute the command: `takiyasha [OPTIONS] [/PATH/TO/INPUT]...`
-- Run the module: `python -m takiyasha [OPTIONS] [/PATH/TO/INPUT]...`
+- Directly execute the command: `takiyasha file1.qmcflac file2.mflac ...`
+- Run the module: `python -m takiyasha file3.mgg file4.ncm ...`
 
-    ```
-    Argument:
-        [PATHS/TO/INPUT]          Paths to input file or directory.
-    
-    Options:
-        -o, --output PATH         Path to output file or dir.  [default: (current directory)]
-        -r, --recursive           Also unlock supported files in subdirectories
-                                  during unlocking.  [default: False]
-        -n, --without-metadata    Do not embed metadata found in the source file
-                                  into the unlocked file.  [default: False]
-        -q, --quiet               Don't print OK for each unlocked file.  [default: False]
-        --exts, --supported-exts  Show supported file extensions and exit.
-        -V, --version             Show the version information and exit.
-        -h, --help                Show this message and exit.
-    ```
+In any case, you can use the `-h/--help` option to get detailed help information.
 
 ### Import and use it as a python module
 
-- General usage
+1. Create a Decrypter instance by file encryption type
 
-    1. Create a Decrypter instance by file encryption type
+    ```python
+    from takiyasha import new_decoder
 
-        ```python
-        from takiyasha import new_decrypter
-        
-        qmcflac_dec = new_decrypter('test.qmcflac')
-        mflac_dec = new_decrypter('test.mflac')
-        ncm_dec = new_decrypter('test.ncm')
+    qmcflac_dec = new_decoder('test.qmcflac')
+    mflac_dec = new_decoder('test.mflac')
+    ncm_dec = new_decoder('test.ncm')
+    noop_dec = new_decoder('test.kv2')  # “test.kv2” is a mp3 file with the extension name “kv2”
 
-        print(qmcflac_dec, mflac_dec, ncm_dec)
-        ```
-        Output:
-        ```
-        <takiyasha.algorithms.qmc.QMCDecrypter object at 0x7f013116f670>
-        <takiyasha.algorithms.qmc.QMCDecrypter object at 0x7f01311c0b80>
-        <takiyasha.algorithms.ncm.NCMDecrypter object at 0x7f01311c0fd0>
-        ```
+    print(qmcflac_dec, mflac_dec, ncm_dec, noop_dec)
+    ```
+    Output:
+    ```
+    <QMCFormatDecoder at 0x7fdbf2057760 name='test.qmcflac'>  # QMCv1 encrypted
+    <QMCFormatDecoder at 0x7fdbf2ac1090 name='test.mflac'>  # QMCv2 encrypted
+    <NCMFormatDecoder at 0x7fdbf15622f0 name='test.ncm'>  # NCM encrypted
+    <NoOperationDecoder at 0x7fdbf1563400 name='test.kv2'>  # No work to do
+    ```
 
-    2. Decrypt and save data to file
+2. Decrypt and save data to file
 
-        ```python
-        for idx, decrypter in enumerate([qmcflac_dec, mflac_dec, ncm_dec]):
-            audio_format = decrypter.audio_format
-            save_filename = f'test{idx}.{audio_format}'
+    ```python
+    for idx, decoder in enumerate([qmcflac_dec, mflac_dec, ncm_dec, noop_dec]):
+        audio_format = decoder.audio_format
+        save_filename = f'test{idx}.{audio_format}'
 
-            with open(save_filename, 'wb') as f:
-                decrypter.reset_buffer_offset()
-                f.write(decrypter.read())
+        with open(save_filename, 'wb') as f:
+            for bytestring in decoder:
+                f.write(bytestring)
 
-                print(save_filename)
-        ```
-        Output:
-        ```
-        test0.flac
-        test1.flac
-        test2.flac
-        ```
-        Use the shell command `file` to verify that the output file is correct:
-        ```
-        > file test0.flac test1.flac test2.flac
-        test0.flac: FLAC audio bitstream data, 16 bit, stereo, 44.1 kHz, 14232044 samples
-        test1.flac: FLAC audio bitstream data, 16 bit, stereo, 44.1 kHz, 11501280 samples
-        test2.flac: FLAC audio bitstream data, 16 bit, stereo, 44.1 kHz, 9907800 samples
-        ```
+        print('Saved:', save_filename)
+    ```
+    Output:
+    ```
+    Saved: test0.flac
+    Saved: test1.flac
+    Saved: test2.flac
+    Saved: test3.mp3
+    ```
+    Use the shell command `file` to verify that the output file is correct:
+    ```
+    > file test0.flac test1.flac test2.flac
+    test0.flac: FLAC audio bitstream data, 16 bit, stereo, 44.1 kHz, 13379940 samples
+    test1.flac: FLAC audio bitstream data, 16 bit, stereo, 44.1 kHz, 16585716 samples
+    test2.flac: FLAC audio bitstream data, 16 bit, stereo, 44.1 kHz, 10222154 samples
+    test3.mp3:  Audio file with ID3 version 2.4.0, contains: MPEG ADTS, layer III, v1, 320 kbps, 44.1 kHz, Stereo
+    ```
