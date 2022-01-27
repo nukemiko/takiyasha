@@ -41,7 +41,8 @@ Takiyasha 解锁 QMC 加密文件的能力，来源于此项目：[Unlock Music 
 
 - [前往发布页面](https://github.com/nukemiko/takiyasha/releases)
 - 找到你需要的版本
-    - 当前最新的稳定版本：[v0.3.0-pre1 Build 2022-01-27](https://github.com/nukemiko/takiyasha/releases/tag/v0.3.0-pre1)
+    - 当前最新的稳定版本：[v0.2.1 Build 2022-01-17](https://github.com/nukemiko/takiyasha/releases/tag/v0.2.1)
+    - 预发布版本：[v0.3.0rc1 Build 2022-01-27](https://github.com/nukemiko/takiyasha/releases/tag/v0.3.0rc1)
 - 按照发布说明进行下载和安装
 
 ## 如何使用
