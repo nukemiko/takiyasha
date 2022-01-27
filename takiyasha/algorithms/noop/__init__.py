@@ -1,7 +1,8 @@
-from typing import IO
+from typing import IO, Optional
 
 from .ciphers import NoOperationStreamCipher
 from ..common import Cipher, Decoder
+from ...utils import get_file_ext_by_header
 
 
 class NoOperationDecoder(Decoder):
@@ -14,4 +15,10 @@ class NoOperationDecoder(Decoder):
     @classmethod
     def _pre_create_instance(cls, file: IO[bytes]) -> tuple[bytes, Cipher, dict[str, ...]]:
         file.seek(0, 0)
-        return file.read(), NoOperationStreamCipher(), {}
+
+        header_data: bytes = file.read(32)
+        audio_fmt: Optional[str] = get_file_ext_by_header(header_data)
+
+        file.seek(0, 0)
+
+        return file.read(), NoOperationStreamCipher(), {'audio_format': audio_fmt}

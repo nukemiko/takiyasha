@@ -66,7 +66,8 @@ class QMCFormatDecoder(Decoder):
 
         # 验证文件是否被QQ音乐加密
         decrypted_header_data: bytes = cipher.decrypt(file.read(32))
-        if not get_file_ext_by_header(decrypted_header_data):
+        audio_fmt: Optional[str] = get_file_ext_by_header(decrypted_header_data)
+        if not audio_fmt:
             raise ValidateFailed(
                 f"file '{get_file_name_from_fileobj(file)}' "
                 f"is not encrypted by QQ Music"
@@ -75,7 +76,7 @@ class QMCFormatDecoder(Decoder):
         file.seek(0, 0)
 
         raw_audio_data: bytes = file.read(audio_length)
-        misc = {}
+        misc = {'audio_format': audio_fmt}
         if raw_meta_extra1 is not None:
             misc['song_id'] = raw_meta_extra1
         if raw_meta_extra2 is not None:

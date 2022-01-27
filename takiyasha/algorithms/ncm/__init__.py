@@ -68,6 +68,10 @@ class NCMFormatDecoder(Decoder):
 
             # 读取剩余的加密音频数据
             raw_audio_data: bytes = file.read()
+
+            # 根据文件头猜测文件格式
+            decrypted_header_data: bytes = cipher.decrypt(raw_audio_data[:32])
+            audio_fmt: Optional[str] = get_file_ext_by_header(decrypted_header_data)
         else:
             # 文件或许是网易云音乐的加密缓存
             file.seek(0, 0)
@@ -77,7 +81,8 @@ class NCMFormatDecoder(Decoder):
 
             # 验证文件是否被网易云音乐加密
             decrypted_header_data: bytes = cipher.decrypt(file.read(32))
-            if not get_file_ext_by_header(decrypted_header_data):
+            audio_fmt: Optional[str] = get_file_ext_by_header(decrypted_header_data)
+            if not audio_fmt:
                 raise ValidateFailed(
                     f"file '{get_file_name_from_fileobj(file)}' "
                     f"is not encrypted by Cloudmusic"
@@ -87,7 +92,7 @@ class NCMFormatDecoder(Decoder):
 
             raw_audio_data: bytes = file.read()
 
-        return raw_audio_data, cipher, {'metadata': metadata}
+        return raw_audio_data, cipher, {'metadata': metadata, 'audio_format': audio_fmt}
 
     def __init__(
             self,

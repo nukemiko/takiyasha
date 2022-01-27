@@ -201,6 +201,13 @@ class Decoder(BufferedIOBase, BinaryIO, metaclass=ABCMeta):
             )
         self._cipher = new_cipher
 
+    @property
+    def audio_format(self) -> Optional[str]:
+        """返回音频的格式。
+
+        如果无法识别音频格式，或者其它解码器实现没有实现此行为，返回 `None`。"""
+        return self._misc.get('audio_format')
+
     def tell(self) -> int:
         """返回当前流的操作位置。"""
         self._raise_while_closed()
