@@ -20,7 +20,8 @@ AUDIO_FILE_HEADER_FORMAT_MAP: dict[bytes, str] = {
     b'0&\xb2u\x8ef\xcf\x11\xa6\xd9\x00\xaa\x00b\xcel': 'wma',
     b'RIFF': 'wav',
     b'\xff\xf1': 'aac',
-    b'FRM8': 'dff'
+    b'FRM8': 'dff',
+    b'MAC ': 'ape'
 }
 AUDIO_FILE_FORMAT_HEADER_MAP: dict[str, bytes] = {
     v: k for k, v in AUDIO_FILE_HEADER_FORMAT_MAP.items()
