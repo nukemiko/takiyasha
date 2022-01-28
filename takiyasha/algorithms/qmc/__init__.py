@@ -9,7 +9,7 @@ from .ciphers import (
 from .keyutil import decrypt_key
 from ..common import Cipher, Decoder
 from ...exceptions import DecryptionError, ValidateFailed
-from ...utils import get_file_ext_by_header, get_file_name_from_fileobj
+from ...utils import get_audio_format, get_file_name_from_fileobj
 
 LE_Uint32 = struct.Struct('<L')
 BE_Uint32 = struct.Struct('>L')
@@ -66,7 +66,7 @@ class QMCFormatDecoder(Decoder):
 
         # 验证文件是否被QQ音乐加密
         decrypted_header_data: bytes = cipher.decrypt(file.read(32))
-        audio_fmt: Optional[str] = get_file_ext_by_header(decrypted_header_data)
+        audio_fmt: Optional[str] = get_audio_format(decrypted_header_data)
         if not audio_fmt:
             raise ValidateFailed(
                 f"file '{get_file_name_from_fileobj(file)}' "

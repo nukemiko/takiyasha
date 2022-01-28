@@ -16,7 +16,8 @@ from ..common import (
 )
 from ...exceptions import ValidateFailed
 from ...utils import (
-    get_file_ext_by_header, get_file_name_from_fileobj
+    get_audio_format,
+    get_file_name_from_fileobj
 )
 
 LE_Uint32: Struct = Struct('<I')
@@ -71,7 +72,7 @@ class NCMFormatDecoder(Decoder):
 
             # 根据文件头猜测文件格式
             decrypted_header_data: bytes = cipher.decrypt(raw_audio_data[:32])
-            audio_fmt: Optional[str] = get_file_ext_by_header(decrypted_header_data)
+            audio_fmt: Optional[str] = get_audio_format(decrypted_header_data)
         else:
             # 文件或许是网易云音乐的加密缓存
             file.seek(0, 0)
@@ -81,7 +82,7 @@ class NCMFormatDecoder(Decoder):
 
             # 验证文件是否被网易云音乐加密
             decrypted_header_data: bytes = cipher.decrypt(file.read(32))
-            audio_fmt: Optional[str] = get_file_ext_by_header(decrypted_header_data)
+            audio_fmt: Optional[str] = get_audio_format(decrypted_header_data)
             if not audio_fmt:
                 raise ValidateFailed(
                     f"file '{get_file_name_from_fileobj(file)}' "

@@ -25,17 +25,36 @@ AUDIO_FILE_HEADER_FORMAT_MAP: dict[bytes, str] = {
 AUDIO_FILE_FORMAT_HEADER_MAP: dict[str, bytes] = {
     v: k for k, v in AUDIO_FILE_HEADER_FORMAT_MAP.items()
 }
+IMAGE_FILE_HEADER_MIME_MAP: dict[bytes, str] = {
+    b'\x89\x50\x4e\x47\x0d\x0a\x1a\x0a': 'image/png',
+    b'\xff\xd8\xff': 'image/jpeg',
+    b'\x42\x4d': 'image/bmp'
+}
+IMAGE_FILE_MIME_HEADER_MAP: dict[str, bytes] = {
+    v: k for k, v in IMAGE_FILE_HEADER_MIME_MAP.items()
+}
 
 
-def get_file_ext_by_header(data: BytesType) -> Optional[str]:
+def get_audio_format(data: BytesType) -> Optional[str]:
     for header, fmt in AUDIO_FILE_HEADER_FORMAT_MAP.items():
         if data.startswith(header):
             return fmt
 
 
-def get_header_by_file_fmt(fmt: str) -> Optional[bytes]:
+def get_possible_audio_header(fmt: str) -> Optional[bytes]:
     fmt: str = fmt.removeprefix('.')
     return AUDIO_FILE_FORMAT_HEADER_MAP.get(fmt)
+
+
+def get_image_mime(data: BytesType) -> Optional[str]:
+    for header, fmt in IMAGE_FILE_HEADER_MIME_MAP.items():
+        if data.startswith(header):
+            return fmt
+
+
+def get_possible_image_header(fmt: str) -> Optional[bytes]:
+    fmt: str = fmt.removeprefix('.')
+    return IMAGE_FILE_MIME_HEADER_MAP.get(fmt)
 
 
 def get_file_ext(name: PathType) -> str:

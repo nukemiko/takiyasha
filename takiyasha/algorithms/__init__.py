@@ -7,8 +7,8 @@ from .qmc import QMCFormatDecoder
 from ..exceptions import ValidateFailed
 from ..typehints import PathType
 from ..utils import (
+    get_audio_format,
     get_encryption_format,
-    get_file_ext_by_header,
     get_file_name_from_fileobj,
     is_fileobj
 )
@@ -57,7 +57,7 @@ def new_decoder(filething: Union[PathType, IO[bytes]], enable_noop_decoder=False
 
     decoder_class: Type[Decoder] = get_decoder_class(encryption)
     if not decoder_class:
-        if get_file_ext_by_header(file_header):
+        if get_audio_format(file_header):
             decoder: Decoder = NoOperationDecoder.from_file(filething)
         else:
             for decoder_class in _ENCRYPTIONS_DECODERS.values():

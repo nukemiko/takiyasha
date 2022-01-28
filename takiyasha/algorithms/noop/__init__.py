@@ -2,7 +2,7 @@ from typing import IO, Optional
 
 from .ciphers import NoOperationStreamCipher
 from ..common import Cipher, Decoder
-from ...utils import get_file_ext_by_header
+from ...utils import get_audio_format
 
 
 class NoOperationDecoder(Decoder):
@@ -17,7 +17,7 @@ class NoOperationDecoder(Decoder):
         file.seek(0, 0)
 
         header_data: bytes = file.read(32)
-        audio_fmt: Optional[str] = get_file_ext_by_header(header_data)
+        audio_fmt: Optional[str] = get_audio_format(header_data)
 
         file.seek(0, 0)
 
