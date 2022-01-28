@@ -4,7 +4,7 @@ from .common import Decoder
 from .ncm import NCMFormatDecoder
 from .noop import NoOperationDecoder
 from .qmc import QMCFormatDecoder
-from ..exceptions import ValidateFailed
+from ..exceptions import UnsupportedDecryptionFormat, ValidateFailed
 from ..typehints import PathType
 from ..utils import (
     get_audio_format,
@@ -69,7 +69,7 @@ def new_decoder(filething: Union[PathType, IO[bytes]], enable_noop_decoder=False
                     break
             else:
                 if not enable_noop_decoder:
-                    raise ValidateFailed(
+                    raise UnsupportedDecryptionFormat(
                         f"file '{file_name}' is in an unrecongized format"
                     )
                 decoder: Decoder = NoOperationDecoder.from_file(filething)

@@ -6,6 +6,10 @@ class DecryptionError(DecryptionException):
     pass
 
 
+class UnsupportedDecryptionFormat(DecryptionException):
+    pass
+
+
 class ValidateFailed(DecryptionException):
     pass
 
@@ -19,4 +23,12 @@ class CipherGenerationException(CipherException):
 
 
 class CipherGenerationError(CipherGenerationException):
+    pass
+
+
+class TagException(Exception):
+    pass
+
+
+class UnsupportedTagFormat(TagException):
     pass
