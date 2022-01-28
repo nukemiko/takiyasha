@@ -105,36 +105,40 @@ class NCMFormatDecoder(Decoder):
         super().__init__(raw_audio_data, cipher, misc, filename)
 
     @property
-    def _metadata(self) -> dict[str, Union[str, list[Union[str, list[str]]], bytes]]:
+    def metadata(self) -> dict[str, Union[str, list[Union[str, list[str]]], bytes]]:
         return self._misc['metadata']
 
     @property
     def music_title(self) -> Optional[str]:
-        return self._metadata.get('musicName')
+        return self.metadata.get('musicName')
 
     @property
     def music_id(self) -> Optional[int]:
-        if self._metadata.get('musicId'):
-            return int(self._metadata.get('musicId'))
+        if self.metadata.get('musicId'):
+            return int(self.metadata.get('musicId'))
 
     @property
     def music_artists(self) -> Optional[list[str]]:
-        if self._metadata.get('artist'):
-            return [item[0] for item in self._metadata.get('artist')]
+        if self.metadata.get('artist'):
+            return [item[0] for item in self.metadata.get('artist')]
 
     @property
     def music_album(self) -> Optional[str]:
-        return self._metadata.get('album')
+        return self.metadata.get('album')
 
     @property
     def music_album_id(self) -> Optional[int]:
-        if self._metadata.get('albumId'):
-            return int(self._metadata.get('albumId'))
+        if self.metadata.get('albumId'):
+            return int(self.metadata.get('albumId'))
 
     @property
     def music_platform_alias(self) -> Optional[list[str]]:
-        return self._metadata.get('alias')
+        return self.metadata.get('alias')
 
     @property
     def music_identifiers(self) -> Optional[str]:
-        return self._metadata.get('identifier')
+        return self.metadata.get('identifier')
+
+    @property
+    def music_cover_data(self) -> Optional[bytes]:
+        return self.metadata.get('cover_data')
