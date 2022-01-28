@@ -27,9 +27,9 @@ AUDIO_FILE_FORMAT_HEADER_MAP: dict[str, bytes] = {
     v: k for k, v in AUDIO_FILE_HEADER_FORMAT_MAP.items()
 }
 IMAGE_FILE_HEADER_MIME_MAP: dict[bytes, str] = {
-    b'\x89\x50\x4e\x47\x0d\x0a\x1a\x0a': 'image/png',
+    b'\x89PNG\r\n\x1a\n': 'image/png',
     b'\xff\xd8\xff': 'image/jpeg',
-    b'\x42\x4d': 'image/bmp'
+    b'BM': 'image/bmp'
 }
 IMAGE_FILE_MIME_HEADER_MAP: dict[str, bytes] = {
     v: k for k, v in IMAGE_FILE_HEADER_MIME_MAP.items()
