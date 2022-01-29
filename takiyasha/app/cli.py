@@ -2,15 +2,27 @@ import shutil
 import sys
 from pathlib import Path
 from time import time
-from typing import IO, Optional
+from typing import Generator, IO
 
 import click
 
 from ..__version__ import version
-from ..algorithms import new_decoder
-from ..algorithms.common import Decoder
-from ..exceptions import DecryptionException
-from ..utils import SUPPORTED_FORMATS_PATTERNS
+from ..algorithms import (
+    Decoder,
+    NCMFormatDecoder,
+    new_decoder
+)
+from ..exceptions import (
+    CipherException,
+    DecryptionException,
+    UnsupportedDecryptionFormat
+)
+from ..metadata import new_tag
+from ..metadata.common import TagWrapper
+from ..utils import (
+    get_audio_format,
+    SUPPORTED_FORMATS_PATTERNS
+)
 
 # Parameters for click.core.Context()
 _CONTEXT_SETTINGS = {
@@ -30,7 +42,9 @@ _HELP_CONTENTS = {
     'path_to_output': """Path to output file or dir.""",
     'write_to_stdout': """\b
     Output the contents of the unlocked file to the screen.
-    It will occupy the STDOUT.""",
+    It will occupy the STDOUT, and skip the metadata embedding.""",
+    'without_metadata': """Do not embed found metadata in the output file.""",
+    'show_supported_formats': """Show supported formats and exit.""",
     'show_version': """Show the version information and exit."""
 }
 
@@ -53,7 +67,7 @@ def preprocess_input_paths(
         for path in input_paths:
             if path.is_dir():
                 click.echo(
-                    f"WARNING: Skipped input directory '{path}'.",
+                    f"Warning: Skipped input directory '{path}'.",
                     err=True
                 )
                 continue
@@ -133,16 +147,21 @@ def show_version(
     help=_HELP_CONTENTS['path_to_output']
 )
 @click.option(
-    '--formats', '--supported-formats',
+    '-w', '--without-metadata', 'without_metadata',
+    is_flag=True,
+    help=_HELP_CONTENTS['without_metadata']
+)
+@click.option(
+    '--formats', '--supported-formats', 'show_supported_formats',
     is_flag=True,
     is_eager=True,
-    callback=show_supported_formats,
     expose_value=False,
+    callback=show_supported_formats,
+    help=_HELP_CONTENTS['show_supported_formats']
 )
 @click.option(
     '-S', '--stdout', 'write_to_stdout',
     is_flag=True,
-    show_default=True,
     help=_HELP_CONTENTS['write_to_stdout']
 )
 @click.option(
@@ -160,17 +179,67 @@ def main(**kwargs):
     input_paths: tuple[Path] = kwargs['paths_to_input']
     output_path: Path = kwargs['path_to_output']
     write_to_stdout: bool = kwargs['write_to_stdout']
-    check_output_path(output_path, input_paths)
+    without_metadata: bool = kwargs['without_metadata']
 
     if len(input_paths) > 1 and write_to_stdout:
         raise click.ClickException(
             "Output the unlocked data to the screen only if the input path is a single file."
         )
+    if write_to_stdout:
+        tasks: list[tuple[Decoder, IO[bytes]]] = [generate_stdout_task(input_paths[0])]
+        without_metadata = True
+    else:
+        check_output_path(output_path, input_paths)
+        tasks: list[tuple[Decoder, IO[bytes]]] = list(generate_tasks(*input_paths, output_path=output_path))
 
-    for path in input_paths:
-        output_file: Optional[IO[bytes]] = unlock_flow(path, output_path, write_to_stdout=write_to_stdout)
-        if output_file:
-            output_file.close()
+    for decoder, file in tasks:
+        input_file_name: str = Path(decoder.name).name
+        output_file_name: str = '<STDOUT>' if write_to_stdout else file.name
+        totalsize: int = decoder.seek(0, 2)
+        blksize: int = decoder.iter_blocksize
+        progress: Progress = Progress(totalsize, blksize)
+        decoder.seek(0, 0)
+
+        # 解锁文件
+        sys.stderr.write(f'[{progress}] Unlocking: {input_file_name}\t\r')
+        last_update_time: float = time()
+        for blk in decoder:
+            file.write(blk)
+            progress.update()
+            if time() - last_update_time >= 1:
+                sys.stderr.write(f'[{progress}] Unlocking: {input_file_name}\t\r')
+                last_update_time: float = time()
+        else:
+            # 写入元数据
+            if not without_metadata:
+                sys.stderr.write('Embedding metadata...\r')
+                file.seek(0, 0)
+                if isinstance(decoder, NCMFormatDecoder):
+                    tag: TagWrapper = new_tag(file)
+                    tag.title = decoder.music_title
+                    tag.artist = decoder.music_artists
+                    tag.album = decoder.music_album
+                    tag.comment = decoder.music_identifiers
+                    tag.cover = decoder.music_cover_data
+                    file.seek(0, 0)
+                    tag.save(file)
+                else:
+                    sys.stderr.write(
+                        'Warning: Skipped metadata embedding, '
+                        'because no metadata found.\r'
+                    )
+            else:
+                sys.stderr.write('Warning: Skipped metadata embedding')
+                if write_to_stdout:
+                    sys.stderr.write(', because the output is STDOUT.\r')
+                else:
+                    sys.stderr.write('.\r')
+            decoder.close()
+            file.close()
+            click.echo(
+                f"Unlock finished: {input_file_name} -> {output_file_name}",
+                err=True
+            )
 
 
 def check_output_path(path_to_output: Path, paths_to_input: tuple[Path]) -> None:
@@ -184,73 +253,72 @@ def check_output_path(path_to_output: Path, paths_to_input: tuple[Path]) -> None
         )
 
 
-def unlock_percent(done: int, total: int):
-    if done >= total:
-        return '100%'
-    else:
-        return '{:.2f}%'.format((done / total) * 100)
-
-
-def unlock_flow(
-        input_path: Path,
-        output_path: Path,
-        write_to_stdout: bool = False
-) -> Optional[IO[bytes]]:
+def generate_stdout_task(input_path: Path) -> tuple[Decoder, IO[bytes]]:
     try:
         decoder: Decoder = new_decoder(input_path)
-    except DecryptionException as exc:
-        click.echo(f"WARNING: Skipped input file '{input_path.name}': {exc}", err=True)
-        return
-    audio_length: int = decoder.seek(0, 2)
+    except (CipherException, DecryptionException) as exc:
+        if isinstance(exc, UnsupportedDecryptionFormat):
+            raise click.ClickException(
+                f"Warning: Skipped input file '{input_path}': "
+                f"Unrecongized encryption format.",
+            )
+        else:
+            raise click.ClickException(
+                f"Warning: Skipped input file '{input_path}': "
+                f"Failed to unlock the data."
+            )
+
     decoder.seek(0, 0)
 
-    if write_to_stdout:
-        output_file: IO[bytes] = sys.stdout.buffer
-    else:
-        if output_path.is_dir():
-            audio_format: str = decoder.audio_format
-            if not audio_format:
-                audio_format: str = 'unlocked'
-            new_output_path: Path = output_path / f'{input_path.stem}.{audio_format}'
-        else:
-            new_output_path: Path = output_path
+    return decoder, sys.stdout.buffer
+
+
+def generate_tasks(
+        *input_paths: Path,
+        output_path: Path
+) -> Generator[tuple[Decoder, IO[bytes]], None, None]:
+    for input_path in input_paths:
         try:
-            output_file: IO[bytes] = open(
-                new_output_path, 'x+b'
-            )
-        except FileExistsError:
-            click.echo(
-                f"WARNING: Skipped input file '{input_path.name}': "
-                f"Output path '{new_output_path}' already exists.",
-                err=True
-            )
-            return
+            decoder: Decoder = new_decoder(input_path)
+        except (CipherException, DecryptionException) as exc:
+            if isinstance(exc, UnsupportedDecryptionFormat):
+                click.echo(
+                    f"Warnong: Skipped input file '{input_path}': "
+                    f"Unrecongized encryption format.",
+                    err=True
+                )
+            else:
+                click.echo(
+                    f"Warning: Skipped input file '{input_path}': "
+                    f"Failed to unlock the data.",
+                    err=True
+                )
+            continue
 
-    writed_bytes: int = 0
-    last_marked_time: float = time()
-    click.echo(
-        f"[{unlock_percent(writed_bytes, audio_length)}] "
-        f"Unlocking: '{input_path.name}'\r",
-        nl=False,
-        err=True
-    )
-    for bytestringline in decoder:
-        line_length: int = len(bytestringline)
-        output_file.write(bytestringline)
-        writed_bytes += line_length
+        audio_format: str = get_audio_format(decoder.read(32))
+        if output_path.is_dir():
+            output_path /= f'{input_path.stem}.{audio_format}'
 
-        current_time: float = time()
-        if current_time - last_marked_time >= 1:
-            click.echo(
-                f"[{unlock_percent(writed_bytes, audio_length)}] "
-                f"Unlocking: '{input_path.name}'\r",
-                nl=False,
-                err=True
-            )
-            last_marked_time: float = current_time
-    else:
-        click.echo(
-            f"Done: '{input_path.name}' -> '{Path(output_file.name).name}'",
-            err=True
-        )
-        return output_file
+        decoder.seek(0, 0)
+
+        yield decoder, open(output_path, 'w+b')
+
+
+class Progress:
+    def __init__(self, totalsize: int, blksize: int, blkcount: int = 0):
+        self.totalsize: int = totalsize
+        self.blksize: int = blksize
+        self.blkcount: int = blkcount
+
+    def update(self, updated_blk: int = 1):
+        self.blkcount += updated_blk
+
+    def __repr__(self):
+        return f'<Progress {self} ({self.blksize * self.blkcount}/{self.totalsize})>'
+
+    def __str__(self):
+        done_size: int = self.blksize * self.blkcount
+        if done_size >= self.totalsize:
+            return '100%'
+        else:
+            return '{:.2f}%'.format((done_size / self.totalsize) * 100)
