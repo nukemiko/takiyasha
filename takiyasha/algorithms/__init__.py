@@ -34,7 +34,7 @@ def new_decoder(filething: Union[PathType, IO[bytes]], enable_noop_decoder=False
     - 输入文件并非音频文件
     - 参数 `enable_noop_decoder` 设置为 `False`
 
-    则会抛出 `ValidateFailed` 异常。
+    则会抛出 `UnsupportedDecryptionFormat` 异常。
 
     Args:
         filething: 文件路径或文件对象。
@@ -44,7 +44,7 @@ def new_decoder(filething: Union[PathType, IO[bytes]], enable_noop_decoder=False
     Returns:
         和文件加密格式对应的解码器
     Raises:
-        ValidateFailed: 无法判断输入文件的加密格式、输入文件并非音频文件，且参数 `enable_noop_decoder` 设置为 `False`"""
+        UnsupportedDecryptionFormat: 无法判断输入文件的加密格式、输入文件并非音频文件，且参数 `enable_noop_decoder` 设置为 `False`"""
     if is_fileobj(filething):
         file_name: Optional[str] = get_file_name_from_fileobj(filething)
         encryption: Optional[str] = get_encryption_format(file_name)
