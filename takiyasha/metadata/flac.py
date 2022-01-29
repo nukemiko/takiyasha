@@ -128,4 +128,3 @@ class FLAC(TagWrapper):
             self.real_tag.clear_pictures()
             for item in pictures:
                 self.real_tag.add_picture(item)
-                pass
