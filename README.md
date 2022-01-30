@@ -1,4 +1,4 @@
-# Takiyasha v0.3.0 ![](https://img.shields.io/badge/python-3.8+-green)
+# Takiyasha v0.3.1 ![](https://img.shields.io/badge/python-3.8+-green)
 
 简体中文 | [English](README_EN.md)
 
@@ -41,7 +41,7 @@ Takiyasha 解锁 QMC 加密文件的能力，来源于此项目：[Unlock Music 
 
 - [前往发布页面](https://github.com/nukemiko/takiyasha/releases)
 - 找到你需要的版本
-    - 当前最新的稳定版本：[v0.3.0 Build 2022-01-30](https://github.com/nukemiko/takiyasha/releases/tag/v0.3.0)
+    - 当前最新的稳定版本：[v0.3.1 Build 2022-01-30](https://github.com/nukemiko/takiyasha/releases/tag/v0.3.1)
 - 按照发布说明进行下载和安装
 
 ## 如何使用
