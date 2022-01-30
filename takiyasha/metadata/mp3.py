@@ -4,7 +4,7 @@ from typing import Optional, Type, Union
 from mutagen import id3, mp3
 
 from .common import TagWrapper
-from ..utils import get_image_mime
+from ..utils import get_image_mimetype
 
 
 def _gen_text_frame(
@@ -75,11 +75,11 @@ class MP3(TagWrapper):
                 cover: id3.APIC = id3.APIC()
                 cover.data = value
                 cover.type = 3
-                cover.mime = get_image_mime(value)
+                cover.mime = get_image_mimetype(value)
             elif isinstance(value, id3.APIC):
                 cover = dp(value)
                 cover.type = 3
-                cover.mime = get_image_mime(cover.data)
+                cover.mime = get_image_mimetype(cover.data)
             else:
                 raise TypeError(f"a bytes or mutagen.id3.APIC object required, not {type(value).__name__}")
 

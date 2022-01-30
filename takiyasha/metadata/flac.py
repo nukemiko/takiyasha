@@ -5,7 +5,7 @@ from mutagen import flac
 
 from .common import TagWrapper
 from ..typehints import PathType
-from ..utils import get_image_mime
+from ..utils import get_image_mimetype
 
 
 class FLAC(TagWrapper):
@@ -108,7 +108,7 @@ class FLAC(TagWrapper):
                 if content_type is None:
                     content_type: int = 3
                 if mime is None:
-                    mime: str = get_image_mime(pic.data)
+                    mime: str = get_image_mimetype(pic.data)
                 if desc is None:
                     desc: str = ''
                 pic.type = content_type

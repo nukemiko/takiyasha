@@ -1,4 +1,5 @@
 import os
+import re
 from fnmatch import fnmatch
 from typing import IO, Optional
 
@@ -12,50 +13,36 @@ SUPPORTED_FORMATS_PATTERNS: dict[str, list[str]] = {
             '*.bkcmp3', '*.bkcm4a', '*.bkcflac', '*.bkcwav', '*.bkcape', '*.bkcogg', '*.bkcwma']
 }
 
-AUDIO_FILE_HEADER_FORMAT_MAP: dict[bytes, str] = {
-    b'fLaC': 'flac',
-    b'ID3': 'mp3',
-    b'OggS': 'ogg',
-    b'ftyp': 'm4a',
-    b'0&\xb2u\x8ef\xcf\x11\xa6\xd9\x00\xaa\x00b\xcel': 'wma',
-    b'RIFF': 'wav',
-    b'\xff\xf1': 'aac',
-    b'FRM8': 'dff',
-    b'MAC ': 'ape'
+AUDIO_FILE_HEADER_REGEX_FORMAT_MAP: dict[re.Pattern, str] = {
+    re.compile(b'^fLaC'): 'flac',  # FLAC
+    re.compile(b'^ID3.{,1021}fLaC'): 'flac',  # 嵌入 ID3v2 标签的 FLAC
+    re.compile(b'^ID3'): 'mp3',  # 嵌入 ID3v2 标签的 MP3
+    re.compile(b'^\xff[\xf2\xf3\xfb]'): 'mp3',  # 没有嵌入 ID3v2 标签的 MP3
+    re.compile(b'^OggS'): 'ogg',  # OGG
+    re.compile(b'^.{4}ftyp'): 'm4a',  # M4A
+    re.compile(b'^0&\xb2u\x8ef\xcf\x11\xa6\xd9\x00\xaa\x00b\xcel'): 'wma',  # WMA
+    re.compile(b'^\xff\xf1'): 'aac',  # AAC
+    re.compile(b'^MAC '): 'ape',  # APE (Monkey's Audio)
+    re.compile(b'^FRM8'): 'dff'  # DSDIFF
 }
-AUDIO_FILE_FORMAT_HEADER_MAP: dict[str, bytes] = {
-    v: k for k, v in AUDIO_FILE_HEADER_FORMAT_MAP.items()
-}
-IMAGE_FILE_HEADER_MIME_MAP: dict[bytes, str] = {
-    b'\x89PNG\r\n\x1a\n': 'image/png',
-    b'\xff\xd8\xff': 'image/jpeg',
-    b'BM': 'image/bmp'
-}
-IMAGE_FILE_MIME_HEADER_MAP: dict[str, bytes] = {
-    v: k for k, v in IMAGE_FILE_HEADER_MIME_MAP.items()
+IMAGE_FILE_HEADER_REGEX_MIME_MAP: dict[re.Pattern, str] = {
+    re.compile(b'^\x89PNG\r\n\x1a\n'): 'image/png',
+    re.compile(b'^\xff\xd8\xff[\xdb\xe0\xe1\xee]'): 'image/jpeg',
+    re.compile(b'^BM'): 'image/bmp',
+    re.compile(b'^[\x49\x4d]{2}[\x2a\x00]{2}'): 'image/tiff'
 }
 
 
-def get_audio_format(data: BytesType) -> Optional[str]:
-    for header, fmt in AUDIO_FILE_HEADER_FORMAT_MAP.items():
-        if data.startswith(header):
+def get_audio_format(data: bytes) -> Optional[str]:
+    for header_regex, fmt in AUDIO_FILE_HEADER_REGEX_FORMAT_MAP.items():
+        if header_regex.match(data):
             return fmt
 
 
-def get_possible_audio_header(fmt: str) -> Optional[bytes]:
-    fmt: str = fmt.removeprefix('.')
-    return AUDIO_FILE_FORMAT_HEADER_MAP.get(fmt)
-
-
-def get_image_mime(data: BytesType) -> Optional[str]:
-    for header, fmt in IMAGE_FILE_HEADER_MIME_MAP.items():
-        if data.startswith(header):
+def get_image_mimetype(data: bytes) -> Optional[str]:
+    for header_regex, fmt in IMAGE_FILE_HEADER_REGEX_MIME_MAP.items():
+        if header_regex.match(data):
             return fmt
-
-
-def get_possible_image_header(fmt: str) -> Optional[bytes]:
-    fmt: str = fmt.removeprefix('.')
-    return IMAGE_FILE_MIME_HEADER_MAP.get(fmt)
 
 
 def get_file_ext(name: PathType) -> str:

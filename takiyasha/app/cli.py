@@ -12,10 +12,11 @@ from ..algorithms import (
     NCMFormatDecoder,
     new_decoder
 )
+from ..algorithms.ncm import NCM_RC4Cipher
 from ..exceptions import (
     CipherException,
     DecryptionException,
-    UnsupportedDecryptionFormat
+    UnsupportedDecryptionFormat, UnsupportedTagFormat
 )
 from ..metadata import new_tag
 from ..metadata.common import TagWrapper
@@ -214,7 +215,7 @@ def main(**kwargs):
             if not without_metadata:
                 sys.stderr.write('Embedding metadata...\r')
                 file.seek(0, 0)
-                if isinstance(decoder, NCMFormatDecoder):
+                if isinstance(decoder, NCMFormatDecoder) and isinstance(decoder.cipher, NCM_RC4Cipher):
                     tag: TagWrapper = new_tag(file)
                     tag.title = decoder.music_title
                     tag.artist = decoder.music_artists

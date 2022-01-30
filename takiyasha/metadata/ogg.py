@@ -6,7 +6,7 @@ from mutagen import flac, oggvorbis
 
 from .common import TagWrapper
 from ..typehints import PathType
-from ..utils import get_image_mime
+from ..utils import get_image_mimetype
 
 
 class OGG(TagWrapper):
@@ -77,11 +77,11 @@ class OGG(TagWrapper):
             if isinstance(value, bytes):
                 picture: flac.Picture = flac.Picture()
                 picture.data = value
-                picture.mime = get_image_mime(value)
+                picture.mime = get_image_mimetype(value)
                 picture.type = 3
             elif isinstance(value, flac.Picture):
                 picture = dp(value)
-                picture.mime = get_image_mime(picture.data)
+                picture.mime = get_image_mimetype(picture.data)
                 picture.type = 3
             else:
                 raise TypeError(f"a bytes or mutagen.flac.Picture object required, not {type(value).__name__}")
