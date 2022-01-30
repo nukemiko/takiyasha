@@ -136,7 +136,7 @@ class NCMFormatDecoder(Decoder):
         return self.metadata.get('alias')
 
     @property
-    def music_identifiers(self) -> Optional[str]:
+    def music_identifier(self) -> Optional[str]:
         return self.metadata.get('identifier')
 
     @property

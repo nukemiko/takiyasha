@@ -219,7 +219,7 @@ def main(**kwargs):
                     tag.title = decoder.music_title
                     tag.artist = decoder.music_artists
                     tag.album = decoder.music_album
-                    tag.comment = decoder.music_identifiers
+                    tag.comment = decoder.music_identifier
                     tag.cover = decoder.music_cover_data
                     file.seek(0, 0)
                     tag.save(file)
