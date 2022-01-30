@@ -9,11 +9,12 @@ dependencies = dependencies.strip().splitlines()
 
 setup(
     name='takiyasha',
-    version='0.3.0rc1',
+    version='0.3.0',
     packages=[
         'takiyasha',
         'takiyasha.app',
         'takiyasha.algorithms',
+        'takiyasha.metadata',
         'takiyasha.algorithms.qmc',
         'takiyasha.algorithms.ncm',
         'takiyasha.algorithms.noop'

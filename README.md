@@ -1,4 +1,4 @@
-# Takiyasha v0.3.0rc1 ![](https://img.shields.io/badge/python-3.8+-green)
+# Takiyasha v0.3.0 ![](https://img.shields.io/badge/python-3.8+-green)
 
 简体中文 | [English](README_EN.md)
 
@@ -41,8 +41,7 @@ Takiyasha 解锁 QMC 加密文件的能力，来源于此项目：[Unlock Music 
 
 - [前往发布页面](https://github.com/nukemiko/takiyasha/releases)
 - 找到你需要的版本
-    - 当前最新的稳定版本：[v0.2.1 Build 2022-01-17](https://github.com/nukemiko/takiyasha/releases/tag/v0.2.1)
-    - 预发布版本：[v0.3.0rc1 Build 2022-01-27](https://github.com/nukemiko/takiyasha/releases/tag/v0.3.0rc1)
+    - 当前最新的稳定版本：[v0.3.0 Build 2022-01-30](https://github.com/nukemiko/takiyasha/releases/tag/v0.3.0)
 - 按照发布说明进行下载和安装
 
 ## 如何使用
@@ -56,7 +55,7 @@ Takiyasha 解锁 QMC 加密文件的能力，来源于此项目：[Unlock Music 
 
 ### 作为 Python 模块导入并使用
 
-1. 创建一个 Decoder 实例
+1. 创建一个 Decoder 实例：
 
     ```python
     from takiyasha import new_decoder
@@ -78,7 +77,7 @@ Takiyasha 解锁 QMC 加密文件的能力，来源于此项目：[Unlock Music 
     <NoOperationDecoder at 0x7fdbf1563400 name='test.kv2'>  # 无需解锁操作
     ```
 
-2. 执行解锁操作并保存到文件
+2. 执行解锁操作并保存到文件：
 
     ```python
     for idx, decoder in enumerate([qmcflac_dec, mflac_dec, ncm_dec, noop_dec]):
@@ -86,8 +85,8 @@ Takiyasha 解锁 QMC 加密文件的能力，来源于此项目：[Unlock Music 
         save_filename = f'test{idx}.{audio_format}'
 
         with open(save_filename, 'wb') as f:
-            for bytestring in decoder:
-                f.write(bytestring)
+            for block in decoder:
+                f.write(block)
 
         print('Saved:', save_filename)
     ```
@@ -109,4 +108,22 @@ Takiyasha 解锁 QMC 加密文件的能力，来源于此项目：[Unlock Music 
     test1.flac: FLAC audio bitstream data, 16 bit, stereo, 44.1 kHz, 16585716 samples
     test2.flac: FLAC audio bitstream data, 16 bit, stereo, 44.1 kHz, 10222154 samples
     test3.mp3:  Audio file with ID3 version 2.4.0, contains: MPEG ADTS, layer III, v1, 320 kbps, 44.1 kHz, Stereo
+    ```
+
+3. 针对一些内嵌封面等元数据的加密格式（例如 NCM），还可将其嵌入解锁后的文件：
+
+    ```python
+    from takiyasha import new_tag
+
+    with open('text2.flac', 'rb') as ncmfile:
+        tag = new_tag(ncm_decrypted_file)
+        # 上文中的 NCMFormatDecoder 对象已经储存了找到的元数据
+        tag.title = ncm_dec.music_title
+        tag.artist = ncm_dec.music_artists
+        tag.album = ncm_dec.music_album
+        tag.comment = ncm_dec.music_identifier
+        tag.cover = ncm_dev.music_cover_data
+
+        ncm_decrypted_file.seek(0, 0)
+        tag.save(ncm_decrypted_file)
     ```
