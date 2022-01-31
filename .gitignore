@@ -426,3 +426,6 @@ cython_debug/
 # Nutika generated directories
 /*.build
 /*.dist
+
+# Test files
+/tests
