@@ -9,7 +9,7 @@ dependencies = dependencies.strip().splitlines()
 
 setup(
     name='takiyasha',
-    version='0.3.1',
+    version='0.3.2',
     packages=[
         'takiyasha',
         'takiyasha.app',
