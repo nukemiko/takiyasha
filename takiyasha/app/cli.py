@@ -16,7 +16,7 @@ from ..algorithms.ncm import NCM_RC4Cipher
 from ..exceptions import (
     CipherException,
     DecryptionException,
-    UnsupportedDecryptionFormat, UnsupportedTagFormat
+    UnsupportedDecryptionFormat
 )
 from ..metadata import new_tag
 from ..metadata.common import TagWrapper
@@ -195,20 +195,21 @@ def main(**kwargs):
 
     for decoder, file in tasks:
         input_file_name: str = Path(decoder.name).name
-        output_file_name: str = '<STDOUT>' if write_to_stdout else file.name
+        output_file_path: str = '<stdout>' if write_to_stdout else file.name
+        output_file_name: str = Path(output_file_path).name
         totalsize: int = decoder.seek(0, 2)
         blksize: int = decoder.iter_blocksize
         progress: Progress = Progress(totalsize, blksize)
         decoder.seek(0, 0)
 
         # 解锁文件
-        sys.stderr.write(f'[{progress}] Unlocking: {input_file_name}\t\r')
+        sys.stderr.write(f'[{progress}] Unlocking: {input_file_name} -> {output_file_name}\t\r')
         last_update_time: float = time()
         for blk in decoder:
             file.write(blk)
             progress.update()
             if time() - last_update_time >= 1:
-                sys.stderr.write(f'[{progress}] Unlocking: {input_file_name}\t\r')
+                sys.stderr.write(f'[{progress}] Unlocking: {input_file_name} -> {output_file_name}\t\r')
                 last_update_time: float = time()
         else:
             # 写入元数据
@@ -238,7 +239,7 @@ def main(**kwargs):
             decoder.close()
             file.close()
             click.echo(
-                f"Unlock finished: {input_file_name} -> {output_file_name}",
+                f"Unlock finished: {input_file_name} -> {output_file_path}",
                 err=True
             )
 
@@ -248,7 +249,7 @@ def check_output_path(path_to_output: Path, paths_to_input: tuple[Path]) -> None
     if len(paths_to_input) == 1 and paths_to_input[0].is_file():
         output_path_can_be_file: bool = True
 
-    if path_to_output.is_file() and not output_path_can_be_file:
+    if not (path_to_output.is_dir() or output_path_can_be_file):
         raise click.ClickException(
             'The output path can be a file only if the input path is a single file.'
         )
@@ -260,12 +261,12 @@ def generate_stdout_task(input_path: Path) -> tuple[Decoder, IO[bytes]]:
     except (CipherException, DecryptionException) as exc:
         if isinstance(exc, UnsupportedDecryptionFormat):
             raise click.ClickException(
-                f"Warning: Skipped input file '{input_path}': "
-                f"Unrecongized encryption format.",
+                f"Cannot unlock input file '{input_path}': "
+                f"Unrecognized encryption format.",
             )
         else:
             raise click.ClickException(
-                f"Warning: Skipped input file '{input_path}': "
+                f"Cannot unlock input file '{input_path}': "
                 f"Failed to unlock the data."
             )
 
@@ -284,8 +285,8 @@ def generate_tasks(
         except (CipherException, DecryptionException) as exc:
             if isinstance(exc, UnsupportedDecryptionFormat):
                 click.echo(
-                    f"Warnong: Skipped input file '{input_path}': "
-                    f"Unrecongized encryption format.",
+                    f"Warning: Skipped input file '{input_path}': "
+                    f"Unrecognized encryption format.",
                     err=True
                 )
             else:
@@ -298,11 +299,13 @@ def generate_tasks(
 
         audio_format: str = get_audio_format(decoder.read(32))
         if output_path.is_dir():
-            output_path /= f'{input_path.stem}.{audio_format}'
+            new_output_path: Path = output_path / f'{input_path.stem}.{audio_format}'
+        else:
+            new_output_path: Path = output_path
 
         decoder.seek(0, 0)
 
-        yield decoder, open(output_path, 'w+b')
+        yield decoder, open(new_output_path, 'w+b')
 
 
 class Progress:
