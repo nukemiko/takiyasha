@@ -7,10 +7,11 @@ from .typehints import BytesType, PathType
 
 SUPPORTED_FORMATS_PATTERNS: dict[str, list[str]] = {
     'ncm': ['*.ncm'],
-    'qmc': ['*.qmc[023468]', '*.qmcflac', '*.qmcogg',
+    'qmc': ['*.qmc?', '*.qmcflac', '*.qmcogg',
             '*.tkm',
-            '*.mflac', '*.mflac[0]', '*.mgg', '*.mgg[01l]',
-            '*.bkcmp3', '*.bkcm4a', '*.bkcflac', '*.bkcwav', '*.bkcape', '*.bkcogg', '*.bkcwma']
+            '*.mflac', '*.mflac?', '*.mgg', '*.mgg?',
+            '*.bkcmp3', '*.bkcm4a', '*.bkcflac', '*.bkcwav', '*.bkcape', '*.bkcogg', '*.bkcwma'],
+    'tm': ['*.tm?']
 }
 
 AUDIO_FILE_HEADER_REGEX_FORMAT_MAP: dict[re.Pattern, str] = {
