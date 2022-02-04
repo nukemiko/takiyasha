@@ -3,6 +3,7 @@ from typing import IO, Optional, Type, Union
 from .ape import APE
 from .common import TagWrapper
 from .flac import FLAC
+from .m4a import M4A
 from .mp3 import MP3
 from .ogg import OGG
 from ..exceptions import UnsupportedTagFormat
@@ -12,6 +13,7 @@ from ..utils import get_audio_format, get_file_name_from_fileobj, is_fileobj
 SUPPORTED_AUDIO_FORMATS = {
     'ape': APE,
     'flac': FLAC,
+    'm4a': M4A,
     'mp3': MP3,
     'ogg': OGG
 }
