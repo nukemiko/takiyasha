@@ -81,6 +81,6 @@ class MP3(TagWrapper):
                 cover.type = 3
                 cover.mime = get_image_mimetype(cover.data)
             else:
-                raise TypeError(f"a bytes or mutagen.id3.APIC object required, not {type(value).__name__}")
+                raise TypeError(f'a bytes or mutagen.id3.APIC object required, not {type(value).__name__}')
 
             self.real_tag['APIC:'] = cover

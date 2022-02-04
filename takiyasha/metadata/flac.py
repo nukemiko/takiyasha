@@ -11,7 +11,7 @@ from ..utils import get_image_mimetype
 class FLAC(TagWrapper):
     def __init__(self, filething: Union[PathType, IO[bytes]]):
         super().__init__(filething)
-        if self.real_tag.get('descripition'):
+        if self.real_tag.get('descripition') and not self.real_tag.get('description'):
             self.real_tag['description'] = self.real_tag.pop('descripition')
 
     @property
@@ -115,7 +115,7 @@ class FLAC(TagWrapper):
                 pic.mime = mime
                 pic.desc = desc
             else:
-                raise TypeError(f"a bytes or mutagen.flac.Picture object required, not {type(picture).__name__}")
+                raise TypeError(f'a bytes or mutagen.flac.Picture object required, not {type(picture).__name__}')
 
             pictures: list[Optional[flac.Picture]] = dp(self.real_tag.pictures)
             for idx, item in enumerate(pictures):

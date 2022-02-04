@@ -12,7 +12,7 @@ from ..utils import get_image_mimetype
 class OGG(TagWrapper):
     def __init__(self, filething: Union[PathType, IO[bytes]]):
         super().__init__(filething)
-        if self.real_tag.get('descripition'):
+        if self.real_tag.get('descripition') and not self.real_tag.get('description'):
             self.real_tag['description'] = self.real_tag.pop('descripition')
 
     @property
@@ -84,7 +84,7 @@ class OGG(TagWrapper):
                 picture.mime = get_image_mimetype(picture.data)
                 picture.type = 3
             else:
-                raise TypeError(f"a bytes or mutagen.flac.Picture object required, not {type(value).__name__}")
+                raise TypeError(f'a bytes or mutagen.flac.Picture object required, not {type(value).__name__}')
 
             data: bytes = picture.write()
             encoded_data: bytes = b64encode(data)
