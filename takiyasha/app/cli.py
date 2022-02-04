@@ -88,9 +88,15 @@ def show_supported_formats(
     if not value or ctx.resilient_parsing:
         return
 
-    click.echo('Supported encryption formats:\n', err=True)
+    click.echo(
+        'Supported encryption formats:\n'
+        '(displayed using Unix shell-style wildcard format)\n\n'
+        'The meaning of wildcard characters:\n'
+        '    * - Match any character\n'
+        '    ? - Match any single character\n', err=True
+        )
     for encryption, patterns in SUPPORTED_FORMATS_PATTERNS.items():
-        click.echo(f'{encryption.title()} files: ', nl=False, err=True)
+        click.echo(f'{encryption.upper()} files: ', nl=False, err=True)
         patterns_map: list[list[str]] = []
         map_line: list[str] = []
         for idx, pattern in enumerate(patterns):
@@ -176,7 +182,12 @@ def show_version(
 def main(**kwargs):
     """\b
     Takiyasha - an unlocker for DRM protected music files, written by python
-    Support the project: https://github.com/nukemiko/takiyasha"""
+    Support the project: https://github.com/nukemiko/takiyasha
+
+    \b
+    Examples:
+        takiyasha file1.qmcflac file2.mflac ...
+        python -m takiyasha file3.mgg1 file4.ncm"""
     input_paths: tuple[Path] = kwargs['paths_to_input']
     output_path: Path = kwargs['path_to_output']
     write_to_stdout: bool = kwargs['write_to_stdout']
