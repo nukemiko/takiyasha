@@ -4,6 +4,8 @@
 
 Takiyasha 是用来解锁被加密的音乐文件的工具，支持 .qmc、.mflac 等多种格式。
 
+**Takiyasha 项目是以学习和技术研究的初衷创建的，修改、再分发时请遵循 [License](LICENSE)**
+
 Takiyasha 解锁 QMC 加密文件的能力，来源于此项目：[Unlock Music 音乐解锁](https://github.com/unlock-music/unlock-music)
 
 ## 特性
@@ -13,16 +15,18 @@ Takiyasha 解锁 QMC 加密文件的能力，来源于此项目：[Unlock Music 
 
 ### 支持的加密格式
 
-- 老版 QMC 加密格式 (.qmc*)
+- 旧版 QMC 加密格式 (.qmc*)
 - 新版 QMC 加密格式 (.mflac/.mflac*/.mgg/.mgg*)
+- QQ 音乐 .tm 格式 (.tm*)
 - Moo Music 加密格式 (.bkc*)
 - NCM 加密格式 (.ncm)
 
-### 适用人群
+### 适用群体
 
 - 经常批量下载和解锁加密格式的用户
 - 不在乎解锁速度的用户
-    - 因为 Python 的语言特性，解锁过程很慢
+    - 受限于 Python 的语言特性，解锁过程很慢
+- 想要研究算法和提升自己技术水平的开发者
 
 ## 如何安装
 
@@ -32,6 +36,7 @@ Takiyasha 解锁 QMC 加密文件的能力，来源于此项目：[Unlock Music 
     - Python 包：[click](https://pypi.org/project/click/) - 提供命令行界面
     - Python 包：[mutagen](https://pypi.org/project/mutagen/) - 向输出文件写入歌曲信息
     - Python 包：[pycryptodomex](https://pypi.org/project/pycryptodomex/) - 部分加密格式的解锁支持
+        - 因为此库中用到的功能较少，目前打算逐步使用自制的功能替代
 
 ### 从本仓库直接安装 Takiyasha
 
@@ -55,7 +60,7 @@ Takiyasha 解锁 QMC 加密文件的能力，来源于此项目：[Unlock Music 
 
 ### 作为 Python 模块导入并使用
 
-1. 创建一个 Decoder 实例：
+1. 创建一个 Decoder 对象：
 
     ```python
     from takiyasha import new_decoder

@@ -4,14 +4,24 @@
 
 The Takiyasha is an unlocker for DRM protected music file.
 
+**This project was created with the intention of learning and technical research, please follow the [License](LICENSE) when modifying and redistributing.**
+
 The QMC decryption is partly derived from this project: [Unlock Music 音乐解锁](https://github.com/unlock-music/unlock-music)
 
 ## Supported encryption format
 
-- NCM files (.ncm)
-- QMCv1 files (.qmc*)
-- QMCv2 files (.mflac/.mflac*/.mgg/.mgg*)
+- Old QMC encrypted files (.qmc*)
+- New QMC encrypted files (.mflac/.mflac*/.mgg/.mgg*)
+- QQ Music .tm files (.tm*)
 - Moo Music format files (.bkc*)
+- NCM files (.ncm)
+
+## What kind of users are suitable to use Takiyasha?
+
+- Users who frequently download and unlock encrypted formats in bulk
+- Users who don't care about unlocking speed
+    - Python is a slow unlocking process due to the nature of the language
+- Developers who want to study algorithms and improve their skills
 
 ## Install
 
