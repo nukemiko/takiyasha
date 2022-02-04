@@ -32,3 +32,7 @@ class TagException(Exception):
 
 class UnsupportedTagFormat(TagException):
     pass
+
+
+class UnsupportedImageFormat(TagException):
+    pass

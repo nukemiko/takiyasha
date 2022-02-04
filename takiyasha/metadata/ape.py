@@ -4,7 +4,8 @@ from typing import Optional, Type, Union
 from mutagen import apev2, monkeysaudio
 
 from .common import TagWrapper
-from ..utils import get_image_mimetype
+from ..exceptions import UnsupportedImageFormat
+from ..utils import get_image_format
 
 
 class APE(TagWrapper):
@@ -60,14 +61,18 @@ class APE(TagWrapper):
     def cover(self, value: Union[bytes, apev2.APEBinaryValue]) -> None:
         if value is not None:
             if isinstance(value, bytes):
-                pic: apev2.APEBinaryValue = apev2.APEBinaryValue(value)
-                pic.mime = get_image_mimetype(value)
-                pic.type = 3
+                image_format: Optional[str] = get_image_format(value)
+                if image_format:
+                    pic: apev2.APEBinaryValue = apev2.APEBinaryValue(
+                        b'Cover Art (Front).' + image_format.encode('ASCII') + b'\x00' + value
+                    )
+                    pic.type = 3
+                else:
+                    raise UnsupportedImageFormat(f"'{image_format}'")
             elif isinstance(value, apev2.APEBinaryValue):
                 pic: apev2.APEBinaryValue = dp(value)
-                pic.mime = get_image_mimetype(pic.data)
                 pic.type = 3
             else:
-                raise TypeError(f"a bytes or mutagen.apev2.APEBinaryValue object required, not {type(value).__name__}")
+                raise TypeError(f'a bytes or mutagen.apev2.APEBinaryValue object required, not {type(value).__name__}')
 
             self.real_tag['COVER ART (FRONT)'] = pic

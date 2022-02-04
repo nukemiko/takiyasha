@@ -31,6 +31,12 @@ IMAGE_FILE_HEADER_REGEX_MIME_MAP: dict[re.Pattern, str] = {
     re.compile(b'^BM'): 'image/bmp',
     re.compile(b'^[\x49\x4d]{2}[\x2a\x00]{2}'): 'image/tiff'
 }
+IMAGE_FILE_HEADER_REGEX_FORMAT_MAP: dict[re.Pattern, str] = {
+    re.compile(b'^\x89PNG\r\n\x1a\n'): 'png',
+    re.compile(b'^\xff\xd8\xff[\xdb\xe0\xe1\xee]'): 'jpg',
+    re.compile(b'^BM'): 'bmp',
+    re.compile(b'^[\x49\x4d]{2}[\x2a\x00]{2}'): 'tiff'
+}
 
 
 def get_audio_format(data: bytes) -> Optional[str]:
@@ -40,7 +46,13 @@ def get_audio_format(data: bytes) -> Optional[str]:
 
 
 def get_image_mimetype(data: bytes) -> Optional[str]:
-    for header_regex, fmt in IMAGE_FILE_HEADER_REGEX_MIME_MAP.items():
+    for header_regex, mime in IMAGE_FILE_HEADER_REGEX_MIME_MAP.items():
+        if header_regex.match(data):
+            return mime
+
+
+def get_image_format(data: bytes) -> Optional[str]:
+    for header_regex, fmt in IMAGE_FILE_HEADER_REGEX_FORMAT_MAP.items():
         if header_regex.match(data):
             return fmt
 
