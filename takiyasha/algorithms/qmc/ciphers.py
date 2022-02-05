@@ -236,12 +236,15 @@ class QMCv2_ModifiedRC4Cipher(StreamCipher):
         self._rc4_1st_segment_size: int = 128
         self._rc4_segment_size: int = 5120
 
-        self._box: bytearray = bytearray(i % 256 for i in range(self.key_length))
+        key_len: int = self.key_length
+
+        box: bytearray = bytearray(i % 256 for i in range(key_len))
 
         j: int = 0
-        for i in range(self.key_length):
-            j = (j + self._box[i] + key[i % self.key_length]) % self.key_length
-            self._box[i], self._box[j] = self._box[j], self._box[i]
+        for i in range(key_len):
+            j = (j + box[i] + key[i % key_len]) % key_len
+            box[i], box[j] = box[j], box[i]
+        self._box: bytearray = box
 
         self._hash: int = self._get_hash_base()
 
@@ -255,8 +258,9 @@ class QMCv2_ModifiedRC4Cipher(StreamCipher):
 
     def _get_hash_base(self) -> int:
         hash_base = 1
+        key: bytes = self.key
         for i in range(self.key_length):
-            v: int = self.key[i]
+            v: int = key[i]
             if v == 0:
                 continue
             next_hash: int = (hash_base * v) & 0xffffffff
