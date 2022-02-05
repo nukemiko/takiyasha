@@ -1,4 +1,4 @@
-# Takiyasha v0.3.2 ![](https://img.shields.io/badge/python-3.8+-green)
+# Takiyasha v0.3.3 ![](https://img.shields.io/badge/python-3.8+-green)
 
 [简体中文](README.md) | English
 
