@@ -1,3 +1,5 @@
+from typing import Optional
+
 from ..common import StreamCipher
 
 
@@ -8,8 +10,8 @@ class NoOperationStreamCipher(StreamCipher):
 
     应当在源数据无需解密、但又需要保持接口一致性时使用。"""
 
-    def __init__(self):
-        super().__init__(None)
+    def __init__(self, key: Optional[bytes] = None):
+        super().__init__(key)
 
     def decrypt(self, src: bytes, offset: int = 0) -> bytes:
         """原样返回源数据，不对数据做任何操作。
