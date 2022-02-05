@@ -293,7 +293,7 @@ class Decoder(BufferedIOBase, BinaryIO, metaclass=ABCMeta):
             return b''
 
         offset: int = self._offset
-        if (size < -1) or (size > self._audio_length - self._offset):
+        if (size <= -1) or (size > self._audio_length - self._offset):
             size: int = self._audio_length - self._offset
         else:
             size: int = size
