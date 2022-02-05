@@ -1,14 +1,13 @@
-from typing import Generator
+from typing import Generator, Optional
 
 from ..common import StreamCipher
-from ...typehints import BytesType, BytesType_tuple
 from ...utils import xor_bytestrings
 
 
 class NCM_RC4Cipher(StreamCipher):
-    def __init__(self, key: BytesType):
-        if not isinstance(key, BytesType_tuple):
-            raise TypeError(f"'key' must be bytes or bytearray, not {type(key).__name__}")
+    def __init__(self, key: bytes):
+        if not isinstance(key, bytes):
+            raise TypeError(f"'key' must be bytes, not {type(key).__name__}")
         super().__init__(bytes(key))
 
         first_box: bytearray = bytearray(range(256))
@@ -42,7 +41,7 @@ class NCM_RC4Cipher(StreamCipher):
 
 
 class NCM_XorOnlyCipher(StreamCipher):
-    def __init__(self, key: BytesType = None):
+    def __init__(self, key: Optional[bytes] = None):
         super().__init__(key)
 
     def decrypt(self, src: bytes, offset: int = 0) -> bytes:

@@ -3,7 +3,6 @@ from math import tan
 
 from .ciphers import TC_ModifiedTEACipher
 from ...exceptions import DecryptionError
-from ...typehints import BytesType
 
 
 def generate_simple_key(salt: int, length: int) -> bytes:
@@ -12,7 +11,7 @@ def generate_simple_key(salt: int, length: int) -> bytes:
     )
 
 
-def decrypt_key(raw_key: BytesType) -> bytes:
+def decrypt_key(raw_key: bytes) -> bytes:
     raw_key_decoded: bytes = b64decode(raw_key, validate=True)
     if len(raw_key_decoded) < 16:
         raise DecryptionError(f'key length is too short (must be greater than 16, got {len(raw_key_decoded)}')

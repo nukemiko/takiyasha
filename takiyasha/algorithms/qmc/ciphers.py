@@ -3,16 +3,16 @@ from typing import Generator, Optional
 
 from ..common import BlockCipher, StreamCipher
 from ...exceptions import CipherGenerationError, DecryptionError
-from ...typehints import BytesType, BytesType_tuple
+from ...typehints import BytesType
 from ...utils import xor_bytestrings
 
 BE_Uint32 = struct.Struct('>L')
 
 
 class TC_ModifiedTEACipher(BlockCipher):
-    def __init__(self, key: BytesType, rounds: int = 64, magic_number: int = 0x9e3779b9):
-        if not isinstance(key, BytesType_tuple):
-            raise TypeError(f"'key' must be bytes or bytearray, not {type(key).__name__}")
+    def __init__(self, key: bytes, rounds: int = 64, magic_number: int = 0x9e3779b9):
+        if not isinstance(key, bytes):
+            raise TypeError(f"'key' must be bytes, not {type(key).__name__}")
         super().__init__(bytes(key))
 
         self._delta: int = magic_number
@@ -149,7 +149,7 @@ class TC_ModifiedTEACipher(BlockCipher):
 
 
 class QMCv1_StaticMapCipher(StreamCipher):
-    def __init__(self, key: BytesType = None):
+    def __init__(self, key: Optional[bytes] = None):
         super().__init__(key)
 
         self._static_cipher_box: bytes = bytes(
@@ -204,9 +204,9 @@ class QMCv1_StaticMapCipher(StreamCipher):
 
 
 class QMCv2_DynamicMapCipher(StreamCipher):
-    def __init__(self, key: Optional[bytes]):
-        if not isinstance(key, BytesType_tuple):
-            raise TypeError(f"'key' must be bytes or bytearray, not {type(key).__name__}")
+    def __init__(self, key: bytes):
+        if not isinstance(key, bytes):
+            raise TypeError(f"'key' must be bytes, not {type(key).__name__}")
         super().__init__(key)
 
     def _yield_mask(self, buffer_len: int, offset: int) -> Generator[int, None, None]:
@@ -228,9 +228,9 @@ class QMCv2_DynamicMapCipher(StreamCipher):
 
 
 class QMCv2_ModifiedRC4Cipher(StreamCipher):
-    def __init__(self, key: BytesType):
-        if not isinstance(key, BytesType_tuple):
-            raise TypeError(f"'key' must be bytes or bytearray, not {type(key).__name__}")
+    def __init__(self, key: bytes):
+        if not isinstance(key, bytes):
+            raise TypeError(f"'key' must be bytes, not {type(key).__name__}")
         super().__init__(key)
 
         self._rc4_1st_segment_size: int = 128
