@@ -20,6 +20,7 @@ Takiyasha 解锁 QMC 加密文件的能力，来源于此项目：[Unlock Music 
 - QQ 音乐 .tm 格式 (.tm*)
 - Moo Music 加密格式 (.bkc*)
 - NCM 加密格式 (.ncm)
+- KGM 加密格式 (.kgm/.kgma/.vpr)
 
 ### 适用群体
 

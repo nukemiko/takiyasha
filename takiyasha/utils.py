@@ -11,7 +11,8 @@ SUPPORTED_FORMATS_PATTERNS: dict[str, list[str]] = {
             '*.tkm',
             '*.mflac', '*.mflac?', '*.mgg', '*.mgg?',
             '*.bkcmp3', '*.bkcm4a', '*.bkcflac', '*.bkcwav', '*.bkcape', '*.bkcogg', '*.bkcwma'],
-    'tm': ['*.tm?']
+    'tm': ['*.tm?'],
+    'kgm': ['*.kgm', '*.kgma', '*.vpr']
 }
 
 AUDIO_FILE_HEADER_REGEX_FORMAT_MAP: dict[re.Pattern, str] = {

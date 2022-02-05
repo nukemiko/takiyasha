@@ -1,6 +1,7 @@
 from typing import IO, Optional, Type, Union
 
 from .common import Decoder
+from .kgm import KGMFormatDecoder
 from .ncm import NCMFormatDecoder
 from .noop import NoOperationDecoder
 from .qmc import QMCFormatDecoder
@@ -16,6 +17,7 @@ from ..utils import (
 _ENCRYPTIONS_DECODERS = {
     'ncm': NCMFormatDecoder,
     'qmc': QMCFormatDecoder,
+    'kgm': KGMFormatDecoder
 }
 
 

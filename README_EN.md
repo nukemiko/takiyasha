@@ -15,6 +15,7 @@ The QMC decryption is partly derived from this project: [Unlock Music 音乐解�
 - QQ Music .tm files (.tm*)
 - Moo Music format files (.bkc*)
 - NCM files (.ncm)
+- KGM files (.kgm/.kgma/.vpr)
 
 ## What kind of users are suitable to use Takiyasha?
 

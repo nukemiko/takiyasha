@@ -10,6 +10,10 @@ class UnsupportedDecryptionFormat(DecryptionException):
     pass
 
 
+class DecryptionWarning(Warning):
+    pass
+
+
 class ValidateFailed(DecryptionException):
     pass
 
