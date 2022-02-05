@@ -15,10 +15,14 @@ setup(
         'takiyasha.app',
         'takiyasha.algorithms',
         'takiyasha.metadata',
-        'takiyasha.algorithms.qmc',
+        'takiyasha.algorithms.kgm',
         'takiyasha.algorithms.ncm',
-        'takiyasha.algorithms.noop'
+        'takiyasha.algorithms.noop',
+        'takiyasha.algorithms.qmc',
     ],
+    package_data={
+        'takiyasha.algorithms': ['binaries/kgm.v2.mask']
+    },
     url='https://github.com/nukemiko/takiyasha',
     license='MIT',
     author='nukemiko',
