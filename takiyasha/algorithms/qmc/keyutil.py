@@ -8,9 +8,7 @@ from ...typehints import BytesType
 
 def generate_simple_key(salt: int, length: int) -> bytes:
     return bytes(
-        (
-            int(abs(tan(salt + i * 0.1)) * 100) for i in range(length)
-        )
+        int(abs(tan(salt + i * 0.1)) * 100) for i in range(length)
     )
 
 
@@ -25,6 +23,6 @@ def decrypt_key(raw_key: BytesType) -> bytes:
         tea_key[i << 1] = simple_key[i]
         tea_key[(i << 1) + 1] = raw_key_decoded[i]
 
-    rs: bytes = TC_ModifiedTEACipher(tea_key, rounds=32).decrypt(raw_key_decoded[8:])
+    rs: bytes = TC_ModifiedTEACipher(bytes(tea_key), rounds=32).decrypt(raw_key_decoded[8:])
 
     return raw_key_decoded[:8] + rs
