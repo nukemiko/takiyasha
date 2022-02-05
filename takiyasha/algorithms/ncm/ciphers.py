@@ -41,7 +41,7 @@ class NCM_RC4Cipher(StreamCipher):
         return xor_bytestrings(stream, src)
 
 
-class NCM_XORCipher(StreamCipher):
+class NCM_XorOnlyCipher(StreamCipher):
     def __init__(self, key: BytesType = None):
         super().__init__(key)
 

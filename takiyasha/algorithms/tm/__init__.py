@@ -1,6 +1,6 @@
 from typing import IO
 
-from .ciphers import TM_XORHeaderCipher
+from .ciphers import TM_Cipher
 from ..common import Cipher, Decoder
 from ...exceptions import DecryptionError, ValidateFailed
 from ...utils import get_file_name_from_fileobj
@@ -27,4 +27,4 @@ class TMFormatDecoder(Decoder):
                 f'(should be greater or equal to 8)'
             )
 
-        return raw_audio_data, TM_XORHeaderCipher(), {}
+        return raw_audio_data, TM_Cipher(), {}

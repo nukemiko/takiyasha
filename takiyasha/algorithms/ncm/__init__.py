@@ -8,7 +8,7 @@ from Cryptodome.Util.Padding import unpad
 
 from .ciphers import (
     NCM_RC4Cipher,
-    NCM_XORCipher,
+    NCM_XorOnlyCipher,
 )
 from ..common import (
     Cipher,
@@ -77,7 +77,7 @@ class NCMFormatDecoder(Decoder):
             # 文件或许是网易云音乐的加密缓存
             file.seek(0, 0)
 
-            cipher: Cipher = NCM_XORCipher()
+            cipher: Cipher = NCM_XorOnlyCipher()
             metadata: dict[str, Union[str, list[Union[str, list[str]]], bytes]] = {}
 
             # 验证文件是否被网易云音乐加密

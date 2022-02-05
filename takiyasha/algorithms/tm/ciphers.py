@@ -3,7 +3,7 @@ from typing import Optional
 from ..common import StreamCipher
 
 
-class TM_XORHeaderCipher(StreamCipher):
+class TM_Cipher(StreamCipher):
     def __init__(self, key: Optional[bytes] = None):
         super().__init__(key)
 
