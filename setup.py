@@ -28,6 +28,7 @@ setup(
     author='nukemiko',
     description='DRM protected music unlocker',
     long_description=readme,
+    long_description_content_type='text/markdown',
     python_requires='>=3.8',
     install_requires=dependencies,
     entry_points={
