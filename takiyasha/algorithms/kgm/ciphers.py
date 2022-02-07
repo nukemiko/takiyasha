@@ -47,7 +47,7 @@ class KGM_Cipher(StreamCipher):
         # 加载 mask_v2（已加载则跳过）
         global _MASK_V2
         if not _MASK_V2:
-            with open(os.path.join(os.path.dirname(__file__), '../binaries/kgm.v2.mask'), 'rb') as lzf:
+            with open(os.path.join(os.path.dirname(__file__), 'binaries/kgm.v2.mask'), 'rb') as lzf:
                 _MASK_V2 = lzma.decompress(lzf.read())
         self._mask_v2: bytes = _MASK_V2
         self._full_mask_len: int = len(_MASK_V2) * 16
