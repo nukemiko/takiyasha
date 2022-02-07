@@ -37,7 +37,6 @@ Takiyasha 解锁 QMC 加密文件的能力，来源于此项目：[Unlock Music 
     - Python 包：[click](https://pypi.org/project/click/) - 提供命令行界面
     - Python 包：[mutagen](https://pypi.org/project/mutagen/) - 向输出文件写入歌曲信息
     - Python 包：[pycryptodomex](https://pypi.org/project/pycryptodomex/) - 部分加密格式的解锁支持
-        - 因为此库中用到的功能较少，目前打算逐步使用自制的功能替代
 
 ### 从本仓库直接安装 Takiyasha
 
