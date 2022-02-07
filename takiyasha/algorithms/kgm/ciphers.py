@@ -42,7 +42,7 @@ class KGM_Cipher(StreamCipher):
         if not isinstance(key, bytes):
             raise TypeError(f"'key' must be bytes or bytearray, not {type(key).__name__}")
         super().__init__(key)
-        self.is_vpr_format: bool = is_vpr_format
+        self._is_vpr_format: bool = bool(is_vpr_format)
 
         # 加载 mask_v2（已加载则跳过）
         global _MASK_V2
@@ -51,6 +51,10 @@ class KGM_Cipher(StreamCipher):
                 _MASK_V2 = lzma.decompress(lzf.read())
         self._mask_v2: bytes = _MASK_V2
         self._full_mask_len: int = len(_MASK_V2) * 16
+
+    @property
+    def is_vpr_format(self):
+        return self._is_vpr_format
 
     @property
     def mask_v2(self):
@@ -81,7 +85,7 @@ class KGM_Cipher(StreamCipher):
 
         ret: bytes = xor_bytestrings(med8_stream1, med8_stream2)
 
-        if self.is_vpr_format:
+        if self._is_vpr_format:
             return xor_bytestrings(ret, bytes(self._yield_vpr_stream(len(src), offset)))
         else:
             return ret
