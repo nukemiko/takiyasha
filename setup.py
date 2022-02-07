@@ -9,7 +9,7 @@ dependencies = dependencies.strip().splitlines()
 
 setup(
     name='takiyasha',
-    version='0.3.3',
+    version='0.3.3.post1',
     packages=[
         'takiyasha',
         'takiyasha.app',
@@ -21,7 +21,7 @@ setup(
         'takiyasha.algorithms.qmc',
     ],
     package_data={
-        'takiyasha.algorithms': ['binaries/kgm.v2.mask']
+        'takiyasha.algorithms.kgm': ['binaries/kgm.v2.mask']
     },
     url='https://github.com/nukemiko/takiyasha',
     license='MIT',
