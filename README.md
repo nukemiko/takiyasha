@@ -1,12 +1,14 @@
-# Takiyasha v0.3.3-1 ![](https://img.shields.io/badge/python-3.8+-green)
+# Takiyasha v0.3.3-2 ![](https://img.shields.io/badge/python-3.8+-green)
 
 简体中文 | [English](README_EN.md)
 
 Takiyasha 是用来解锁被加密的音乐文件的工具，支持 .qmc、.mflac 等多种格式。
 
-**Takiyasha 项目是以学习和技术研究的初衷创建的，修改、再分发时请遵循 [License](LICENSE)**
+**Takiyasha 项目是以学习和技术研究的初衷创建的，修改、再分发时请遵循 [License](LICENSE)。**
 
 Takiyasha 解锁 QMC 加密文件的能力，来源于此项目：[Unlock Music 音乐解锁](https://github.com/unlock-music/unlock-music)
+
+如果你只想快点体验，[查看安装方法](#how_to_install)
 
 ## 特性
 
@@ -29,7 +31,7 @@ Takiyasha 解锁 QMC 加密文件的能力，来源于此项目：[Unlock Music 
     - 受限于 Python 的语言特性，解锁过程很慢
 - 想要研究算法和提升自己技术水平的开发者
 
-## 如何安装
+## <span id="how_to_install">如何安装</span>
 
 - 所需运行环境
     - Python 版本：大于或等于 3.8
@@ -38,27 +40,44 @@ Takiyasha 解锁 QMC 加密文件的能力，来源于此项目：[Unlock Music 
     - Python 包：[mutagen](https://pypi.org/project/mutagen/) - 向输出文件写入歌曲信息
     - Python 包：[pycryptodomex](https://pypi.org/project/pycryptodomex/) - 部分加密格式的解锁支持
 
-### 从本仓库直接安装 Takiyasha
+### <span id="from_pypi">从 Pypi 安装</span>
 
-使用命令：`pip install -U git+https://github.com/nukemiko/takiyasha`
+使用命令：`pip install -U takiyasha`
 
-### 通过已发布的 wheel (.whl) 软件包文件安装 Takiyasha
+### <span id="from_release">通过已发布的 wheel (.whl) 软件包文件安装</span>
 
 - [前往发布页面](https://github.com/nukemiko/takiyasha/releases)
 - 找到你需要的版本
-    - 当前最新的稳定版本：[v0.3.3-1 Build 2022-02-07](https://github.com/nukemiko/takiyasha/releases/tag/v0.3.3-1)
+    - 当前最新的稳定版本：[v0.3.3-2 Build 2022-02-09](https://github.com/nukemiko/takiyasha/releases/tag/v0.3.3-2)
 - 按照发布说明进行下载和安装
+
+### 从本仓库直接安装
+
+*建议[从 Pypi 安装](#from_pypi)或者[在发布页面下载安装](#from_release) Takiyasha。*
+
+需要首先安装 `git`。
+
+使用命令：`pip install -U git+https://github.com/nukemiko/takiyasha`
 
 ## 如何使用
 
-### 在命令行（CMD/Powershell/Terminal 等）中使用
+### 命令行（CMD/Powershell/Terminal 等）
 
-- 直接执行命令：`takiyasha file1.qmcflac file2.mflac ...`
-- 直接运行模块：`python -m takiyasha file3.mgg file4.ncm ...`
+Takiyasha 提供了 3 个命令入口：
+- `takiyasha`
+- `unlocker`
+- `takiyasha-unlocker`
+
+它们只存在命令长度上的区别。
+
+- 直接执行命令：
+    - `takiyasha file1.qmcflac file2.mflac ...`
+    - `unlocker file3.kgm file4.vpr ...`
+- 直接运行模块：`python -m takiyasha file5.mgg file6.ncm ...`
 
 无论怎样运行，都可以使用 `-h/--help` 选项获得更多帮助信息。
 
-### 作为 Python 模块导入并使用
+### 作为 Python 模块导入使用
 
 1. 创建一个 Decoder 对象：
 

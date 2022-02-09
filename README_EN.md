@@ -1,4 +1,4 @@
-# Takiyasha v0.3.3-1 ![](https://img.shields.io/badge/python-3.8+-green)
+# Takiyasha v0.3.3-2 ![](https://img.shields.io/badge/python-3.8+-green)
 
 [简体中文](README.md) | English
 
@@ -38,6 +38,9 @@ The QMC decryption is partly derived from this project: [Unlock Music 音乐解�
 - Install Takiyasha from this repository:
     - `pip install -U git+https://github.com/nukemiko/takiyasha`
 
+- Install Takiyasha from the Pypi:
+    - `pip install -U takiyasha`
+
 - Install Takiyasha via wheel (.whl) package:
     - [Go to the release page](https://github.com/nukemiko/takiyasha/releases).
     - Choose a version that you need.
@@ -45,10 +48,19 @@ The QMC decryption is partly derived from this project: [Unlock Music 音乐解�
 
 ## Usage
 
+Takiyasha provided 3 commands:
+- `takiyasha`
+- `unlocker`
+- `takiyasha-unlocker`
+
+They are only differ in the length of command.
+
 ### In the commandline (Terminal / CMD / Powershell, etc.)
 
-- Directly execute the command: `takiyasha file1.qmcflac file2.mflac ...`
-- Run the module: `python -m takiyasha file3.mgg file4.ncm ...`
+- Directly execute the command: 
+    - `takiyasha file1.qmcflac file2.mflac ...`
+    - `unlocker file3.kgm file4.vpr ...`
+- Run the module: `python -m takiyasha file5.mgg file6.ncm ...`
 
 In any case, you can use the `-h/--help` option to get detailed help information.
 
