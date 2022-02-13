@@ -2,7 +2,7 @@ from struct import Struct
 from typing import IO, Optional
 from warnings import warn
 
-from .ciphers import KGM_Cipher
+from .ciphers import KGM_MaskCipher
 from ..common import Cipher, Decoder
 from ...exceptions import DecryptionError, DecryptionWarning, ValidateFailed
 from ...utils import get_audio_format, get_file_name_from_fileobj
@@ -40,7 +40,7 @@ class KGMFormatDecoder(Decoder):
         master_key1: bytes = file.read(16) + b'\x00'
         # master_key2: bytes = file.read(16)  # 未解决：key2
 
-        cipher: KGM_Cipher = KGM_Cipher(master_key1, is_vpr_format=is_vpr)
+        cipher: KGM_MaskCipher = KGM_MaskCipher(master_key1, is_vpr_format=is_vpr)
         file.seek(header_len, 0)
         raw_audio_data: bytes = file.read()
 

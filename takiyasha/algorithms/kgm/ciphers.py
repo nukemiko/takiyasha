@@ -37,7 +37,7 @@ _MASK_V2_PRE_DEF: bytes = bytes(
 _MASK_V2: bytes = b''
 
 
-class KGM_Cipher(StreamCipher):
+class KGM_MaskCipher(StreamCipher):
     def __init__(self, key: bytes, is_vpr_format: bool = False):
         if not isinstance(key, bytes):
             raise TypeError(f"'key' must be bytes or bytearray, not {type(key).__name__}")
