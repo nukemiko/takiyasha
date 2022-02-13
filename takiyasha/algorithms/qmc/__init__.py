@@ -1,7 +1,8 @@
 import struct
-from typing import IO, Optional
+from typing import IO, Optional, Type, Union
 
 from .ciphers import (
+    QMCv1_LegacyStaticMapCipher,
     QMCv1_StaticMapCipher,
     QMCv2_DynamicMapCipher,
     QMCv2_ModifiedRC4Cipher
@@ -11,8 +12,13 @@ from ..common import Cipher, Decoder
 from ...exceptions import DecryptionError, ValidateFailed
 from ...utils import get_audio_format, get_file_name_from_fileobj
 
+QMC_Ciphers = Union[QMCv1_LegacyStaticMapCipher, QMCv1_StaticMapCipher, QMCv2_DynamicMapCipher, QMCv2_ModifiedRC4Cipher]
+QMC_CiphersTypes = Type[QMC_Ciphers]
+
 LE_Uint32 = struct.Struct('<L')
 BE_Uint32 = struct.Struct('>L')
+
+USE_LEGACY_QMCv1_CIPHER: bool = False
 
 
 class QMCFormatDecoder(Decoder):
@@ -54,13 +60,17 @@ class QMCFormatDecoder(Decoder):
                 master_key: Optional[bytes] = None
 
         if master_key is None:
-            cipher = QMCv1_StaticMapCipher()
+            if USE_LEGACY_QMCv1_CIPHER:
+                cipher_cls: QMC_CiphersTypes = QMCv1_LegacyStaticMapCipher
+            else:
+                cipher_cls: QMC_CiphersTypes = QMCv1_StaticMapCipher
         else:
             key_length: int = len(master_key)
             if 0 < key_length <= 300:
-                cipher = QMCv2_DynamicMapCipher(master_key)
+                cipher_cls: QMC_CiphersTypes = QMCv2_DynamicMapCipher
             else:
-                cipher = QMCv2_ModifiedRC4Cipher(master_key)
+                cipher_cls: QMC_CiphersTypes = QMCv2_ModifiedRC4Cipher
+        cipher: QMC_Ciphers = cipher_cls(master_key)
 
         file.seek(0, 0)
 

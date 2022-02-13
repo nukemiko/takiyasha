@@ -1,3 +1,4 @@
+import os
 import struct
 from typing import Generator, Optional
 
@@ -7,6 +8,8 @@ from ...typehints import BytesType
 from ...utils import xor_bytestrings
 
 BE_Uint32 = struct.Struct('>L')
+QMCv1_KEYSTREAM_1ST_SEGMENT: bytes = b''
+QMCv1_KEYSTREAM_ANOTHER_SEGMENT: bytes = b''
 
 
 class TC_ModifiedTEACipher(BlockCipher):
@@ -148,7 +151,7 @@ class TC_ModifiedTEACipher(BlockCipher):
         return bytes(out_buffer)
 
 
-class QMCv1_StaticMapCipher(StreamCipher):
+class QMCv1_LegacyStaticMapCipher(StreamCipher):
     def __init__(self, key: Optional[bytes] = None):
         super().__init__(key)
 
@@ -201,6 +204,56 @@ class QMCv1_StaticMapCipher(StreamCipher):
     def decrypt(self, src: bytes, offset: int = 0) -> bytes:
         stream: bytes = bytes(self._yield_mask(len(src), offset))
         return xor_bytestrings(stream, src)
+
+
+class QMCv1_StaticMapCipher(StreamCipher):
+    def __init__(self, key: Optional[bytes] = None):
+        super().__init__(key)
+
+        global QMCv1_KEYSTREAM_1ST_SEGMENT, QMCv1_KEYSTREAM_ANOTHER_SEGMENT
+        if not (QMCv1_KEYSTREAM_1ST_SEGMENT and QMCv1_KEYSTREAM_ANOTHER_SEGMENT):
+            with open(os.path.join(os.path.dirname(__file__), 'binaries/qmc.v1.stream.segment'), 'rb') as sf:
+                QMCv1_KEYSTREAM_1ST_SEGMENT = sf.read(32768)
+                QMCv1_KEYSTREAM_ANOTHER_SEGMENT = sf.read(32767)
+
+    def decrypt(self, src: bytes, offset: int = 0) -> bytes:
+        firstseg: bytes = QMCv1_KEYSTREAM_1ST_SEGMENT
+        firstseg_len: int = len(firstseg)  # 应当为 32768
+        anotherseg: bytes = QMCv1_KEYSTREAM_ANOTHER_SEGMENT
+        anotherseg_len: int = len(anotherseg)  # 应当为 32767
+        src_len: int = len(src)
+
+        if offset <= firstseg_len:
+            offset_seg_end_len: int = firstseg_len - offset
+            if src_len <= offset_seg_end_len:
+                stream: bytes = firstseg[offset:offset + src_len]
+                data: bytes = xor_bytestrings(stream, src)
+            else:
+                srcseg1: bytes = src[:offset_seg_end_len]
+                srcseg2: bytes = src[offset_seg_end_len:]
+                srcseg2_len: int = len(srcseg2)
+
+                stream1: bytes = firstseg[offset:]
+                stream2: bytes = anotherseg * (srcseg2_len // anotherseg_len) + anotherseg[:srcseg2_len % anotherseg_len]
+
+                data: bytes = xor_bytestrings(stream1 + stream2, srcseg1 + srcseg2)
+        else:
+            offset_in_seg: int = (offset - firstseg_len) % anotherseg_len
+            offset_seg_end_len: int = anotherseg_len - offset_in_seg
+            if src_len <= offset_seg_end_len:
+                stream: bytes = anotherseg[offset_in_seg:offset_in_seg + src_len]
+                data: bytes = xor_bytestrings(stream, src)
+            else:
+                srcseg1: bytes = src[:offset_seg_end_len]
+                srcseg2: bytes = src[offset_seg_end_len:]
+                srcseg2_len: int = len(srcseg2)
+
+                stream1: bytes = anotherseg[offset_in_seg:]
+                stream2: bytes = anotherseg * (srcseg2_len // anotherseg_len) + anotherseg[:srcseg2_len % anotherseg_len]
+
+                data: bytes = xor_bytestrings(stream1 + stream2, srcseg1 + srcseg2)
+
+        return data
 
 
 class QMCv2_DynamicMapCipher(StreamCipher):
