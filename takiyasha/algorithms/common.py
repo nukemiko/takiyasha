@@ -32,6 +32,9 @@ class StreamCipher(metaclass=ABCMeta):
             self._key: Optional[bytes] = None
             self._key_len: Optional[int] = None
 
+    def __repr__(self):
+        return f'{type(self).__name__}(key={self.key})'
+
     @property
     def key(self) -> Optional[bytes]:
         """构建密码所需的密钥。"""
