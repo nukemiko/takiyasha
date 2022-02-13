@@ -5,7 +5,7 @@ with open('./README.md') as f:
 
 setup(
     name='takiyasha',
-    version='0.3.3.post2',
+    version='0.3.4',
     packages=[
         'takiyasha',
         'takiyasha.app',

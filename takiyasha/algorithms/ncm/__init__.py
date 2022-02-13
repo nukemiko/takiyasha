@@ -1,7 +1,7 @@
 import json
 from base64 import b64decode
 from struct import Struct
-from typing import IO, Optional, Union
+from typing import IO, Optional, Type, Union
 
 from Cryptodome.Cipher import AES
 from Cryptodome.Util.Padding import unpad
@@ -10,22 +10,22 @@ from .ciphers import (
     NCM_RC4Cipher,
     NCM_XorOnlyCipher,
 )
-from ..common import (
-    Cipher,
-    Decoder
-)
+from ..common import Decoder
 from ...exceptions import ValidateFailed
 from ...utils import (
     get_audio_format,
     get_file_name_from_fileobj
 )
 
+NCM_Ciphers = Union[NCM_RC4Cipher, NCM_XorOnlyCipher]
+NCM_CiphersTypes = Type[NCM_Ciphers]
+
 LE_Uint32: Struct = Struct('<I')
 
 
 class NCMFormatDecoder(Decoder):
     @classmethod
-    def _pre_create_instance(cls, file: IO[bytes]) -> tuple[bytes, Cipher, dict[str, ...]]:
+    def _pre_create_instance(cls, file: IO[bytes]) -> tuple[bytes, NCM_Ciphers, dict[str, ...]]:
         file.seek(0, 0)
 
         # 根据文件前8个字节判断文件类型
@@ -38,9 +38,6 @@ class NCMFormatDecoder(Decoder):
             raw_master_key_data: bytes = bytes(b ^ 100 for b in file.read(raw_master_key_len))
             aes_crypter = AES.new(b'hzHRAmso5kInbaxW', AES.MODE_ECB)
             master_key: bytes = unpad(aes_crypter.decrypt(raw_master_key_data), 16)[17:]
-
-            # 使用 master_key 创建 RC4Cipher
-            cipher: Cipher = NCM_RC4Cipher(master_key)
 
             # 读取和解密元数据
             raw_metadada_len: int = LE_Uint32.unpack(file.read(4))[0]
@@ -69,40 +66,28 @@ class NCMFormatDecoder(Decoder):
 
             # 读取剩余的加密音频数据
             raw_audio_data: bytes = file.read()
-
-            # 根据文件头猜测文件格式
-            decrypted_header_data: bytes = cipher.decrypt(raw_audio_data[:32])
-            audio_fmt: Optional[str] = get_audio_format(decrypted_header_data)
+            cipher_cls: NCM_CiphersTypes = NCM_RC4Cipher
         else:
             # 文件或许是网易云音乐的加密缓存
             file.seek(0, 0)
 
-            cipher: Cipher = NCM_XorOnlyCipher()
+            cipher_cls: NCM_CiphersTypes = NCM_XorOnlyCipher
+            master_key: Optional[bytes] = None
+            raw_audio_data: bytes = file.read()
             metadata: dict[str, Union[str, list[Union[str, list[str]]], bytes]] = {}
 
-            # 验证文件是否被网易云音乐加密
-            decrypted_header_data: bytes = cipher.decrypt(file.read(32))
-            audio_fmt: Optional[str] = get_audio_format(decrypted_header_data)
-            if not audio_fmt:
-                raise ValidateFailed(
-                    f"file '{get_file_name_from_fileobj(file)}' "
-                    f"is not encrypted by Cloudmusic"
-                )
+        cipher: NCM_Ciphers = cipher_cls(master_key)
 
-            file.seek(0, 0)
-
-            raw_audio_data: bytes = file.read()
+        # 验证文件是否被网易云音乐加密，同时猜测音频格式
+        decrypted_header_data: bytes = cipher.decrypt(raw_audio_data[:32])
+        audio_fmt: Optional[str] = get_audio_format(decrypted_header_data)
+        if not audio_fmt:
+            raise ValidateFailed(
+                f"file '{get_file_name_from_fileobj(file)}' "
+                f"is not encrypted by Cloudmusic"
+            )
 
         return raw_audio_data, cipher, {'metadata': metadata, 'audio_format': audio_fmt}
-
-    def __init__(
-            self,
-            raw_audio_data: bytes,
-            cipher: Cipher,
-            misc: dict[str, ...],
-            filename: str
-    ):
-        super().__init__(raw_audio_data, cipher, misc, filename)
 
     @property
     def metadata(self) -> dict[str, Union[str, list[Union[str, list[str]]], bytes]]:
