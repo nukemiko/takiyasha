@@ -17,7 +17,8 @@ setup(
         'takiyasha.algorithms.qmc',
     ],
     package_data={
-        'takiyasha.algorithms.kgm': ['binaries/kgm.v2.mask']
+        'takiyasha.algorithms.kgm': ['binaries/kgm.v2.mask'],
+        'takiyasha.algorithms.qmc': ['binaries/qmc.v1.stream.segment']
     },
     url='https://github.com/nukemiko/takiyasha',
     project_urls={
@@ -48,7 +49,7 @@ setup(
         'console_scripts': [
             'takiyasha = takiyasha.app.cli:main',
             'takiyasha-unlocker = takiyasha.app.cli:main',
-            'unlocker = takiyasha.app.cli.main'
+            'unlocker = takiyasha.app.cli:main'
         ]
     }
 )
