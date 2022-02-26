@@ -15,8 +15,8 @@ Takiyasha 解锁部分加密格式文件的能力，来源于此项目：[Unlock
 
 ### 支持的加密格式
 
-- 只要是你认为已经加密的音乐文件，就可以使用此工具尝试
-- 但是肯定不支持 Apple Music/Spotify 等平台的加密格式
+- 请在安装后使用 `takiyasha --formats` 查看支持的加密格式。
+    - 不支持 Apple Music/Spotify 等平台的加密格式
 
 ### 适用群体
 
