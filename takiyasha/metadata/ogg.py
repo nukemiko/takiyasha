@@ -60,16 +60,23 @@ class OGG(TagWrapper):
             self.real_tag['description'] = value
 
     @property
-    def cover(self) -> Optional[bytes]:
-        # 如果封面以 Theora 视频流格式嵌入文件，则无法通过此属性获取封面
-        encoded_data: bytes = self.real_tag.get('metadata_block_picture')
-        if encoded_data is None:
-            return
+    def cover(self) -> Optional[flac.Picture]:
+        # 如果封面以 Theora 视频流形式嵌入文件，则无法通过此属性获取封面
+        metadata_block_pictures: list[bytes] = self.real_tag.get('metadata_block_picture', [])
 
-        try:
-            return b64decode(encoded_data)
-        except (TypeError, ValueError):
-            return
+        for raw_picdata_b64 in metadata_block_pictures:
+            try:
+                raw_picdata: bytes = b64decode(raw_picdata_b64)
+            except (TypeError, ValueError):
+                continue
+
+            try:
+                picture = flac.Picture(data=raw_picdata)
+            except flac.error:
+                continue
+
+            if picture.type == 3:
+                return picture
 
     @cover.setter
     def cover(self, value: Union[bytes, flac.Picture]) -> None:
