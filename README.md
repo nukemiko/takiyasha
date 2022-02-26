@@ -1,12 +1,10 @@
-# Takiyasha v0.3.4 ![](https://img.shields.io/badge/python-3.8+-green)
+# Takiyasha v0.3.5 ![](https://img.shields.io/badge/python-3.8+-green)
 
-简体中文 | [English](https://github.com/nukemiko/takiyasha/blob/master/README_EN.md)
-
-Takiyasha 是用来解锁被加密的音乐文件的工具，支持 .qmc、.mflac 等多种格式。
+Takiyasha 是用来解锁被加密的音乐文件的工具，支持多种加密格式。
 
 **Takiyasha 项目是以学习和技术研究的初衷创建的，修改、再分发时请遵循 [License](https://github.com/nukemiko/takiyasha/blob/master/LICENSE)。**
 
-Takiyasha 解锁 QMC 加密文件的能力，来源于此项目：[Unlock Music 音乐解锁](https://github.com/unlock-music/unlock-music)
+Takiyasha 解锁部分加密格式文件的能力，来源于此项目：[Unlock Music 音乐解锁](https://github.com/unlock-music/unlock-music)
 
 如果你只想快点体验，[查看安装方法](#how_to_install)
 
@@ -17,12 +15,8 @@ Takiyasha 解锁 QMC 加密文件的能力，来源于此项目：[Unlock Music 
 
 ### 支持的加密格式
 
-- 旧版 QMC 加密格式 (.qmc*)
-- 新版 QMC 加密格式 (.mflac/.mflac*/.mgg/.mgg*)
-- QQ 音乐 .tm 格式 (.tm*)
-- Moo Music 加密格式 (.bkc*)
-- NCM 加密格式 (.ncm)
-- KGM 加密格式 (.kgm/.kgma/.vpr)
+- 只要是你认为已经加密的音乐文件，就可以使用此工具尝试
+- 但是肯定不支持 Apple Music/Spotify 等平台的加密格式
 
 ### 适用群体
 
@@ -48,7 +42,7 @@ Takiyasha 解锁 QMC 加密文件的能力，来源于此项目：[Unlock Music 
 
 - [前往发布页面](https://github.com/nukemiko/takiyasha/releases)
 - 找到你需要的版本
-    - 当前最新的稳定版本：[v0.3.4 Build 2022-02-13](https://github.com/nukemiko/takiyasha/releases/tag/v0.3.4)
+    - 当前最新的稳定版本：[v0.3.5 Build 2022-02-26](https://github.com/nukemiko/takiyasha/releases/tag/v0.3.5)
 - 按照发布说明进行下载和安装
 
 ### 从本仓库直接安装
@@ -71,9 +65,9 @@ Takiyasha 提供了 3 个命令入口：
 它们只存在命令长度上的区别。
 
 - 直接执行命令：
-    - `takiyasha file1.qmcflac file2.mflac ...`
-    - `unlocker file3.kgm file4.vpr ...`
-- 直接运行模块：`python -m takiyasha file5.mgg file6.ncm ...`
+    - `takiyasha file1 file2 ...`
+    - `unlocker file3 file4 ...`
+- 直接运行模块：`python -m takiyasha file5 file6 ...`
 
 无论怎样运行，都可以使用 `-h/--help` 选项获得更多帮助信息。
 
