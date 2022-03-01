@@ -4,7 +4,7 @@ Takiyasha 是用来解锁被加密的音乐文件的工具，支持多种加密�
 
 **Takiyasha 项目是以学习和技术研究的初衷创建的，修改、再分发时请遵循 [License](https://github.com/nukemiko/takiyasha/blob/master/LICENSE)。**
 
-Takiyasha 解锁部分加密格式文件的能力，来源于此项目：[Unlock Music 音乐解锁](https://github.com/unlock-music/unlock-music)
+Takiyasha 解锁部分加密格式文件的能力，来源于此项目：[Unlock Music Project - CLI Edition](https://github.com/unlock-music/cli)
 
 如果你只想快点体验，[查看安装方法](#how_to_install)
 
