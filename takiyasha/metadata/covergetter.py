@@ -1,9 +1,15 @@
 from typing import Union
 from urllib.parse import urlparse
 
-from requests import get as reqget
+import requests
 
 from ..algorithms import NCMFormatDecoder
+
+
+def reqget(*args, **kwargs) -> requests.Response:
+    resp = requests.get(*args, **kwargs)
+    resp.raise_for_status()
+    return resp
 
 
 class QQMusicCoverGetter:
