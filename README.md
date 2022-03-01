@@ -1,4 +1,4 @@
-# Takiyasha v0.3.5 ![](https://img.shields.io/badge/python-3.8+-green)
+# Takiyasha ![](https://img.shields.io/badge/python-3.8+-green)
 
 Takiyasha 是用来解锁被加密的音乐文件的工具，支持多种加密格式。
 
@@ -42,7 +42,7 @@ Takiyasha 解锁部分加密格式文件的能力，来源于此项目：[Unlock
 
 - [前往发布页面](https://github.com/nukemiko/takiyasha/releases)
 - 找到你需要的版本
-    - 当前最新的稳定版本：[v0.3.5 Build 2022-02-26](https://github.com/nukemiko/takiyasha/releases/tag/v0.3.5)
+    - 当前的最新版本[在这里](https://github.com/nukemiko/takiyasha/releases/latest)
 - 按照发布说明进行下载和安装
 
 ### 从本仓库直接安装
@@ -140,7 +140,7 @@ Takiyasha 提供了 3 个命令入口：
         tag.artist = ncm_dec.music_artists
         tag.album = ncm_dec.music_album
         tag.comment = ncm_dec.music_identifier
-        tag.cover = ncm_dev.music_cover_data
+        tag.cover = ncm_dec.music_cover_data
 
         ncm_decrypted_file.seek(0, 0)
         tag.save(ncm_decrypted_file)
