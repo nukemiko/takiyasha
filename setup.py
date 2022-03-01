@@ -43,7 +43,8 @@ setup(
     install_requires=[
         'click',
         'mutagen',
-        'pycryptodomex'
+        'pycryptodomex',
+        'requests'
     ],
     entry_points={
         'console_scripts': [
