@@ -5,12 +5,14 @@ from time import time
 from typing import Generator, IO
 
 import click
+from requests import RequestException
 
 from ..__version__ import version
 from ..algorithms import (
     Decoder,
     NCMFormatDecoder,
-    new_decoder
+    new_decoder,
+    QMCFormatDecoder
 )
 from ..algorithms.ncm import NCM_RC4Cipher
 from ..exceptions import (
@@ -20,6 +22,7 @@ from ..exceptions import (
 )
 from ..metadata import new_tag
 from ..metadata.common import TagWrapper
+from ..metadata.covergetter import CloudMusicCoverGetter, QQMusicCoverGetter
 from ..utils import (
     get_audio_format,
     SUPPORTED_FORMATS_PATTERNS
@@ -46,7 +49,10 @@ _HELP_CONTENTS = {
     It will occupy the STDOUT, and skip the metadata embedding.""",
     'without_metadata': """Do not embed found metadata in the output file.""",
     'show_supported_formats': """Show supported formats and exit.""",
-    'show_version': """Show the version information and exit."""
+    'show_version': """Show the version information and exit.""",
+    'without_complete_cover': """\b
+    Do not complete the missing cover of the output file.
+    If the "-w/--without-metadata" option has been set, this option will be enabled."""
 }
 
 
@@ -94,7 +100,7 @@ def show_supported_formats(
         'The meaning of wildcard characters:\n'
         '    * - Match any character\n'
         '    ? - Match any single character\n', err=True
-        )
+    )
     for encryption, patterns in SUPPORTED_FORMATS_PATTERNS.items():
         click.echo(f'{encryption.upper()} files: ', nl=False, err=True)
         patterns_map: list[list[str]] = []
@@ -159,6 +165,11 @@ def show_version(
     help=_HELP_CONTENTS['without_metadata']
 )
 @click.option(
+    '-n', '--without-complete-cover', 'without_complete_cover',
+    is_flag=True,
+    help=_HELP_CONTENTS['without_complete_cover']
+)
+@click.option(
     '--formats', '--supported-formats', 'show_supported_formats',
     is_flag=True,
     is_eager=True,
@@ -192,6 +203,7 @@ def main(**kwargs):
     output_path: Path = kwargs['path_to_output']
     write_to_stdout: bool = kwargs['write_to_stdout']
     without_metadata: bool = kwargs['without_metadata']
+    without_complete_cover: bool = kwargs['without_complete_cover']
 
     if len(input_paths) > 1 and write_to_stdout:
         raise click.ClickException(
@@ -223,9 +235,13 @@ def main(**kwargs):
                 sys.stderr.write(f'[{progress}] Unlocking: {input_file_name} -> {output_file_name}\t\r')
                 last_update_time: float = time()
         else:
+            click.echo(
+                f"Unlock finished: {input_file_name} -> {output_file_path}",
+                err=True
+            )
             # 写入元数据
-            if not without_metadata:
-                sys.stderr.write('Embedding metadata...\r')
+            if (not without_metadata) and isinstance(decoder, (NCMFormatDecoder, QMCFormatDecoder)):
+                click.echo('Embedding metadata...', err=True)
                 file.seek(0, 0)
                 if isinstance(decoder, NCMFormatDecoder) and isinstance(decoder.cipher, NCM_RC4Cipher):
                     tag: TagWrapper = new_tag(file)
@@ -233,26 +249,54 @@ def main(**kwargs):
                     tag.artist = decoder.music_artists
                     tag.album = decoder.music_album
                     tag.comment = decoder.music_identifier
-                    tag.cover = decoder.music_cover_data
+                    if decoder.music_cover_data:
+                        tag.cover = decoder.music_cover_data
+                    elif not without_complete_cover:
+                        try:
+                            cover_getter: CloudMusicCoverGetter = CloudMusicCoverGetter.from_decoder(decoder)
+                        except RequestException as exc:
+                            click.echo(
+                                f'Warning: An error occured during metadata embedding. '
+                                f'The unlocked file will still be saved.\n'
+                                f'Occured error: {exc}',
+                                err=True
+                            )
+                        else:
+                            tag.cover = bytes(cover_getter)
                     file.seek(0, 0)
                     tag.save(file)
+                elif isinstance(decoder, QMCFormatDecoder) and not without_complete_cover:
+                    tag: TagWrapper = new_tag(file)
+                    try:
+                        if decoder.music_id is not None:
+                            cover_getter: QQMusicCoverGetter = QQMusicCoverGetter.from_music_id(decoder.music_id)
+                        else:
+                            cover_getter: QQMusicCoverGetter = QQMusicCoverGetter.from_metadata(tag.title, tag.artist, tag.album)
+                    except RequestException as exc:
+                        click.echo(
+                            f'Warning: An error occured during metadata embedding. '
+                            f'The unlocked file will still be saved.\n'
+                            f'Occured error: {exc}',
+                            err=True
+                        )
+                    else:
+                        tag.cover = bytes(cover_getter)
+                    finally:
+                        tag.save(file)
                 else:
-                    sys.stderr.write(
+                    click.echo(
                         'Warning: Skipped metadata embedding, '
-                        'because no metadata found.\r'
+                        'because no metadata found.',
+                        err=True
                     )
             else:
-                sys.stderr.write('Warning: Skipped metadata embedding')
+                click.echo('Warning: Skipped metadata embedding', err=True, nl=False)
                 if write_to_stdout:
-                    sys.stderr.write(', because the output is STDOUT.\r')
+                    click.echo(', because the output is STDOUT.', err=True)
                 else:
-                    sys.stderr.write('.\r')
+                    click.echo('.', err=True)
             decoder.close()
             file.close()
-            click.echo(
-                f"Unlock finished: {input_file_name} -> {output_file_path}",
-                err=True
-            )
 
 
 def check_output_path(path_to_output: Path, paths_to_input: tuple[Path]) -> None:
