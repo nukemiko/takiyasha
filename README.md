@@ -17,8 +17,10 @@ Takiyasha 解锁部分加密格式文件的能力，来源于此项目：[Unlock
 
 ### 支持的加密格式
 
-- 请在安装后使用 `takiyasha --formats` 查看支持的加密格式。
-    - 不支持 Apple Music/Spotify 等平台的加密格式
+- 文件扩展名中含有 `qmc`、`mflac`、`mgg`、`ncm`、`kgm`、`vpr` 字样的文件。
+    - 可在安装后使用 `takiyasha --formats` 查看所有支持的加密格式。
+- **目前不支持来自版本 1857 以上的 QQ 音乐 PC 客户端的部分加密文件（`.mflac*`、`.mgg*`）。**
+- 不支持 Apple Music/Spotify 等平台的加密格式。
 
 ### 适用群体
 
