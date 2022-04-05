@@ -5,7 +5,7 @@ from .kgm import KGMFormatDecoder
 from .ncm import NCMFormatDecoder
 from .noop import NoOperationDecoder
 from .qmc import QMCFormatDecoder
-from ..exceptions import UnsupportedDecryptionFormat, ValidateFailed
+from ..exceptions import DecryptionError, UnsupportedDecryptionFormat, ValidateFailed
 from ..typehints import PathType
 from ..utils import (
     get_audio_format,
@@ -67,6 +67,9 @@ def new_decoder(filething: Union[PathType, IO[bytes]], enable_noop_decoder=False
                     decoder: Decoder = decoder_class.from_file(filething)
                 except ValidateFailed:
                     pass
+                except DecryptionError:
+                    if decoder_class != KGMFormatDecoder:
+                        raise
                 else:
                     break
             else:
