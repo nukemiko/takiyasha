@@ -1,4 +1,4 @@
-# Takiyasha ![](https://img.shields.io/badge/python-3.8+-green)
+# Takiyasha ![](https://img.shields.io/badge/Python-3.9+-blue)
 
 Takiyasha 是用来解锁被加密的音乐文件的工具，支持多种加密格式。
 
@@ -37,7 +37,7 @@ Takiyasha 解锁部分加密格式文件的能力，来源于此项目：[Unlock
 ## <span id="how_to_install">如何安装</span>
 
 - 所需运行环境
-    - Python 版本：大于或等于 3.8
+    - Python 版本：大于或等于 3.9
 - 所需依赖
     - Python 包：[click](https://pypi.org/project/click/) - 提供命令行界面
     - Python 包：[mutagen](https://pypi.org/project/mutagen/) - 向输出文件写入歌曲信息
@@ -171,13 +171,13 @@ Takiyasha 提供了 3 个命令入口：
 
 > `Warning: Skipped input file '<filename>': Failed to unlock the data: OSError: [Errno 22] Invalid argument`
 
-文件太小了（<8 bytes）。
+文件太小了（可能只有几字节大小）。
 
 出现这种情况，说明你下载的文件没有下载完整，建议重新下载源文件，重新解锁。
 
 > `Warning: Skipped subdirectory '<dirname>'.`
 
-如果传入的路径中存在目录，解锁过程中会一并解锁该目录下受支持的文件，但是不包括子目录。
+如果传入的路径中存在目录，解锁过程中会一并解锁该目录下受支持的文件，但是不包括子目录`<dirname>`。
 
 ## 常见问题
 
