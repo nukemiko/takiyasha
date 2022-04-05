@@ -5,7 +5,6 @@ from time import time
 from typing import Generator, IO
 
 import click
-from requests import RequestException
 
 from ..__version__ import version
 from ..algorithms import (
@@ -16,8 +15,6 @@ from ..algorithms import (
 )
 from ..algorithms.ncm import NCM_RC4Cipher
 from ..exceptions import (
-    CipherException,
-    DecryptionException,
     UnsupportedDecryptionFormat
 )
 from ..metadata import new_tag
@@ -27,6 +24,9 @@ from ..utils import (
     get_audio_format,
     SUPPORTED_FORMATS_PATTERNS
 )
+
+# Switch detail mode on/off
+_DETAIL_MODE = False
 
 # Parameters for click.core.Context()
 _CONTEXT_SETTINGS = {
@@ -52,7 +52,8 @@ _HELP_CONTENTS = {
     'show_version': """Show the version information and exit.""",
     'without_complete_cover': """\b
     Do not complete the missing cover of the output file.
-    If the "-w/--without-metadata" option has been set, this option will be enabled."""
+    If the "-w/--without-metadata" option has been set, this option will be enabled.""",
+    'show_verbose': """Show details during unlocking."""
 }
 
 
@@ -73,12 +74,17 @@ def preprocess_input_paths(
     def filter_dirs():
         for path in input_paths:
             if path.is_dir():
-                click.echo(
-                    f"Warning: Skipped input directory '{path}'.",
-                    err=True
-                )
-                continue
-            yield path
+                for contained_path in path.iterdir():
+                    if contained_path.is_dir():
+                        click.echo(
+                            f"Warning: Skipped subdirectory '{contained_path}'.",
+                            err=True
+                        )
+                        continue
+                    else:
+                        yield contained_path
+            else:
+                yield path
 
     ret = tuple(filter_dirs())
     ctx.meta['input_paths'] = ret
@@ -140,7 +146,28 @@ def show_version(
         err=True
     )
 
-    sys.exit()
+    ctx.exit()
+
+
+def set_detail_mode(
+        ctx: click.core.Context,
+        param: click.core.Parameter,
+        value: str = None
+):
+    bool((ctx, param, value))
+    global _DETAIL_MODE
+    _DETAIL_MODE = True
+
+
+def echo_detail(
+        message: object = None,
+        file: IO = None,
+        nl: bool = True,
+        err: bool = True,
+        color: bool = None
+) -> None:
+    if _DETAIL_MODE:
+        click.echo(message, file, nl, err, color)
 
 
 @click.command(context_settings=_CONTEXT_SETTINGS)
@@ -182,6 +209,13 @@ def show_version(
     is_flag=True,
     help=_HELP_CONTENTS['write_to_stdout']
 )
+# @click.option(
+#     '-v', '--verbose', 'show_verbose',
+#     is_flag=True,
+#     expose_value=False,
+#     callback=set_detail_mode,
+#     help=_HELP_CONTENTS['show_verbose']
+# )
 @click.option(
     '-V', '--version',
     is_flag=True,
@@ -207,10 +241,13 @@ def main(**kwargs):
 
     if len(input_paths) > 1 and write_to_stdout:
         raise click.ClickException(
-            "Output the unlocked data to the screen only if the input path is a single file."
+            "Output the unlocked data to the screen only if the input path is a single file"
         )
     if write_to_stdout:
-        tasks: list[tuple[Decoder, IO[bytes]]] = [generate_stdout_task(input_paths[0])]
+        try:
+            tasks: list[tuple[Decoder, IO[bytes]]] = [generate_stdout_task(input_paths[0])]
+        except IndexError:
+            sys.exit(0)
         without_metadata = True
     else:
         check_output_path(output_path, input_paths)
@@ -254,7 +291,7 @@ def main(**kwargs):
                     elif not without_complete_cover:
                         try:
                             cover_getter: CloudMusicCoverGetter = CloudMusicCoverGetter.from_decoder(decoder)
-                        except RequestException as exc:
+                        except Exception as exc:
                             click.echo(
                                 f'Warning: An error occured during metadata embedding. '
                                 f'The unlocked file will still be saved.\n'
@@ -272,7 +309,7 @@ def main(**kwargs):
                             cover_getter: QQMusicCoverGetter = QQMusicCoverGetter.from_music_id(decoder.music_id)
                         else:
                             cover_getter: QQMusicCoverGetter = QQMusicCoverGetter.from_metadata(tag.title, tag.artist, tag.album)
-                    except RequestException as exc:
+                    except Exception as exc:
                         click.echo(
                             f'Warning: An error occured during metadata embedding. '
                             f'The unlocked file will still be saved.\n'
@@ -285,14 +322,13 @@ def main(**kwargs):
                         tag.save(file)
                 else:
                     click.echo(
-                        'Warning: Skipped metadata embedding, '
-                        'because no metadata found.',
+                        'Warning: Skipped metadata embedding: no metadata found',
                         err=True
                     )
             else:
                 click.echo('Warning: Skipped metadata embedding', err=True, nl=False)
                 if write_to_stdout:
-                    click.echo(', because the output is STDOUT.', err=True)
+                    click.echo(': output is STDOUT', err=True)
                 else:
                     click.echo('.', err=True)
             decoder.close()
@@ -306,28 +342,31 @@ def check_output_path(path_to_output: Path, paths_to_input: tuple[Path]) -> None
 
     if not (path_to_output.is_dir() or output_path_can_be_file):
         raise click.ClickException(
-            'The output path can be a file only if the input path is a single file.'
+            'The output path can be a file only if the input path is a single file'
         )
 
 
 def generate_stdout_task(input_path: Path) -> tuple[Decoder, IO[bytes]]:
     try:
         decoder: Decoder = new_decoder(input_path)
-    except (CipherException, DecryptionException) as exc:
+    except Exception as exc:
         if isinstance(exc, UnsupportedDecryptionFormat):
-            raise click.ClickException(
-                f"Cannot unlock input file '{input_path}': "
-                f"Unrecognized encryption format.",
+            click.echo(
+                f"Warning: Skipped input file '{input_path.name}': "
+                f"Unrecognized format",
+                err=True
             )
         else:
-            raise click.ClickException(
-                f"Cannot unlock input file '{input_path}': "
-                f"Failed to unlock the data."
+            click.echo(
+                f"Warning: Skipped input file '{input_path.name}': "
+                f"Failed to unlock the data: "
+                f"{type(exc).__name__}: {exc}",
+                err=True
             )
-
-    decoder.seek(0, 0)
-
-    return decoder, sys.stdout.buffer
+        sys.exit(1)
+    else:
+        decoder.seek(0, 0)
+        return decoder, sys.stdout.buffer
 
 
 def generate_tasks(
@@ -337,17 +376,18 @@ def generate_tasks(
     for input_path in input_paths:
         try:
             decoder: Decoder = new_decoder(input_path)
-        except (CipherException, DecryptionException) as exc:
+        except Exception as exc:
             if isinstance(exc, UnsupportedDecryptionFormat):
                 click.echo(
-                    f"Warning: Skipped input file '{input_path}': "
-                    f"Unrecognized encryption format.",
+                    f"Warning: Skipped input file '{input_path.name}': "
+                    f"Unrecognized format",
                     err=True
                 )
             else:
                 click.echo(
-                    f"Warning: Skipped input file '{input_path}': "
-                    f"Failed to unlock the data.",
+                    f"Warning: Skipped input file '{input_path.name}': "
+                    f"Failed to unlock the data: "
+                    f"{type(exc).__name__}: {exc}",
                     err=True
                 )
             continue
