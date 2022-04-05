@@ -12,20 +12,25 @@ Takiyasha 解锁部分加密格式文件的能力，来源于此项目：[Unlock
 
 ## 特性
 
-- Takiyasha 使用 Python 3 编写
-- 只要电脑/手机上可以运行 Python 3 和使用 pip，就可以安装和使用 Takiyasha
+- 使用 Python 3 编写
+- 跨平台：只要系统上可以运行 Python 3 和使用 pip，就可以安装和使用
+- [支持多种加密格式](#supported_encrypt_format)
+    - 可自动识别并解锁没有扩展名的加密文件
+    - 支持为解锁后的文件补全元数据（包括封面，仅限`.ncm`/`.qmc*`/`.mflac*`/`.mgg*`）
 
-### 支持的加密格式
+### <span id="supported_encrypt_format">支持的加密格式</span>
 
-- 文件扩展名中含有 `qmc`、`mflac`、`mgg`、`ncm`、`kgm`、`vpr` 字样的文件。
+- 文件扩展名中含有 `.qmc`、`.mflac`、`.mgg`、`.ncm`、`.kgm`、`.vpr` 字样的文件。
     - 可在安装后使用 `takiyasha --formats` 查看所有支持的加密格式。
-- **目前不支持来自版本 1857 以上的 QQ 音乐 PC 客户端的部分加密文件（`.mflac*`、`.mgg*`）。**
-- 不支持 Apple Music/Spotify 等平台的加密格式。
+- **目前不支持解锁以下来源的加密文件：**
+    - 版本 1857 及以上的 QQ 音乐 PC 客户端（`.mflac*`、`.mgg*`）
+    - 版本 11.55 及以上的 QQ 音乐 Android 客户端（`.mflac*`、`.mgg*`）
+    - Apple Music/Spotify 等流媒体平台（在可预见的未来没有可能支持）
 
 ### 适用群体
 
 - 经常批量下载和解锁加密格式的用户
-- 不在乎解锁速度的用户
+- 重视结果大于重视过程的用户
     - 受限于 Python 的语言特性，解锁过程很慢
 - 想要研究算法和提升自己技术水平的开发者
 
@@ -43,12 +48,23 @@ Takiyasha 解锁部分加密格式文件的能力，来源于此项目：[Unlock
 
 使用命令：`pip install -U takiyasha`
 
-### 通过已发布的 wheel (.whl) 软件包文件安装
+### 通过已发布的 wheel (.whl) 包文件安装
 
-- [前往发布页面](https://github.com/nukemiko/takiyasha/releases)
-- 找到你需要的版本
-    - 当前的最新版本[在这里](https://github.com/nukemiko/takiyasha/releases/latest)
+- 前往发布页面
+    - [Github](https://github.com/nukemiko/takiyasha/releases)
+    - [Notabug](https://notabug.org/MiketsuSmasher/takiyasha/releases)
+- 找到你需要的版本（一般是最新版本）
 - 按照发布说明进行下载和安装
+
+### （不推荐）直接从仓库安装
+
+使用命令：
+
+Github: `pip install -U git+https://github.com/nukemiko/takiyasha`
+
+Notabug: `pip install -U git+https://notabug.org/MiketsuSmasher/takiyasha`
+
+需要你先安装`git`。
 
 ## 如何使用
 
@@ -62,9 +78,9 @@ Takiyasha 提供了 3 个命令入口：
 它们只存在命令长度上的区别。
 
 - 直接执行命令：
-    - `takiyasha file1 file2 ...`
-    - `unlocker file3 file4 ...`
-- 直接运行模块：`python -m takiyasha file5 file6 ...`
+    - `takiyasha file1 file2 dir1 ...`
+    - `unlocker file3 file4 dir2 ...`
+- 直接运行模块：`python -m takiyasha file5 file6 dir3 dir4 ...`
 
 无论怎样运行，都可以使用 `-h/--help` 选项获得更多帮助信息。
 
@@ -94,9 +110,7 @@ Takiyasha 提供了 3 个命令入口：
 
 2. 执行解锁操作并保存到文件：
 
-    ```python
-    for idx, decoder in enumerate([qmcflac_dec, mflac_dec, ncm_dec, noop_dec]):
-        audio_format = decoder.audio_format
+    ```python建议重新下载和解锁。io_format
         save_filename = f'test{idx}.{audio_format}'
 
         with open(save_filename, 'wb') as f:
@@ -142,3 +156,43 @@ Takiyasha 提供了 3 个命令入口：
         ncm_decrypted_file.seek(0, 0)
         tag.save(ncm_decrypted_file)
     ```
+
+## 常见提示和错误信息
+
+> `Warning: Skipped input file '<filename>': Failed to unlock the data: Error: Non-base64 digit found`
+
+如果你是从这些来源下载的文件：
+- 版本 1857 及以上的 QQ 音乐 PC 客户端（`.mflac*`、`.mgg*`）
+- 版本 11.55 及以上的 QQ 音乐 Android 客户端（`.mflac*`、`.mgg*`）
+
+很遗憾，目前不支持解锁这些文件。**请尝试使用旧版 QQ 音乐客户端。**
+
+如果你不是从以上来源下载的文件，那么文件可能已经损坏，建议重新下载源文件，重新解锁。
+
+> `Warning: Skipped input file '<filename>': Failed to unlock the data: OSError: [Errno 22] Invalid argument`
+
+文件太小了（<8 bytes）。
+
+出现这种情况，说明你下载的文件没有下载完整，建议重新下载源文件，重新解锁。
+
+> `Warning: Skipped subdirectory '<dirname>'.`
+
+如果传入的路径中存在目录，解锁过程中会一并解锁该目录下受支持的文件，但是不包括子目录。
+
+## 常见问题
+
+> 解锁后的音乐断断续续，甚至无法播放
+
+你用来解锁的源文件可能已经损坏，建议重新下载源文件，重新解锁。
+
+> 能否在解锁的同时转换格式？
+
+不能。Takiyasha 不负责格式转换，它只负责解锁你的加密音乐文件。
+
+> 是否会支持来自 Apple Music/Soptify 等流媒体服务的文件？
+
+不会，也没有这方面的打算。
+
+> Takiyasha 和 [unlock-music](https://git.unlock-music.dev/um/web) 项目的关系？
+
+Takiyasha 的部分算法来源于 [unlock-music](https://git.unlock-music.dev/um/web) 的衍生项目 [Unlock Music Project - CLI Edition](https://github.com/unlock-music/cli)，但 Takiyasha 支持包括补全元数据和封面在内的更多功能。
