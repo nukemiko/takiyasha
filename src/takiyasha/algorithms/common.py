@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from io import BufferedIOBase, BytesIO, DEFAULT_BUFFER_SIZE
-from typing import BinaryIO, IO, Optional, TypeVar, Union
+from typing import Any, BinaryIO, Dict, IO, Optional, Tuple, TypeVar, Union
 
 from ..typehints import (
     BytesType,
@@ -150,7 +150,7 @@ class Decoder(BufferedIOBase, BinaryIO, metaclass=ABCMeta):
 
     @classmethod
     @abstractmethod
-    def _pre_create_instance(cls, file: IO[bytes]) -> tuple[bytes, Cipher, dict[str, ...]]:
+    def _pre_create_instance(cls, file: IO[bytes]) -> Tuple[bytes, Cipher, Dict[str, Any]]:
         """从文件中获取并返回创建解码器实例所需的信息。
 
         没有这些信息就无法创建解码器实例，因此这是一个必须实现的抽象方法。
@@ -164,7 +164,7 @@ class Decoder(BufferedIOBase, BinaryIO, metaclass=ABCMeta):
             self,
             raw_audio_data: bytes,
             cipher: Cipher,
-            misc: dict[str, ...],
+            misc: Dict[str, Any],
             filename: str
     ):
         """根据加密音频数据、密码实例和其他信息（如果有）初始化并返回一个解码器实例。
@@ -178,7 +178,7 @@ class Decoder(BufferedIOBase, BinaryIO, metaclass=ABCMeta):
         self._audio_length: int = len(raw_audio_data)
         self._filename: str = filename
         self._cipher: Cipher = cipher
-        self._misc: dict[str, ...] = misc
+        self._misc: Dict[str, Any] = misc
 
         self._iter_blocksize: int = DEFAULT_BUFFER_SIZE
 

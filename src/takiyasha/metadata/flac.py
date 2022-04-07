@@ -1,5 +1,5 @@
 from copy import deepcopy as dp
-from typing import IO, Optional, Type, Union
+from typing import IO, List, Optional, Type, Union
 
 from mutagen import flac
 
@@ -23,44 +23,44 @@ class FLAC(TagWrapper):
         return self._real_tag
 
     @property
-    def title(self) -> list[str]:
+    def title(self) -> List[str]:
         return self.real_tag.get('title')
 
     @title.setter
-    def title(self, value: Union[str, list[str]]) -> None:
+    def title(self, value: Union[str, List[str]]) -> None:
         if value is not None:
             self.real_tag['title'] = value
 
     @property
-    def artist(self) -> list[str]:
+    def artist(self) -> List[str]:
         return self.real_tag.get('artist')
 
     @artist.setter
-    def artist(self, value: Union[str, list[str]]) -> None:
+    def artist(self, value: Union[str, List[str]]) -> None:
         if value is not None:
             self.real_tag['artist'] = value
 
     @property
-    def album(self) -> list[str]:
+    def album(self) -> List[str]:
         return self.real_tag.get('album')
 
     @album.setter
-    def album(self, value: Union[str, list[str]]) -> None:
+    def album(self, value: Union[str, List[str]]) -> None:
         if value is not None:
             self.real_tag['album'] = value
 
     @property
-    def comment(self) -> list[str]:
+    def comment(self) -> List[str]:
         return self.real_tag.get('description')
 
     @comment.setter
-    def comment(self, value: Union[str, list[str]]) -> None:
+    def comment(self, value: Union[str, List[str]]) -> None:
         if value is not None:
             self.real_tag['description'] = value
 
     @property
     def cover(self) -> flac.Picture:
-        pictures: list[flac.Picture] = self.real_tag.pictures
+        pictures: List[flac.Picture] = self.real_tag.pictures
         for item in pictures:
             if item.type == 3:
                 return item
@@ -71,16 +71,16 @@ class FLAC(TagWrapper):
             self.set_picture(value, 3)
 
     @property
-    def pictures(self) -> list[flac.Picture]:
+    def pictures(self) -> List[flac.Picture]:
         return self.real_tag.pictures
 
     @pictures.setter
-    def pictures(self, value: Union[flac.Picture, list[flac.Picture]]) -> None:
+    def pictures(self, value: Union[flac.Picture, List[flac.Picture]]) -> None:
         if value is not None:
             if isinstance(value, flac.Picture):
-                pictures: list[flac.Picture] = [dp(value)]
+                pictures: List[flac.Picture] = [dp(value)]
             else:
-                pictures: list[flac.Picture] = dp(value)
+                pictures: List[flac.Picture] = dp(value)
 
             self.real_tag.clear_pictures()
             for item in pictures:
@@ -117,11 +117,11 @@ class FLAC(TagWrapper):
             else:
                 raise TypeError(f'a bytes or mutagen.flac.Picture object required, not {type(picture).__name__}')
 
-            pictures: list[Optional[flac.Picture]] = dp(self.real_tag.pictures)
+            pictures: List[Optional[flac.Picture]] = dp(self.real_tag.pictures)
             for idx, item in enumerate(pictures):
                 if item.type == pic.type:
                     pictures[idx] = None
-            pictures: list[Optional[flac.Picture]] = list(filter(None, pictures))
+            pictures: List[Optional[flac.Picture]] = list(filter(None, pictures))
 
             pictures.append(pic)
 

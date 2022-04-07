@@ -2,7 +2,7 @@ import shutil
 import sys
 from pathlib import Path
 from time import time
-from typing import Generator, IO
+from typing import Generator, IO, List, Tuple
 
 import click
 
@@ -60,7 +60,7 @@ _HELP_CONTENTS = {
 def preprocess_input_paths(
         ctx: click.core.Context,
         param: click.core.Parameter,
-        input_paths: tuple[Path]
+        input_paths: Tuple[Path]
 ):
     bool(ctx)
     bool(param)
@@ -109,8 +109,8 @@ def show_supported_formats(
     )
     for encryption, patterns in SUPPORTED_FORMATS_PATTERNS.items():
         click.echo(f'{encryption.upper()} files: ', nl=False, err=True)
-        patterns_map: list[list[str]] = []
-        map_line: list[str] = []
+        patterns_map: List[List[str]] = []
+        map_line: List[str] = []
         for idx, pattern in enumerate(patterns):
             map_line.append(pattern)
             if (idx + 1) % 4 == 0:
@@ -233,7 +233,7 @@ def main(**kwargs):
     Examples:
         takiyasha file1.qmcflac file2.mflac ...
         python -m takiyasha file3.mgg1 file4.ncm"""
-    input_paths: tuple[Path] = kwargs['paths_to_input']
+    input_paths: Tuple[Path] = kwargs['paths_to_input']
     output_path: Path = kwargs['path_to_output']
     write_to_stdout: bool = kwargs['write_to_stdout']
     without_metadata: bool = kwargs['without_metadata']
@@ -245,13 +245,13 @@ def main(**kwargs):
         )
     if write_to_stdout:
         try:
-            tasks: list[tuple[Decoder, IO[bytes]]] = [generate_stdout_task(input_paths[0])]
+            tasks: List[Tuple[Decoder, IO[bytes]]] = [generate_stdout_task(input_paths[0])]
         except IndexError:
             sys.exit(0)
         without_metadata = True
     else:
         check_output_path(output_path, input_paths)
-        tasks: list[tuple[Decoder, IO[bytes]]] = list(generate_tasks(*input_paths, output_path=output_path))
+        tasks: List[Tuple[Decoder, IO[bytes]]] = list(generate_tasks(*input_paths, output_path=output_path))
 
     for decoder, file in tasks:
         input_file_name: str = Path(decoder.name).name
@@ -335,7 +335,7 @@ def main(**kwargs):
             file.close()
 
 
-def check_output_path(path_to_output: Path, paths_to_input: tuple[Path]) -> None:
+def check_output_path(path_to_output: Path, paths_to_input: Tuple[Path]) -> None:
     output_path_can_be_file: bool = False
     if len(paths_to_input) == 1 and paths_to_input[0].is_file():
         output_path_can_be_file: bool = True
@@ -346,7 +346,7 @@ def check_output_path(path_to_output: Path, paths_to_input: tuple[Path]) -> None
         )
 
 
-def generate_stdout_task(input_path: Path) -> tuple[Decoder, IO[bytes]]:
+def generate_stdout_task(input_path: Path) -> Tuple[Decoder, IO[bytes]]:
     try:
         decoder: Decoder = new_decoder(input_path)
     except Exception as exc:
@@ -372,7 +372,7 @@ def generate_stdout_task(input_path: Path) -> tuple[Decoder, IO[bytes]]:
 def generate_tasks(
         *input_paths: Path,
         output_path: Path
-) -> Generator[tuple[Decoder, IO[bytes]], None, None]:
+) -> Generator[Tuple[Decoder, IO[bytes]], None, None]:
     for input_path in input_paths:
         try:
             decoder: Decoder = new_decoder(input_path)

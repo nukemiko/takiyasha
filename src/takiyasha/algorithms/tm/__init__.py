@@ -1,4 +1,4 @@
-from typing import IO
+from typing import Any, Dict, IO, Tuple
 
 from .ciphers import TM_Cipher
 from ..common import Cipher, Decoder
@@ -8,7 +8,7 @@ from ...utils import get_file_name_from_fileobj
 
 class TMFormatDecoder(Decoder):
     @classmethod
-    def _pre_create_instance(cls, file: IO[bytes]) -> tuple[bytes, Cipher, dict[str, ...]]:
+    def _pre_create_instance(cls, file: IO[bytes]) -> Tuple[bytes, Cipher, Dict[str, Any]]:
         header: bytes = file.read(4)
         # 通过文件前4个字节判断是否为 TM 格式文件
         if header != b'\x51\x51\x4d\x55':

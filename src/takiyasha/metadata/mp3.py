@@ -1,5 +1,5 @@
 from copy import deepcopy as dp
-from typing import Optional, Type, Union
+from typing import List, Optional, Type, Union
 
 from mutagen import id3, mp3
 
@@ -9,7 +9,7 @@ from ..utils import get_image_mimetype
 
 def _gen_text_frame(
         frame_cls: Type[id3.TextFrame],
-        value: Union[str, list[str], id3.TextFrame],
+        value: Union[str, List[str], id3.TextFrame],
         desc: str = '',
         encoding: int = 3
 ) -> id3.TextFrame:
@@ -33,7 +33,7 @@ class MP3(TagWrapper):
         return self.real_tag.get('TIT2')
 
     @title.setter
-    def title(self, value: Union[str, list[str], id3.TIT2]) -> None:
+    def title(self, value: Union[str, List[str], id3.TIT2]) -> None:
         if value is not None:
             self.real_tag['TIT2'] = _gen_text_frame(id3.TIT2, value)
 
@@ -42,7 +42,7 @@ class MP3(TagWrapper):
         return self.real_tag.get('TPE1')
 
     @artist.setter
-    def artist(self, value: Union[str, list[str], id3.TPE1]) -> None:
+    def artist(self, value: Union[str, List[str], id3.TPE1]) -> None:
         if value is not None:
             self.real_tag['TPE1'] = _gen_text_frame(id3.TPE1, value)
 
@@ -51,7 +51,7 @@ class MP3(TagWrapper):
         return self.real_tag.get('TALB')
 
     @album.setter
-    def album(self, value: Union[str, list[str], id3.TALB]) -> None:
+    def album(self, value: Union[str, List[str], id3.TALB]) -> None:
         if value is not None:
             self.real_tag['TALB'] = _gen_text_frame(id3.TALB, value)
 
@@ -60,7 +60,7 @@ class MP3(TagWrapper):
         return self.real_tag.get('TXXX:comment')
 
     @comment.setter
-    def comment(self, value: Union[str, list[str], id3.TXXX]) -> None:
+    def comment(self, value: Union[str, List[str], id3.TXXX]) -> None:
         if value is not None:
             self.real_tag['TXXX:comment'] = _gen_text_frame(id3.TXXX, value, desc='comment')
 

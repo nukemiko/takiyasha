@@ -1,6 +1,6 @@
 from base64 import b64decode, b64encode
 from copy import deepcopy as dp
-from typing import IO, Optional, Type, Union
+from typing import IO, List, Optional, Type, Union
 
 from mutagen import flac, oggvorbis
 
@@ -24,45 +24,45 @@ class OGG(TagWrapper):
         return self._real_tag
 
     @property
-    def title(self) -> list[str]:
+    def title(self) -> List[str]:
         return self.real_tag.get('title')
 
     @title.setter
-    def title(self, value: Union[str, list[str]]) -> None:
+    def title(self, value: Union[str, List[str]]) -> None:
         if value is not None:
             self.real_tag['title'] = value
 
     @property
-    def artist(self) -> list[str]:
+    def artist(self) -> List[str]:
         return self.real_tag.get('artist')
 
     @artist.setter
-    def artist(self, value: Union[str, list[str]]) -> None:
+    def artist(self, value: Union[str, List[str]]) -> None:
         if value is not None:
             self.real_tag['artist'] = value
 
     @property
-    def album(self) -> list[str]:
+    def album(self) -> List[str]:
         return self.real_tag.get('album')
 
     @album.setter
-    def album(self, value: Union[str, list[str]]) -> None:
+    def album(self, value: Union[str, List[str]]) -> None:
         if value is not None:
             self.real_tag['album'] = value
 
     @property
-    def comment(self) -> list[str]:
+    def comment(self) -> List[str]:
         return self.real_tag.get('description')
 
     @comment.setter
-    def comment(self, value: Union[str, list[str]]) -> None:
+    def comment(self, value: Union[str, List[str]]) -> None:
         if value is not None:
             self.real_tag['description'] = value
 
     @property
     def cover(self) -> Optional[flac.Picture]:
         # 如果封面以 Theora 视频流形式嵌入文件，则无法通过此属性获取封面
-        metadata_block_pictures: list[bytes] = self.real_tag.get('metadata_block_picture', [])
+        metadata_block_pictures: List[bytes] = self.real_tag.get('metadata_block_picture', [])
 
         for raw_picdata_b64 in metadata_block_pictures:
             try:

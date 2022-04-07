@@ -1,5 +1,5 @@
 import struct
-from typing import IO, Optional, Type, Union
+from typing import Any, Dict, IO, List, Optional, Tuple, Type, Union
 
 from .ciphers import (
     QMCv1_LegacyStaticMapCipher,
@@ -23,7 +23,7 @@ USE_LEGACY_QMCv1_CIPHER: bool = False
 
 class QMCFormatDecoder(Decoder):
     @classmethod
-    def _pre_create_instance(cls, file: IO[bytes]) -> tuple[bytes, Cipher, dict[str, ...]]:
+    def _pre_create_instance(cls, file: IO[bytes]) -> Tuple[bytes, Cipher, Dict[str, Any]]:
         file.seek(0, 0)
 
         # 搜索和解密主密钥
@@ -40,7 +40,7 @@ class QMCFormatDecoder(Decoder):
             audio_length: int = file.seek(-(8 + raw_meta_len), 2)
             raw_meta_data: bytes = file.read(raw_meta_len)
 
-            items: list[bytes] = raw_meta_data.split(b',')
+            items: List[bytes] = raw_meta_data.split(b',')
             if len(items) != 3:
                 raise DecryptionError('invalid raw metadata')
 

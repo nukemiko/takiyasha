@@ -1,7 +1,7 @@
 import json
 from base64 import b64decode
 from struct import Struct
-from typing import IO, Optional, Type, Union
+from typing import Any, Dict, IO, List, Optional, Tuple, Type, Union
 
 from Cryptodome.Cipher import AES
 from Cryptodome.Util.Padding import unpad
@@ -25,7 +25,7 @@ LE_Uint32: Struct = Struct('<I')
 
 class NCMFormatDecoder(Decoder):
     @classmethod
-    def _pre_create_instance(cls, file: IO[bytes]) -> tuple[bytes, NCM_Ciphers, dict[str, ...]]:
+    def _pre_create_instance(cls, file: IO[bytes]) -> Tuple[bytes, NCM_Ciphers, Dict[str, Any]]:
         file.seek(0, 0)
 
         # 根据文件前8个字节判断文件类型
@@ -47,10 +47,10 @@ class NCMFormatDecoder(Decoder):
                 encrypted_metadata: bytes = b64decode(raw_metadata[22:])
 
                 aes_crypter = AES.new(b"#14ljk_!\\]&0U<'(", AES.MODE_ECB)
-                metadata: dict[str, Union[str, list[Union[str, list[str]]], bytes]] = json.loads(unpad(aes_crypter.decrypt(encrypted_metadata), 16)[6:])
+                metadata: Dict[str, Union[str, List[Union[str, List[str]]], bytes]] = json.loads(unpad(aes_crypter.decrypt(encrypted_metadata), 16)[6:])
             else:
                 identifier: str = ''
-                metadata: dict[str, Union[str, list[Union[str, list[str]]], bytes]] = {}
+                metadata: Dict[str, Union[str, List[Union[str, List[str]]], bytes]] = {}
 
             file.seek(5, 1)
 
@@ -74,7 +74,7 @@ class NCMFormatDecoder(Decoder):
             cipher_cls: NCM_CiphersTypes = NCM_XorOnlyCipher
             master_key: Optional[bytes] = None
             raw_audio_data: bytes = file.read()
-            metadata: dict[str, Union[str, list[Union[str, list[str]]], bytes]] = {}
+            metadata: Dict[str, Union[str, List[Union[str, List[str]]], bytes]] = {}
 
         cipher: NCM_Ciphers = cipher_cls(master_key)
 
@@ -90,7 +90,7 @@ class NCMFormatDecoder(Decoder):
         return raw_audio_data, cipher, {'metadata': metadata, 'audio_format': audio_fmt}
 
     @property
-    def metadata(self) -> dict[str, Union[str, list[Union[str, list[str]]], bytes]]:
+    def metadata(self) -> Dict[str, Union[str, List[Union[str, List[str]]], bytes]]:
         return self._misc['metadata']
 
     @property
@@ -103,7 +103,7 @@ class NCMFormatDecoder(Decoder):
             return int(self.metadata.get('musicId'))
 
     @property
-    def music_artists(self) -> Optional[list[str]]:
+    def music_artists(self) -> Optional[List[str]]:
         if self.metadata.get('artist'):
             return [item[0] for item in self.metadata.get('artist')]
 
@@ -117,7 +117,7 @@ class NCMFormatDecoder(Decoder):
             return int(self.metadata.get('albumId'))
 
     @property
-    def music_platform_alias(self) -> Optional[list[str]]:
+    def music_platform_alias(self) -> Optional[List[str]]:
         return self.metadata.get('alias')
 
     @property

@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Dict, Union
 from urllib.parse import urlparse
 
 import requests
@@ -32,7 +32,7 @@ class QQMusicCoverGetter:
             'Artist': artist,
             'Album': album
         }
-        cover_type_id: dict[str, Union[str, int]] = reqget(cls._api_entrypoint + '/music/qq-cover', params=payload).json()
+        cover_type_id: Dict[str, Union[str, int]] = reqget(cls._api_entrypoint + '/music/qq-cover', params=payload).json()
         cover_type: int = cover_type_id['Type']
         cover_pmid: str = cover_type_id['Id']
 

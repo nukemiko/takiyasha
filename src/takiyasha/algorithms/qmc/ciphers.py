@@ -1,6 +1,6 @@
 import os
 import struct
-from typing import Generator, Optional
+from typing import Generator, Optional, Tuple
 
 from ..common import BlockCipher, StreamCipher
 from ...exceptions import CipherGenerationError, DecryptionError
@@ -51,7 +51,7 @@ class TC_ModifiedTEACipher(BlockCipher):
             ]
         )
 
-    def _get_values_from_src_data(self, src: BytesType) -> tuple[int, int, int, int, int, int]:
+    def _get_values_from_src_data(self, src: BytesType) -> Tuple[int, int, int, int, int, int]:
         v0: int = BE_Uint32.unpack(src[:4])[0]
         v1: int = BE_Uint32.unpack(src[4:8])[0]
         k0: int = BE_Uint32.unpack(self._key[:4])[0]

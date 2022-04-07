@@ -1,11 +1,11 @@
 import os
 import re
 from fnmatch import fnmatch
-from typing import IO, Optional
+from typing import Dict, IO, List, Optional
 
 from .typehints import BytesType, PathType
 
-SUPPORTED_FORMATS_PATTERNS: dict[str, list[str]] = {
+SUPPORTED_FORMATS_PATTERNS: Dict[str, List[str]] = {
     'ncm': ['*.ncm'],
     'qmc': ['*.qmc?', '*.qmcflac', '*.qmcogg',
             '*.tkm',
@@ -15,7 +15,7 @@ SUPPORTED_FORMATS_PATTERNS: dict[str, list[str]] = {
     'kgm': ['*.kgm', '*.kgma', '*.vpr']
 }
 
-AUDIO_FILE_HEADER_REGEX_FORMAT_MAP: dict[re.Pattern, str] = {
+AUDIO_FILE_HEADER_REGEX_FORMAT_MAP: Dict[re.Pattern, str] = {
     re.compile(b'^fLaC'): 'flac',  # FLAC
     re.compile(b'^ID3.{,1021}fLaC'): 'flac',  # 嵌入 ID3v2 标签的 FLAC
     re.compile(b'^ID3'): 'mp3',  # 嵌入 ID3v2 标签的 MP3
@@ -27,13 +27,13 @@ AUDIO_FILE_HEADER_REGEX_FORMAT_MAP: dict[re.Pattern, str] = {
     re.compile(b'^MAC '): 'ape',  # APE (Monkey's Audio)
     re.compile(b'^FRM8'): 'dff'  # DSDIFF
 }
-IMAGE_FILE_HEADER_REGEX_MIME_MAP: dict[re.Pattern, str] = {
+IMAGE_FILE_HEADER_REGEX_MIME_MAP: Dict[re.Pattern, str] = {
     re.compile(b'^\x89PNG\r\n\x1a\n'): 'image/png',
     re.compile(b'^\xff\xd8\xff[\xdb\xe0\xe1\xee]'): 'image/jpeg',
     re.compile(b'^BM'): 'image/bmp',
     re.compile(b'^[\x49\x4d]{2}[\x2a\x00]{2}'): 'image/tiff'
 }
-IMAGE_FILE_HEADER_REGEX_FORMAT_MAP: dict[re.Pattern, str] = {
+IMAGE_FILE_HEADER_REGEX_FORMAT_MAP: Dict[re.Pattern, str] = {
     re.compile(b'^\x89PNG\r\n\x1a\n'): 'png',
     re.compile(b'^\xff\xd8\xff[\xdb\xe0\xe1\xee]'): 'jpg',
     re.compile(b'^BM'): 'bmp',

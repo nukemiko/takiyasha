@@ -1,5 +1,5 @@
 from struct import Struct
-from typing import IO, Optional
+from typing import Any, Dict, IO, Optional, Tuple
 from warnings import warn
 
 from .ciphers import KGM_MaskCipher
@@ -24,7 +24,7 @@ _KGM_HEADER: bytes = bytes(
 
 class KGMFormatDecoder(Decoder):
     @classmethod
-    def _pre_create_instance(cls, file: IO[bytes]) -> tuple[bytes, Cipher, dict[str, ...]]:
+    def _pre_create_instance(cls, file: IO[bytes]) -> Tuple[bytes, Cipher, Dict[str, Any]]:
         file.seek(0x10, 0)
         header_len: int = LE_Uint32.unpack(file.read(4))[0]
         file.seek(0, 0)

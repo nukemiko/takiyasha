@@ -1,5 +1,5 @@
 from copy import deepcopy as dp
-from typing import Optional, Type, Union
+from typing import List, Optional, Type, Union
 
 from mutagen import apev2, monkeysaudio
 
@@ -22,7 +22,7 @@ class APE(TagWrapper):
         return self.real_tag.get('TITLE')
 
     @title.setter
-    def title(self, value: Union[str, list[str], apev2.APETextValue]) -> None:
+    def title(self, value: Union[str, List[str], apev2.APETextValue]) -> None:
         if value is not None:
             self.real_tag['TITLE'] = value
 
@@ -31,7 +31,7 @@ class APE(TagWrapper):
         return self.real_tag.get('ARTIST')
 
     @artist.setter
-    def artist(self, value: Union[str, list[str], apev2.APETextValue]) -> None:
+    def artist(self, value: Union[str, List[str], apev2.APETextValue]) -> None:
         if value is not None:
             self.real_tag['ARTIST'] = value
 
@@ -40,7 +40,7 @@ class APE(TagWrapper):
         return self.real_tag.get('ALBUM')
 
     @album.setter
-    def album(self, value: Union[str, list[str], apev2.APETextValue]) -> None:
+    def album(self, value: Union[str, List[str], apev2.APETextValue]) -> None:
         if value is not None:
             self.real_tag['ALBUM'] = value
 
@@ -49,7 +49,7 @@ class APE(TagWrapper):
         return self.real_tag.get('COMMENT')
 
     @comment.setter
-    def comment(self, value: Union[str, list[str], apev2.APETextValue]) -> None:
+    def comment(self, value: Union[str, List[str], apev2.APETextValue]) -> None:
         if value is not None:
             self.real_tag['COMMENT'] = value
 
