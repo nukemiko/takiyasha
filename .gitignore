@@ -429,3 +429,4 @@ cython_debug/
 
 # Test files
 /tests
+/oldsrc/
