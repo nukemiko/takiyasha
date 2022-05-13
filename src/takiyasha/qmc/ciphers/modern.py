@@ -13,7 +13,7 @@ QMCv1_KEYSTREAM_REMAINING_SEGMENT = b''
 def load_segment_file() -> None:
     global QMCv1_KEYSTREAM_1ST_SEGMENT, QMCv1_KEYSTREAM_REMAINING_SEGMENT
     if not (QMCv1_KEYSTREAM_1ST_SEGMENT and QMCv1_KEYSTREAM_REMAINING_SEGMENT):
-        with open(os.path.join(os.path.dirname(__file__), '../binary/QMCv1-keystream-segment'), 'rb') as seg_file:
+        with open(os.path.join(os.path.dirname(__file__), 'binaries/QMCv1-keystream-segment'), 'rb') as seg_file:
             QMCv1_KEYSTREAM_1ST_SEGMENT = seg_file.read(32768)
             QMCv1_KEYSTREAM_REMAINING_SEGMENT = seg_file.read(32767)
 
