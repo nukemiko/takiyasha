@@ -128,3 +128,19 @@ class ModifiedRC4(Cipher):
 
         for i in range(data_offset, data_offset + data_len):
             yield key[self.get_seg_skip(i)]
+
+    def gen_remain_seg(self,
+                       data_offset: int,
+                       data_len: int
+                       ) -> Generator[int, None, None]:
+        key_len = self._key_len
+        box = self._box.copy()
+        j, k = 0, 0
+
+        skip_len = (data_offset % self.remain_segsize()) + self.get_seg_skip(data_offset // self.remain_segsize())
+        for i in range(-skip_len, data_len):
+            j = (j + 1) % key_len
+            k = (box[j] + k) % key_len
+            box[j], box[k] = box[k], box[j]
+            if i >= 0:
+                yield box[(box[j] + box[k]) % key_len]
