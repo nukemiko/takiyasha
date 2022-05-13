@@ -74,17 +74,3 @@ def verify_fileobj_writable(fileobj: IO,
         raise UnsupportedOperation('write')
 
     fileobj.write(io_type())
-
-
-def openfile(file: FileThing,
-             mode: str = 'r',
-             buffering: int | None = None,
-             encoding: str | None = None,
-             errors: str | None = None,
-             newline: str | None = None,
-             closefd: bool = True
-             ) -> IO:
-    if is_filepath(file):
-        return open(file, mode, buffering, encoding, errors, newline, closefd)
-    else:
-        return file
