@@ -53,10 +53,10 @@ class Crypter(IOBase):
 
     def load(self, filething: FileThing) -> None:
         if is_filepath(filething):
-            fileobj: IO[bytes] = open(filething, 'rb')
+            fileobj: IO[bytes] = open(filething, 'rb')  # type: ignore
             self._name = fileobj.name
         else:
-            fileobj: IO[bytes] = filething
+            fileobj: IO[bytes] = filething  # type: ignore
             self._name = None
             verify_fileobj_readable(fileobj, bytes)
             verify_fileobj_seekable(fileobj)
@@ -69,9 +69,9 @@ class Crypter(IOBase):
     def save(self, filething: FileThing | None = None) -> None:
         if filething:
             if is_filepath(filething):
-                fileobj: IO[bytes] = open(filething, 'wb')
+                fileobj: IO[bytes] = open(filething, 'wb')  # type: ignore
             else:
-                fileobj: IO[bytes] = filething
+                fileobj: IO[bytes] = filething  # type: ignore
                 verify_fileobj_writable(fileobj, bytes)
         elif self._name:
             fileobj: IO[bytes] = open(self._name, 'wb')

@@ -3,7 +3,7 @@ from __future__ import annotations
 from io import BytesIO
 from typing import IO
 
-from ._common import Ciphers, Crypter, KeylessCipher
+from .common import Ciphers, Crypter, KeylessCipher
 from .utils import FileThing, is_filepath, verify_fileobj_readable, verify_fileobj_seekable
 
 
@@ -19,10 +19,10 @@ class NcmCache(Crypter):
 
     def load(self, filething: FileThing) -> None:
         if is_filepath(filething):
-            fileobj: IO[bytes] = open(filething, 'rb')
+            fileobj: IO[bytes] = open(filething, 'rb')  # type: ignore
             self._name = fileobj.name
         else:
-            fileobj: IO[bytes] = filething
+            fileobj: IO[bytes] = filething  # type: ignore
             self._name = None
             verify_fileobj_readable(fileobj, bytes)
             verify_fileobj_seekable(fileobj)
