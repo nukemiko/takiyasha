@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from io import BytesIO, IOBase, UnsupportedOperation
-from typing import Union
+from typing import IO, Union
+
+from .utils import FileThing, is_filepath, verify_fileobj_readable, verify_fileobj_seekable, verify_fileobj_writable
 
 
 class KeylessCipher:
@@ -40,10 +42,46 @@ class Cipher(KeylessCipher):
 Ciphers = Union[KeylessCipher, Cipher]
 
 
-class CryptedIOBase(IOBase):
-    def __init__(self, initial_bytes: bytes | bytearray) -> None:
-        self._raw = BytesIO(initial_bytes)
-        self._cipher = KeylessCipher()
+class Crypter(IOBase):
+    def __init__(self, filething: FileThing | None = None) -> None:
+        if filething is None:
+            self._raw = BytesIO()
+            self._cipher: Ciphers = KeylessCipher()
+            self._name: str | None = None
+        else:
+            self.load(filething)
+
+    def load(self, filething: FileThing) -> None:
+        if is_filepath(filething):
+            fileobj: IO[bytes] = open(filething, 'rb')
+            self._name = fileobj.name
+        else:
+            fileobj: IO[bytes] = filething
+            self._name = None
+            verify_fileobj_readable(fileobj, bytes)
+            verify_fileobj_seekable(fileobj)
+
+        self._raw = BytesIO(fileobj.read())
+        if is_filepath(filething):
+            fileobj.close()
+        self._cipher: Ciphers = KeylessCipher()
+
+    def save(self, filething: FileThing | None = None) -> None:
+        if filething:
+            if is_filepath(filething):
+                fileobj: IO[bytes] = open(filething, 'wb')
+            else:
+                fileobj: IO[bytes] = filething
+                verify_fileobj_writable(fileobj, bytes)
+        elif self._name:
+            fileobj: IO[bytes] = open(self._name, 'wb')
+        else:
+            raise ValueError('missing filepath or fileobj')
+
+        self.seek(0, 0)
+        fileobj.write(self.read())
+        if is_filepath(filething):
+            fileobj.close()
 
     @property
     def raw(self):
@@ -52,6 +90,10 @@ class CryptedIOBase(IOBase):
     @property
     def cipher(self) -> Ciphers:
         return self._cipher
+
+    @property
+    def name(self) -> str | None:
+        return self._name
 
     def close(self) -> None:
         self._raw.close()
