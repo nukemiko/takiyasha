@@ -47,6 +47,25 @@ class NCMRC4Cipher(Cipher):
 
 
 class NCM(Crypter):
+    """读写网易云音乐 NCM 格式的文件。
+
+    读取：
+
+    >>> ncmfile = NCM('./test1.ncm')
+    >>> data = ncmfile.read()
+
+    写入：
+
+    >>> ncmfile.write(b'Writted bytes')
+
+    创建、写入并保存：
+
+    >>> new_ncmfile = NCM()  # 随机生成一个密钥
+    >>> with open('./metal.flac', 'rb') as f:  # 写入未加密的文件数据
+    ...     new_ncmfile.write(f.read())
+    >>> new_ncmfile.save('./result.ncm')
+    >>> """
+
     @staticmethod
     def core_key() -> bytes:
         return b'\x68\x7a\x48\x52\x41\x6d\x73\x6f\x35\x6b\x49\x6e\x62\x61\x78\x57'
@@ -56,6 +75,11 @@ class NCM(Crypter):
         return b'\x23\x31\x34\x6c\x6a\x6b\x5f\x21\x5c\x5d\x26\x30\x55\x3c\x27\x28'
 
     def __init__(self, filething: utils.FileThing | None = None, key: bytes | None = None) -> None:
+        """读写网易云音乐 NCM 格式的文件。
+
+        Args:
+            filething (file): 源 NCM 文件的路径或文件对象；留空则视为创建一个空 NCM 文件
+            key (bytes): 加/解密数据所需的密钥；留空则会随机生成一个"""
         if filething is None:
             self._raw = BytesIO()
             self._name = None
@@ -76,6 +100,13 @@ class NCM(Crypter):
             super().__init__(filething)
 
     def load(self, filething: utils.FileThing, skip_tagdata: bool = False) -> None:
+        """将一个 NCM 文件加载到当前 NCM 对象中。
+
+        Args:
+            filething (file): 源 NCM 文件的路径或文件对象
+            skip_tagdata (bool): 加载文件时跳过加载标签信息和封面数据，默认为 ``False``
+        Raises:
+            FileTypeMismatchError: ``filething`` 不是一个 NCM 格式文件"""
         if utils.is_filepath(filething):
             fileobj: IO[bytes] = open(filething, 'rb')  # type: ignore
             self._name = fileobj.name
@@ -133,6 +164,16 @@ class NCM(Crypter):
              tagdata: dict | None = None,
              coverdata: bytes | None = None
              ) -> None:
+        """将当前 NCM 对象保存为一个 NCM 格式文件。
+
+        Args:
+            filething (file): 目标 NCM 文件的路径或文件对象，
+                留空则尝试使用 ``self.name``；如果两者都为空，
+                抛出 ``ValueError``
+            tagdata (dict): 向目标文件写入的标签信息；留空则使用 ``self.tagdata``
+            coverdata (bytes): 向目标文件写入的封面数据；留空则使用 ``self.coverdata``
+        Raises:
+            ValueError: 同时缺少参数 ``filething`` 和属性 ``self.name``"""
         if filething:
             if utils.is_filepath(filething):
                 fileobj: IO[bytes] = open(filething, 'wb')  # type: ignore
