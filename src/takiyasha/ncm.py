@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import json
 from base64 import b64decode, b64encode
 from copy import deepcopy as dp
@@ -60,7 +61,7 @@ class NCM(Crypter):
             self._name = None
 
             if key is not None:
-                self._cipher = NCMRC4Cipher(key)
+                self._cipher: NCMRC4Cipher = NCMRC4Cipher(key)
             else:
                 # 如果没有指定密钥，也没有指定文件，那么随机生成一个长度等于 111 或 113 的密钥
                 key_left = utils.gen_random_numeric_string(
@@ -70,7 +71,7 @@ class NCM(Crypter):
                 self._cipher = NCMRC4Cipher(key_left + key_right)
 
             self._tagdata = {}
-            self._coverdata = b''
+            self.coverdata = b''
         else:
             super().__init__(filething)
 
@@ -123,14 +124,14 @@ class NCM(Crypter):
 
         # 将以上步骤所得信息，连同加密音频数据设置为属性
         self._tagdata = tagdata
-        self._coverdata = coverdata
-        self._cipher = NCMRC4Cipher(masterkey)
+        self.coverdata = coverdata
+        self._cipher: NCMRC4Cipher = NCMRC4Cipher(masterkey)
         self._raw = BytesIO(fileobj.read())
 
     def save(self,
              filething: utils.FileThing | None = None,
              tagdata: dict | None = None,
-             coverdata: bytes = b''
+             coverdata: bytes | None = None
              ) -> None:
         if filething:
             if utils.is_filepath(filething):
@@ -143,9 +144,11 @@ class NCM(Crypter):
         else:
             raise ValueError('missing filepath or fileobj')
         if tagdata is None:
-            tagdata = {}
+            tagdata = dp(self._tagdata)
         else:
             tagdata = dp(tagdata)
+        if coverdata is None:
+            coverdata = bytes(self.coverdata)
 
         fileobj.write(b'CTENFDAM\x01a')
 
@@ -184,7 +187,3 @@ class NCM(Crypter):
     @property
     def tagdata(self) -> dict:
         return self._tagdata
-
-    @property
-    def coverdata(self) -> bytes:
-        return self._coverdata
