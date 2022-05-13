@@ -144,3 +144,47 @@ class ModifiedRC4(Cipher):
             box[j], box[k] = box[k], box[j]
             if i >= 0:
                 yield box[(box[j] + box[k]) % key_len]
+
+    def decrypt(self, cipherdata: bytes, start_offset: int = 0) -> bytes:
+        first_segsize = self.first_segsize()
+        remain_segsize = self.remain_segsize()
+        gen_remain_seg = self.gen_remain_seg
+
+        pending = len(cipherdata)
+        done = 0
+        offset = int(start_offset)
+        keystream_buffer = bytearray(pending)
+
+        def mark(p: int) -> None:
+            nonlocal pending, done, offset
+
+            pending -= p
+            done += p
+            offset += p
+
+        if 0 <= offset < first_segsize:
+            blksize = pending
+            if blksize > first_segsize - offset:
+                blksize = first_segsize - offset
+            keystream_buffer[:blksize] = self.gen_first_seg(offset, blksize)
+            mark(blksize)
+            if pending <= 0:
+                return bytesxor(cipherdata, keystream_buffer)
+
+        if offset % remain_segsize != 0:
+            blksize = pending
+            if blksize > remain_segsize - (offset % remain_segsize):
+                blksize = remain_segsize - (offset % remain_segsize)
+            keystream_buffer[done:done + blksize] = gen_remain_seg(offset, blksize)
+            mark(blksize)
+            if pending <= 0:
+                return bytesxor(cipherdata, keystream_buffer)
+
+        while pending > remain_segsize:
+            keystream_buffer[done:done + remain_segsize] = gen_remain_seg(offset, remain_segsize)
+            mark(remain_segsize)
+
+        if pending > 0:
+            keystream_buffer[done:] = gen_remain_seg(offset, len(keystream_buffer[done:]))
+
+        return bytesxor(cipherdata, keystream_buffer)
