@@ -1,9 +1,15 @@
 from __future__ import annotations
+import json
+from base64 import b64decode, b64encode
+from copy import deepcopy as dp
+from io import BytesIO
+from random import randrange
+from typing import Generator, IO
 
-from typing import Generator
-
-from ._common import Cipher
 from . import utils
+from .common import Cipher, Crypter
+from .exceptions import FileTypeMismatchError
+from .standardciphers import AES_MODE_ECB
 
 
 class NCMRC4Cipher(Cipher):
@@ -37,3 +43,148 @@ class NCMRC4Cipher(Cipher):
     def decrypt(self, cipherdata: bytes, start_offset: int = 0) -> bytes:
         cipherdata_len = len(cipherdata)
         return utils.bytesxor(cipherdata, bytes(self.yield_keystream(cipherdata_len, start_offset)))
+
+
+class NCM(Crypter):
+    @staticmethod
+    def core_key() -> bytes:
+        return b'\x68\x7a\x48\x52\x41\x6d\x73\x6f\x35\x6b\x49\x6e\x62\x61\x78\x57'
+
+    @staticmethod
+    def meta_key():
+        return b'\x23\x31\x34\x6c\x6a\x6b\x5f\x21\x5c\x5d\x26\x30\x55\x3c\x27\x28'
+
+    def __init__(self, filething: utils.FileThing | None = None, key: bytes | None = None) -> None:
+        if filething is None:
+            self._raw = BytesIO()
+            self._name = None
+
+            if key is not None:
+                self._cipher = NCMRC4Cipher(key)
+            else:
+                # 如果没有指定密钥，也没有指定文件，那么随机生成一个长度等于 111 或 113 的密钥
+                key_left = utils.gen_random_numeric_string(
+                    randrange(27, 30)
+                ).encode()
+                key_right = b'E7fT49x7dof9OKCgg9cdvhEuezy3iZCL1nFvBFd1T4uSktAJKmwZXsijPbijliionVUXXg9plTbXEclAE9Lb'
+                self._cipher = NCMRC4Cipher(key_left + key_right)
+
+            self._tagdata = {}
+            self._coverdata = b''
+        else:
+            super().__init__(filething)
+
+    def load(self, filething: utils.FileThing, skip_tagdata: bool = False) -> None:
+        if utils.is_filepath(filething):
+            fileobj: IO[bytes] = open(filething, 'rb')  # type: ignore
+            self._name = fileobj.name
+        else:
+            fileobj: IO[bytes] = filething  # type: ignore
+            self._name = None
+            utils.verify_fileobj_readable(fileobj, bytes)
+            utils.verify_fileobj_seekable(fileobj)
+
+        if fileobj.read(10) != b'CTENFDAM\x01a':
+            raise FileTypeMismatchError('not a NCM file: bad file header')
+
+        # 获取加密的主密钥数据
+        encrypted_masterkey_len = int.from_bytes(fileobj.read(4), 'little')
+        encrypted_masterkey = bytes(b ^ 0x64 for b in fileobj.read(encrypted_masterkey_len))
+        masterkey_cipher = AES_MODE_ECB(self.core_key())
+        masterkey = masterkey_cipher.decrypt(encrypted_masterkey)[17:]  # 去除密钥开头的 b'neteasecloudmusic'
+
+        # 获取加密的标签信息
+        raw_encrypted_tagdata_len = int.from_bytes(fileobj.read(4), 'little')
+        tagdata = {}
+        if skip_tagdata:
+            fileobj.seek(raw_encrypted_tagdata_len, 1)
+        else:
+            raw_encrypted_tagdata = bytes(
+                b ^ 0x63 for b in fileobj.read(raw_encrypted_tagdata_len)
+            )
+            encrypted_tagdata = b64decode(raw_encrypted_tagdata[22:], validate=True)  # 在 b64decode 之前，去除原始数据开头的 b"163 key(Don't modify):"
+            identifier = raw_encrypted_tagdata
+            tagdata_cipher = AES_MODE_ECB(self.meta_key())
+            tagdata.update(json.loads(tagdata_cipher.decrypt(encrypted_tagdata)[6:]))  # 在 JSON 反序列化之前，去除字节串开头的 b'music:'
+            tagdata['identifier'] = identifier
+
+        fileobj.seek(5, 1)
+
+        # 获取封面数据
+        cover_alloc = int.from_bytes(fileobj.read(4), 'little')
+        coverdata = b''
+        if skip_tagdata:
+            fileobj.seek(cover_alloc, 1)
+        else:
+            cover_size = int.from_bytes(fileobj.read(4), 'little')
+            if cover_size:
+                coverdata = fileobj.read(cover_size)
+            fileobj.seek(cover_alloc - cover_size, 1)
+
+        # 将以上步骤所得信息，连同加密音频数据设置为属性
+        self._tagdata = tagdata
+        self._coverdata = coverdata
+        self._cipher = NCMRC4Cipher(masterkey)
+        self._raw = BytesIO(fileobj.read())
+
+    def save(self,
+             filething: utils.FileThing | None = None,
+             tagdata: dict | None = None,
+             coverdata: bytes = b''
+             ) -> None:
+        if filething:
+            if utils.is_filepath(filething):
+                fileobj: IO[bytes] = open(filething, 'wb')  # type: ignore
+            else:
+                fileobj: IO[bytes] = filething  # type: ignore
+                utils.verify_fileobj_writable(fileobj, bytes)
+        elif self._name:
+            fileobj: IO[bytes] = open(self._name, 'wb')
+        else:
+            raise ValueError('missing filepath or fileobj')
+        if tagdata is None:
+            tagdata = {}
+        else:
+            tagdata = dp(tagdata)
+
+        fileobj.write(b'CTENFDAM\x01a')
+
+        # 加密并写入主密钥
+        masterkey = b'neteasecloudmusic' + self._cipher.key
+        masterkey_cipher = AES_MODE_ECB(self.core_key())
+        encrypted_masterkey = bytes(b ^ 0x64 for b in masterkey_cipher.encrypt(masterkey))
+        fileobj.write(len(encrypted_masterkey).to_bytes(4, 'little'))
+        fileobj.write(encrypted_masterkey)
+
+        # 加密并写入标签信息
+        tagdata.pop('identifier', None)
+        plain_tagdata = b'music:' + json.dumps(tagdata).encode()
+        tagdata_cipher = AES_MODE_ECB(self.meta_key())
+        encrypted_tagdata = tagdata_cipher.encrypt(plain_tagdata)
+        raw_encrypted_tagdata = bytes(b ^ 0x63 for b in b"163 key(Don't modify):" + b64encode(encrypted_tagdata))
+        fileobj.write(len(raw_encrypted_tagdata).to_bytes(4, 'little'))
+        fileobj.write(raw_encrypted_tagdata)
+
+        fileobj.seek(5, 1)
+
+        # 写入封面数据
+        cover_alloc = len(coverdata)
+        cover_size = cover_alloc
+        fileobj.write(cover_alloc.to_bytes(4, 'little'))
+        fileobj.write(cover_size.to_bytes(4, 'little'))
+        fileobj.write(coverdata)
+
+        # 写入加密的音频数据
+        self._raw.seek(0, 0)
+        fileobj.write(self._raw.read())
+
+        if utils.is_filepath(filething):
+            fileobj.close()
+
+    @property
+    def tagdata(self) -> dict:
+        return self._tagdata
+
+    @property
+    def coverdata(self) -> bytes:
+        return self._coverdata
