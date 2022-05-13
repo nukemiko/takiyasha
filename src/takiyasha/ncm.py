@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Generator
 
 from ._common import Cipher
-from .utils import bytesxor
+from . import utils
 
 
 class NCMRC4Cipher(Cipher):
@@ -36,4 +36,4 @@ class NCMRC4Cipher(Cipher):
 
     def decrypt(self, cipherdata: bytes, start_offset: int = 0) -> bytes:
         cipherdata_len = len(cipherdata)
-        return bytesxor(cipherdata, bytes(self.yield_keystream(cipherdata_len, start_offset)))
+        return utils.bytesxor(cipherdata, bytes(self.yield_keystream(cipherdata_len, start_offset)))
