@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from typing import Generator
 
 from ...common import Cipher, KeylessCipher
 from ...utils import bytesxor
@@ -118,3 +119,12 @@ class ModifiedRC4(Cipher):
         idx: int = int(hash_ / ((v + 1) * seed) * 100)
 
         return idx % key_len
+
+    def gen_first_seg(self,
+                      data_offset: int,
+                      data_len: int
+                      ) -> Generator[int, None, None]:
+        key = self._key
+
+        for i in range(data_offset, data_offset + data_len):
+            yield key[self.get_seg_skip(i)]
