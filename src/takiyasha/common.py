@@ -8,11 +8,16 @@ from .utils import FileThing, is_filepath, verify_fileobj_readable, verify_fileo
 
 class KeylessCipher:
     @property
-    def support_offset(self):
+    def support_offset(self) -> bool:
+        """指示 Cipher 实现是否可以根据源数据在文件中的位置，对源数据进行加/解密
+        （即 ``encrypt``/``decrypt`` 方法的 ``start_offset`` 参数是否会影响其行为）。
+
+        如果返回 False，说明 Cipher 实现不支持此特性，``start_offset`` 参数将被忽略。"""
         return True
 
     @property
     def support_decrypt(self) -> bool:
+        """指示 Cipher 实现是否支持解密。"""
         return True
 
     def decrypt(self, cipherdata: bytes, start_offset: int = 0) -> bytes:
@@ -21,6 +26,7 @@ class KeylessCipher:
 
     @property
     def support_encrypt(self) -> bool:
+        """指示 Cipher 实现是否支持加密。"""
         return True
 
     def encrypt(self, plaindata: bytes, start_offset: int = 0) -> bytes:
