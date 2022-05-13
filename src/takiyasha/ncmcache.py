@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from ._common import CryptedIOBase, KeylessCipher
+from io import BytesIO
+from typing import IO
+
+from ._common import Ciphers, Crypter, KeylessCipher
+from .utils import FileThing, is_filepath, verify_fileobj_readable, verify_fileobj_seekable
 
 
 class NcmCacheCipher(KeylessCipher):
@@ -9,7 +13,21 @@ class NcmCacheCipher(KeylessCipher):
         return bytes(b ^ 163 for b in cipherdata)
 
 
-class NcmCacheCryptedIO(CryptedIOBase):
-    def __init__(self, initial_bytes: bytes | bytearray = b'') -> None:
-        super().__init__(initial_bytes)
-        self._cipher = NcmCacheCipher()
+class NcmCache(Crypter):
+    def __init__(self, filething: FileThing | None = None):
+        super().__init__(filething)
+
+    def load(self, filething: FileThing) -> None:
+        if is_filepath(filething):
+            fileobj: IO[bytes] = open(filething, 'rb')
+            self._name = fileobj.name
+        else:
+            fileobj: IO[bytes] = filething
+            self._name = None
+            verify_fileobj_readable(fileobj, bytes)
+            verify_fileobj_seekable(fileobj)
+
+        self._raw = BytesIO(fileobj.read())
+        if is_filepath(filething):
+            fileobj.close()
+        self._cipher: Ciphers = NcmCacheCipher()
