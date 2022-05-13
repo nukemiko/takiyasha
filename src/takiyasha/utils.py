@@ -74,3 +74,17 @@ def verify_fileobj_writable(fileobj: IO,
         raise UnsupportedOperation('write')
 
     fileobj.write(io_type())
+
+
+def bytesxor(term1: bytes, term2: bytes) -> bytes:
+    segment1 = bytes(term1)
+    segment2 = bytes(term2)
+
+    if len(segment1) != len(segment2):
+        raise ValueError('only byte strings of equal length can be xored')
+
+    def xor():
+        for b1, b2 in zip(segment1, segment2):
+            yield b1 ^ b2
+
+    return bytes(xor())
