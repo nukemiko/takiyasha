@@ -68,3 +68,53 @@ class DynamicMap(Cipher):
     def decrypt(self, cipherdata: bytes, start_offset: int = 0) -> bytes:
         keystream = bytes(self.yield_mask(cipherdata, start_offset))
         return bytesxor(cipherdata, keystream)
+
+
+class ModifiedRC4(Cipher):
+    @staticmethod
+    def first_segsize() -> int:
+        return 128
+
+    @staticmethod
+    def remain_segsize() -> int:
+        return 5120
+
+    @staticmethod
+    def get_hash_base(key: bytes) -> int:
+        hash_base = 1
+        key_len = len(key)
+
+        for i in range(key_len):
+            v: int = key[i]
+            if v == 0:
+                continue
+            next_hash: int = (hash_base * v) & 0xffffffff
+            if next_hash == 0 or next_hash <= hash_base:
+                break
+            hash_base = next_hash
+        return hash_base
+
+    def __init__(self, key: bytes):
+        super().__init__(key)
+        key_len = len(key)
+        self._key_len = key_len
+
+        box: bytearray = bytearray(i % 256 for i in range(key_len))
+
+        j: int = 0
+        for i in range(key_len):
+            j = (j + box[i] + key[i % key_len]) % key_len
+            box[i], box[j] = box[j], box[i]
+        self._box: bytearray = box
+
+        self._hash_base = self.get_hash_base(key)
+
+    def get_seg_skip(self, v: int) -> int:
+        key: bytes = self._key
+        key_len: int = self._key_len
+        hash_: int = self._hash_base
+
+        seed: int = key[v % key_len]
+        idx: int = int(hash_ / ((v + 1) * seed) * 100)
+
+        return idx % key_len
