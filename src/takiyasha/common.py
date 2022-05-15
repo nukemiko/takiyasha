@@ -60,10 +60,10 @@ class Crypter(IOBase):
     def load(self, filething: FileThing) -> None:
         if is_filepath(filething):
             fileobj: IO[bytes] = open(filething, 'rb')  # type: ignore
-            self._name = fileobj.name
+            self._name: str | None = fileobj.name
         else:
             fileobj: IO[bytes] = filething  # type: ignore
-            self._name = None
+            self._name: str | None = getattr(fileobj, 'name', None)
             verify_fileobj_readable(fileobj, bytes)
             verify_fileobj_seekable(fileobj)
 
