@@ -151,3 +151,17 @@ class Crypter(IOBase):
 
         curpos = self.tell() if self.seekable() else 0
         return self._raw.write(self._cipher.encrypt(data, curpos))
+
+    def __repr__(self) -> str:
+        self_cls_name: str = type(self).__name__
+        file_name: str | None = self._name
+        ret = f"<{self_cls_name}"
+        if self_cls_name != 'Crypter':
+            ret += ' file, '
+        if file_name is None:
+            ret += f'at {hex(id(self))}'
+        else:
+            ret += f'name={repr(file_name)}'
+        ret += '>'
+
+        return ret
