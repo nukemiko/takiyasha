@@ -49,7 +49,7 @@ class QMCv2Key(KeylessCipher):
         return b'\x69\x56\x46\x38\x2b\x20\x15\x0b'
 
     @classmethod
-    def mk_tea_key(cls, recipe: bytes) -> bytes:
+    def tea_recipe2key(cls, recipe: bytes) -> bytes:
         simple_key = cls.simple_key()
         tea_key_buf = bytearray(16)
         for i in range(8):
@@ -132,7 +132,7 @@ class QMCv2Key(KeylessCipher):
         tea_key_recipe = decoded_cipherdata[:8]
         encrypted_keydata = decoded_cipherdata[8:]
 
-        tea_key = self.mk_tea_key(tea_key_recipe)
+        tea_key = self.tea_recipe2key(tea_key_recipe)
 
         rs = self.decrypt_tencent_tea(encrypted_keydata, tea_key)
 
