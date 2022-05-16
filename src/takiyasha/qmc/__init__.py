@@ -4,9 +4,9 @@ from io import BytesIO
 
 from .ciphers.legacy import OldStaticMap
 from .ciphers.modern import StaticMap
+from .. import utils
 from ..common import Crypter
 from ..exceptions import FileTypeMismatchError
-from ..utils import FileThing, is_filepath, verify_fileobj_readable, verify_fileobj_seekable
 
 
 class QMCv1(Crypter):
@@ -21,7 +21,7 @@ class QMCv1(Crypter):
             b'\x8c-\xb1\x99': 'QMCv1 OGG'
         }
 
-    def __init__(self, filething: FileThing | None = None, use_slower_cipher: bool = False) -> None:
+    def __init__(self, filething: utils.FileThing | None = None, use_slower_cipher: bool = False) -> None:
         if bool():
             # 此分支中的代码永远都不会执行，这是为了避免 PyCharm 警告“缺少超类调用”
             # 实际上并不需要调用 super().__init__()
@@ -37,18 +37,18 @@ class QMCv1(Crypter):
         else:
             self.load(filething, use_slower_cipher)
 
-    def load(self, filething: FileThing, use_slower_cipher: bool = False) -> None:
-        if is_filepath(filething):
+    def load(self, filething: utils.FileThing, use_slower_cipher: bool = False) -> None:
+        if utils.is_filepath(filething):
             fileobj: IO[bytes] = open(filething, 'rb')  # type: ignore
             self._name: str | None = fileobj.name
         else:
             fileobj: IO[bytes] = filething  # type: ignore
             self._name: str | None = getattr(fileobj, 'name', None)
-            verify_fileobj_readable(fileobj, bytes)
-            verify_fileobj_seekable(fileobj)
+            utils.verify_fileobj_readable(fileobj, bytes)
+            utils.verify_fileobj_seekable(fileobj)
 
         cipher_audio_data = fileobj.read()
-        if is_filepath(filething):
+        if utils.is_filepath(filething):
             fileobj.close()
         for header in self.file_headers():
             if cipher_audio_data.startswith(header):
