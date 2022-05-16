@@ -14,6 +14,25 @@ __all__ = ['QMCv1', 'QMCv2']
 
 
 class QMCv1(Crypter):
+    """读写 QQ 音乐 QMCv1 格式的文件。
+
+    读取：
+
+    >>> qmcv1file = QMCv1('./test.qmcflac')
+    >>> data = qmcv1file.read()
+
+    写入：
+
+    >>> qmcv1file.write(b'Writted bytes')
+
+    创建、写入并保存：
+
+    >>> new_qmcv1file = QMCv1()
+    >>> with open('./source.flac', 'rb') as f:  # 写入未加密的文件数据
+    ...     new_qmcv1file.write(f.read())
+    >>> new_qmcv1file.save('./result.qmcflac')
+    >>> """
+
     @staticmethod
     def file_headers() -> dict[bytes, str]:
         return {
@@ -26,6 +45,12 @@ class QMCv1(Crypter):
         }
 
     def __init__(self, filething: utils.FileThing | None = None, use_slower_cipher: bool = False) -> None:
+        """读写 QQ 音乐 QMCv1 格式的文件。
+
+        Args:
+            filething (file): 源 QMCv1 文件的路径或文件对象；留空则视为创建一个空 QMCv1 文件
+            use_slower_cipher (bool): 使用更慢但更稳定的加/解密方式
+        """
         if bool():
             # 此分支中的代码永远都不会执行，这是为了避免 PyCharm 警告“缺少超类调用”
             # 实际上并不需要调用 super().__init__()
@@ -42,6 +67,13 @@ class QMCv1(Crypter):
             self.load(filething, use_slower_cipher)
 
     def load(self, filething: utils.FileThing, use_slower_cipher: bool = False) -> None:
+        """将一个 QMCv1 文件加载到当前 QMCv1 对象中。
+
+        Args:
+            filething (file): 源 QMCv1 文件的路径或文件对象
+            use_slower_cipher (bool): 使用更慢但更稳定的加/解密方式
+        Raises:
+            FileTypeMismatchError: ``filething`` 不是一个 QMCv1 格式文件"""
         if utils.is_filepath(filething):
             fileobj: IO[bytes] = open(filething, 'rb')  # type: ignore
             self._name: str | None = fileobj.name
@@ -66,6 +98,16 @@ class QMCv1(Crypter):
         else:
             self._cipher: StaticMap | OldStaticMap = StaticMap()
 
+    def save(self, filething: utils.FileThing | None = None) -> None:
+        """将当前 QMCv1 对象保存为一个 QMCv1 格式文件。
+
+        Args:
+            filething (file): 目标 QMCv1 文件的路径或文件对象；
+                留空则尝试使用 ``self.name``；如果两者都为空，抛出 ``ValueError``
+        Raises:
+            ValueError: 同时缺少参数 ``filething`` 和属性 ``self.name``"""
+        super().save(filething)
+
     @property
     def cipher(self) -> StaticMap | OldStaticMap:
         return self._cipher
@@ -82,6 +124,12 @@ class QMCv2(Crypter):
     写入：
 
     >>> qmcv2file.write(b'Writted bytes')
+
+    创建空文件并写入：
+
+    >>> empty_qmcv2file = QMCv2()
+    >>> empty_qmcv2file.write(b'Writted bytes')
+    >>>
 
     目前不支持保存到文件。
     """
@@ -113,9 +161,11 @@ class QMCv2(Crypter):
 
         Args:
             filething (file): 指向源文件的路径或文件对象；留空则视为创建一个空的 QMCv2 文件
-            key (bytes): 加/解密数据所需的密钥；留空则会随机创建一个
-            cipher_type (str): 加密类型，可选值：``dynamic_map``、``rc4``
+            key (bytes): 加/解密数据所需的密钥；留空则会随机创建一个；仅在 ``filething`` 为空时有效
+            cipher_type (str): 加密类型，可选值：``dynamic_map``、``rc4``；仅在 ``filething`` 为空时有效
             try_legacy (bool): 如果无法找到可用的密钥，是否尝试使用后备方案，默认为 False
+        Raises:
+            ValueError: 为参数 ``cipher_type`` 指定了不支持的值
         """
         if bool():
             # 此分支中的代码永远都不会执行，这是为了避免 PyCharm 警告“缺少超类调用”
@@ -165,6 +215,15 @@ class QMCv2(Crypter):
         return audio_len, raw_key, int(songid), unknown
 
     def load(self, filething: utils.FileThing, try_legacy: bool = False) -> None:
+        """将一个 QMCv2 文件加载到当前 QMCv2 对象中。
+
+        Args:
+            filething (file): 源 QMCv2 文件的路径或文件对象
+            try_legacy (bool): 如果无法找到可用的密钥，是否尝试使用后备方案，默认为 False
+        Raises:
+            FileTypeMismatchError: ``filething`` 不是一个 QMCv2 格式文件
+            UnsupportedFileType: ``filething`` 是一个 QMCv2 文件，但其格式不受支持
+        """
         if utils.is_filepath(filething):
             fileobj: IO[bytes] = open(filething, 'rb')  # type: ignore
             self._name: str | None = fileobj.name
@@ -206,6 +265,16 @@ class QMCv2(Crypter):
         self._qtag_unknown = unknown
 
     def save(self, filething: utils.FileThing | None = None) -> None:
+        """将当前 QMCv2 对象保存为一个 QMCv2 格式文件。
+
+        警告：目前不支持保存到文件；尝试调用本方法会引发 ``NotImplementedError``
+
+        Args:
+            filething (file): 目标 QMCv2 文件的路径或文件对象；
+                留空则尝试使用 ``self.name``；如果两者都为空，抛出 ``ValueError``
+        Raises:
+            ValueError: 同时缺少参数 ``filething`` 和属性 ``self.name``
+            NotImplementedError: 在调用本方法时引发；此移除将在未来加入功能后移除"""
         key = self._cipher.key
         bool(key)
         key_cipher = QMCv2Key()
