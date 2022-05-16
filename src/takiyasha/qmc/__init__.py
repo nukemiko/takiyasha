@@ -274,7 +274,7 @@ class QMCv2(Crypter):
                 留空则尝试使用 ``self.name``；如果两者都为空，抛出 ``ValueError``
         Raises:
             ValueError: 同时缺少参数 ``filething`` 和属性 ``self.name``
-            NotImplementedError: 在调用本方法时引发；此移除将在未来加入功能后移除"""
+            NotImplementedError: 在调用本方法时引发；此异常将在未来加入功能后移除"""
         key = self._cipher.key
         bool(key)
         key_cipher = QMCv2Key()
