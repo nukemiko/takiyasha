@@ -5,6 +5,7 @@ from base64 import b64decode, b64encode
 from copy import deepcopy as dp
 from io import BytesIO
 from random import randrange
+from string import digits as strdigits
 from typing import Generator, IO
 
 from . import utils
@@ -94,8 +95,8 @@ class NCM(Crypter):
                 self._cipher: NCMRC4Cipher = NCMRC4Cipher(key)
             else:
                 # 如果没有指定密钥，也没有指定文件，那么随机生成一个长度等于 111 或 113 的密钥
-                key_left = utils.gen_random_numeric_string(
-                    randrange(27, 30)
+                key_left = utils.gen_random_string(
+                    randrange(27, 30), strdigits
                 ).encode()
                 key_right = b'E7fT49x7dof9OKCgg9cdvhEuezy3iZCL1nFvBFd1T4uSktAJKmwZXsijPbijliionVUXXg9plTbXEclAE9Lb'
                 self._cipher = NCMRC4Cipher(key_left + key_right)

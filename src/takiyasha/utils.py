@@ -3,7 +3,7 @@ from __future__ import annotations
 from io import UnsupportedOperation
 from os import PathLike
 from random import choices as random_choices
-from string import digits as strdigits
+from string import ascii_letters, digits as strdigits
 from typing import Any, Callable, IO, Type, Union
 
 FilePath = Union[str, bytes, PathLike]
@@ -92,5 +92,7 @@ def bytesxor(term1: bytes, term2: bytes) -> bytes:
     return bytes(xor())
 
 
-def gen_random_numeric_string(length: int) -> str:
-    return ''.join(random_choices(strdigits, k=length))
+def gen_random_string(length: int,
+                      recipe: str = strdigits + ascii_letters
+                      ) -> str:
+    return ''.join(random_choices(recipe, k=length))
