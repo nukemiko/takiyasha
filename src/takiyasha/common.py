@@ -84,8 +84,8 @@ class Crypter(IOBase):
         else:
             raise ValueError('missing filepath or fileobj')
 
-        self.seek(0, 0)
-        fileobj.write(self.read())
+        self._raw.seek(0, 0)
+        fileobj.write(self._raw.read())
         if is_filepath(filething):
             fileobj.close()
 
