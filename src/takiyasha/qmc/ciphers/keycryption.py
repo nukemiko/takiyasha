@@ -3,13 +3,9 @@ from __future__ import annotations
 from base64 import b64decode
 
 from ...common import KeylessCipher
-from ...exceptions import DecryptException
+from ...exceptions import DecryptException, InvalidDataError
 from ...standardciphers import TEA
 from ...utils import bytesxor
-
-
-class InvalidDataError(DecryptException):
-    pass
 
 
 class ValidationError(DecryptException):

@@ -11,3 +11,11 @@ class DecryptException(TakiyashaException):
 
 class FileTypeMismatchError(TakiyashaException):
     pass
+
+
+class UnsupportedFileType(TakiyashaException):
+    pass
+
+
+class InvalidDataError(DecryptException):
+    pass
