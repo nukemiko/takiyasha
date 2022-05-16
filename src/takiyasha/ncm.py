@@ -74,6 +74,12 @@ class NCM(Crypter):
     def meta_key():
         return b'\x23\x31\x34\x6c\x6a\x6b\x5f\x21\x5c\x5d\x26\x30\x55\x3c\x27\x28'
 
+    @staticmethod
+    def file_headers() -> dict[bytes, str]:
+        return {
+            b'CTENFDAM\x01a': 'NCM'
+        }
+
     def __init__(self, filething: utils.FileThing | None = None, key: bytes | None = None) -> None:
         """读写网易云音乐 NCM 格式的文件。
 
@@ -116,7 +122,11 @@ class NCM(Crypter):
             utils.verify_fileobj_readable(fileobj, bytes)
             utils.verify_fileobj_seekable(fileobj)
 
-        if fileobj.read(10) != b'CTENFDAM\x01a':
+        file_header = fileobj.read(10)
+        for header in self.file_headers():
+            if file_header.startswith(header):
+                break
+        else:
             raise FileTypeMismatchError('not a NCM file: bad file header')
 
         # 获取加密的主密钥数据
