@@ -59,7 +59,11 @@ class QMCv2Key(KeylessCipher):
         return bytes(tea_key_buf)
 
     @classmethod
-    def decrypt_tencent_tea(cls, encrypted_keydata: bytes, tea_key: bytes) -> bytes:
+    def decrypt_tencent_tea(cls,
+                            encrypted_keydata: bytes,
+                            tea_key: bytes,
+                            # skip_zero_check: bool = False
+                            ) -> bytes:
         salt_len: int = cls.salt_len()
         zero_len: int = cls.zero_len()
 
@@ -118,8 +122,9 @@ class QMCv2Key(KeylessCipher):
         # for i in range(1, zero_len):
         #     if dest_buf[dest_idx] != iv_previous[dest_idx]:
         #         raise ValidationError('zero check failed')
-        if dest_buf[dest_idx] != iv_previous[dest_idx]:
-            raise ValidationError('zero check failed')
+        # if not skip_zero_check:
+        #     if dest_buf[dest_idx] != iv_previous[dest_idx]:
+        #         raise ValidationError('zero check failed')
 
         return bytes(out_buf)
 
