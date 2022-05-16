@@ -10,6 +10,8 @@ from .. import utils
 from ..common import Crypter
 from ..exceptions import FileTypeMismatchError, InvalidDataError, UnsupportedFileType
 
+__all__ = ['QMCv1', 'QMCv2']
+
 
 class QMCv1(Crypter):
     @staticmethod
