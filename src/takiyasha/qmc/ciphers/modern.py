@@ -23,32 +23,27 @@ class StaticMap(KeylessCipher):
         load_segment_file()
 
     def decrypt(self, cipherdata: bytes, start_offset: int = 0) -> bytes:
-        firstseg = QMCv1_KEYSTREAM_1ST_SEGMENT
-        otherseg = QMCv1_KEYSTREAM_REMAINING_SEGMENT
+        first_seg = QMCv1_KEYSTREAM_1ST_SEGMENT
+        remain_seg = QMCv1_KEYSTREAM_REMAINING_SEGMENT
+        first_seg_len = len(first_seg)
+        remain_seg_len = len(remain_seg)
 
-        if 0 <= start_offset <= len(firstseg):
-            start_segend_len = len(firstseg) - start_offset
-            if len(cipherdata) <= start_segend_len:
-                keystream = firstseg[start_offset:start_offset + len(cipherdata)]
-            else:
-                srcseg2 = cipherdata[start_segend_len:]
-                srcseg2_len = len(srcseg2)
-                stream1 = otherseg[start_offset:]
-                stream2 = otherseg * (srcseg2_len // len(otherseg)) + otherseg[:srcseg2_len % len(otherseg)]
-                keystream = stream1 + stream2
+        end_offset = start_offset + len(cipherdata)
+
+        if start_offset < 0:
+            raise ValueError("'start_offset' must be a positive integer")
         else:
-            start_in_seg_pos = (start_offset - len(firstseg)) % len(otherseg)
-            start_segend_len = len(otherseg) - start_in_seg_pos
-            if len(cipherdata) <= start_segend_len:
-                keystream = otherseg[start_in_seg_pos:start_in_seg_pos + len(cipherdata)]
+            data = cipherdata.rjust(end_offset, b'\x00')
+            data_len = len(data)
+            if data_len <= first_seg_len:
+                return bytesxor(data[start_offset:], first_seg[start_offset:end_offset])
             else:
-                srcseg2 = cipherdata[start_segend_len:]
-                srcseg2_len = len(srcseg2)
-                stream1 = otherseg[start_in_seg_pos:]
-                stream2 = otherseg * (srcseg2_len // len(otherseg)) + otherseg[:srcseg2_len % len(otherseg)]
-                keystream = stream1 + stream2
-
-        return bytesxor(cipherdata, keystream)
+                remain_data_len = data_len - first_seg_len
+                required_remain_seg_count = remain_data_len // remain_seg_len
+                if remain_data_len % remain_seg_len != 0:
+                    required_remain_seg_count += 1
+                keystream = first_seg + remain_seg * required_remain_seg_count
+                return bytesxor(data[start_offset:], keystream[start_offset:end_offset])
 
 
 class DynamicMap(Cipher):
