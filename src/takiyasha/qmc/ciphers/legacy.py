@@ -6,6 +6,8 @@ from .legacyconstants import key256mapping_all
 from ...common import Cipher, KeylessCipher
 from ...utils import bytesxor
 
+__all__ = ['Key256Mask128', 'OldStaticMap']
+
 
 class OldStaticMap(KeylessCipher):
     @staticmethod

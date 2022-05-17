@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Final
 
+__all__ = []
+
 # key256mapping_all = [[]] * 256
 # key256mapping_128to44 = [float('nan')] * 128
 #

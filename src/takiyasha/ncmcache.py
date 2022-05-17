@@ -6,6 +6,8 @@ from typing import IO
 from .common import Ciphers, Crypter, KeylessCipher
 from .utils import FileThing, is_filepath, verify_fileobj_readable, verify_fileobj_seekable
 
+__all__ = ['NcmCache', 'NcmCacheCipher']
+
 
 class NcmCacheCipher(KeylessCipher):
     def decrypt(self, cipherdata: bytes, start_offset: int = 0) -> bytes:
