@@ -5,7 +5,7 @@ from base64 import b64decode
 from ...common import KeylessCipher
 from ...exceptions import DecryptException, InvalidDataError
 from ...standardciphers import TEA
-from ...utils import bytesxor
+from ... import utils
 
 
 class ValidationError(DecryptException):
@@ -92,7 +92,7 @@ class QMCv2Key(KeylessCipher):
             nonlocal in_buf_pos
             iv_previous[:] = iv_current[:]
             iv_current[:] = in_buf[in_buf_pos:in_buf_pos + 8]
-            dest_buf[:] = tea_blk.decrypt(bytesxor(dest_buf[:8], iv_current[:8]))
+            dest_buf[:] = tea_blk.decrypt(utils.bytesxor(dest_buf[:8], iv_current[:8]))
             in_buf_pos += 8
 
         i = 1
