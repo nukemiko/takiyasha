@@ -6,20 +6,20 @@ from typing import IO
 from .common import Crypter, KeylessCipher
 from .utils import FileThing, is_filepath, verify_fileobj_readable, verify_fileobj_seekable
 
-__all__ = ['NcmCache', 'NcmCacheCipher']
+__all__ = ['NCMCache', 'NCMCacheCipher']
 
 
-class NcmCacheCipher(KeylessCipher):
+class NCMCacheCipher(KeylessCipher):
     def decrypt(self, cipherdata: bytes, start_offset: int = 0) -> bytes:
         bool(start_offset)
         return bytes(b ^ 163 for b in cipherdata)
 
 
-class NcmCache(Crypter):
+class NCMCache(Crypter):
     def __init__(self, filething: FileThing | None = None):
         if filething is None:
             self._raw = BytesIO()
-            self._cipher: NcmCacheCipher = NcmCacheCipher()
+            self._cipher: NCMCacheCipher = NCMCacheCipher()
             self._name: str | None = None
         else:
             super().__init__(filething)
@@ -37,8 +37,8 @@ class NcmCache(Crypter):
         self._raw = BytesIO(fileobj.read())
         if is_filepath(filething):
             fileobj.close()
-        self._cipher: NcmCacheCipher = NcmCacheCipher()
+        self._cipher: NCMCacheCipher = NCMCacheCipher()
 
     @property
-    def cipher(self) -> NcmCacheCipher:
+    def cipher(self) -> NCMCacheCipher:
         return self._cipher
