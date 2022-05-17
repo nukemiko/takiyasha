@@ -83,15 +83,9 @@ class QMCv1(Crypter):
             utils.verify_fileobj_readable(fileobj, bytes)
             utils.verify_fileobj_seekable(fileobj)
 
-        cipher_audio_data = fileobj.read()
+        self._raw = BytesIO(fileobj.read())
         if utils.is_filepath(filething):
             fileobj.close()
-        for header in self.file_headers():
-            if cipher_audio_data.startswith(header):
-                self._raw = BytesIO(cipher_audio_data)
-                break
-        else:
-            raise FileTypeMismatchError('not a QMCv1 file: bad file header')
 
         if use_slower_cipher:
             self._cipher: StaticMap | OldStaticMap = OldStaticMap()
