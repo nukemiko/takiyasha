@@ -106,6 +106,7 @@ def audio_file_headers() -> dict[bytes, str]:
 
 
 def sniff_audio_file(fileobj: IO[bytes]) -> str | None:
+    fileobj.seek(0, 0)
     header = fileobj.read(16)
     if header.startswith(b'ID3'):
         size = 10 + BitPaddedInt(header[6:10])
