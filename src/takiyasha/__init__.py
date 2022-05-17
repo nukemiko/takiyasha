@@ -10,6 +10,8 @@ from .ncmcache import NCMCache
 from .qmc import QMCv1, QMCv2
 from .sniff import sniff_audio_file
 
+__VERSION__ = '0.6.0.dev1'
+
 __all__ = ['openfile', 'SupportsCrypters', 'NCM', 'NCMCache', 'QMCv1', 'QMCv2',
            'sniff_audio_file', 'TakiyashaException']
 
