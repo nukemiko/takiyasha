@@ -8,7 +8,7 @@ __all__ = ['sniff_audio_file']
 
 class _BitPaddedMixin(object):
     def as_str(self, width=4, minwidth=4):
-        return self.to_str(self, self.bits, self.bigendian, width, minwidth)
+        return self.to_str(self, self.bits, self.bigendian, width, minwidth)  # type: ignore
 
     @staticmethod
     def to_str(value, bits=7, bigendian=True, width=4, minwidth=4):
@@ -85,8 +85,8 @@ class BitPaddedInt(int, _BitPaddedMixin):
 
         self = int.__new__(BitPaddedInt, numeric_value)
 
-        self.bits = bits
-        self.bigendian = bigendian
+        self.bits = bits  # type: ignore
+        self.bigendian = bigendian  # type: ignore
         return self
 
 
