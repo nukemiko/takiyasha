@@ -142,6 +142,8 @@ class NCM(Crypter):
             utils.verify_fileobj_readable(fileobj, bytes)
             utils.verify_fileobj_seekable(fileobj)
 
+        fileobj.seek(0, 0)
+
         file_header = fileobj.read(10)
         for header in self.file_headers():
             if file_header.startswith(header):
@@ -226,6 +228,8 @@ class NCM(Crypter):
             tagdata = dp(tagdata)
         if coverdata is None:
             coverdata = bytes(self.coverdata)
+
+        fileobj.seek(0, 0)
 
         fileobj.write(b'CTENFDAM\x01a')
 

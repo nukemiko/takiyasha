@@ -40,6 +40,7 @@ class NCMCache(Crypter):
             verify_fileobj_readable(fileobj, bytes)
             verify_fileobj_seekable(fileobj)
 
+        fileobj.seek(0, 0)
         self._raw = BytesIO(fileobj.read())
         if is_filepath(filething):
             fileobj.close()
