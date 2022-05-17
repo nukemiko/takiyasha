@@ -44,18 +44,25 @@ class QMCv1(Crypter):
             b'\x8c-\xb1\x99': 'QMCv1 OGG'
         }
 
-    def __init__(self, filething: utils.FileThing | None = None, use_slower_cipher: bool = False) -> None:
+    def __init__(self,
+                 filething: utils.FileThing | None = None,
+                 **kwargs
+                 ) -> None:
         """读写 QQ 音乐 QMCv1 格式的文件。
 
         Args:
             filething (file): 源 QMCv1 文件的路径或文件对象；留空则视为创建一个空 QMCv1 文件
+        Keyword Args:
             use_slower_cipher (bool): 使用更慢但更稳定的加/解密方式
+
+        所有未知的关键字参数都会被忽略。
         """
         if bool():
             # 此分支中的代码永远都不会执行，这是为了避免 PyCharm 警告“缺少超类调用”
             # 实际上并不需要调用 super().__init__()
             super().__init__()
 
+        use_slower_cipher: bool = kwargs.get('use_slower_cipher', False)
         if filething is None:
             self._raw = BytesIO()
             if use_slower_cipher:
@@ -64,16 +71,25 @@ class QMCv1(Crypter):
                 self._cipher: StaticMap | OldStaticMap = StaticMap()
             self._name: str | None = None
         else:
-            self.load(filething, use_slower_cipher)
+            self.load(filething, **kwargs)
 
-    def load(self, filething: utils.FileThing, use_slower_cipher: bool = False) -> None:
+    def load(self,
+             filething: utils.FileThing,
+             **kwargs
+             ) -> None:
         """将一个 QMCv1 文件加载到当前 QMCv1 对象中。
 
         Args:
             filething (file): 源 QMCv1 文件的路径或文件对象
+        Keyword Args:
             use_slower_cipher (bool): 使用更慢但更稳定的加/解密方式
         Raises:
-            FileTypeMismatchError: ``filething`` 不是一个 QMCv1 格式文件"""
+            FileTypeMismatchError: ``filething`` 不是一个 QMCv1 格式文件
+
+        所有未知的关键字参数都会被忽略。
+        """
+        use_slower_cipher: bool = kwargs.get('use_slower_cipher', False)
+
         if utils.is_filepath(filething):
             fileobj: IO[bytes] = open(filething, 'rb')  # type: ignore
             self._name: str | None = fileobj.name
@@ -92,15 +108,21 @@ class QMCv1(Crypter):
         else:
             self._cipher: StaticMap | OldStaticMap = StaticMap()
 
-    def save(self, filething: utils.FileThing | None = None) -> None:
+    def save(self,
+             filething: utils.FileThing | None = None,
+             **kwargs
+             ) -> None:
         """将当前 QMCv1 对象保存为一个 QMCv1 格式文件。
 
         Args:
             filething (file): 目标 QMCv1 文件的路径或文件对象；
                 留空则尝试使用 ``self.name``；如果两者都为空，抛出 ``ValueError``
         Raises:
-            ValueError: 同时缺少参数 ``filething`` 和属性 ``self.name``"""
-        super().save(filething)
+            ValueError: 同时缺少参数 ``filething`` 和属性 ``self.name``
+
+        所有未知的关键字参数都会被忽略。
+        """
+        super().save(filething, **kwargs)
 
     @property
     def cipher(self) -> StaticMap | OldStaticMap:
@@ -146,9 +168,7 @@ class QMCv2(Crypter):
 
     def __init__(self,
                  filething: utils.FileThing | None = None,
-                 key: bytes | None = None,
-                 cipher_type: Literal['dynamic_map', 'rc4'] = 'dynamic_map',
-                 legacy_fallback: bool = False
+                 **kwargs
                  ) -> None:
         """读取 QQ 音乐 QMCv2 格式的文件。
 
@@ -159,35 +179,41 @@ class QMCv2(Crypter):
         - ``25 02 00 00``：来自版本 18.57 及以上的 QQ 音乐 PC 客户端，密钥使用了新的加密方案
         - ``53 54 61 67`` （``STag``）：来自版本 11.5.5 及以上的 QQ 音乐 Android 客户端，没有内置密钥
 
-        尽管如此，如果使用后备方案（指定 ``try_legacy=True``），仍然有可能读取以上不支持的文件。
+        尽管如此，如果使用后备方案（指定 ``try_legacy=True``），
+        仍然有可能读取以上不支持的文件。
 
         Args:
             filething (file): 指向源文件的路径或文件对象；留空则视为创建一个空的 QMCv2 文件
-            key (bytes): 加/解密数据所需的密钥；留空则会随机创建一个；仅在 ``filething`` 为空时有效
-            cipher_type (str): 加密类型，可选值：``dynamic_map``、``rc4``；仅在 ``filething`` 为空时有效
-            legacy_fallback (bool): 如果无法找到可用的密钥，是否尝试使用后备方案，默认为 False
+        Keyword Args:
+            key (bytes): 加/解密数据所需的密钥；留空则会随机创建一个；
+                仅在 ``filething`` 为空时有效
+            cipher_type (str): 加密类型，仅在 ``filething`` 为空时有效；
+                支持：``dynamic_map``、``rc4``；
+            legacy_fallback (bool): 如果无法找到可用的密钥，是否尝试使用后备方案，
+                默认为 False
         Raises:
             ValueError: 为参数 ``cipher_type`` 指定了不支持的值
+
+        所有未知的关键字参数都会被忽略。
         """
         if bool():
             # 此分支中的代码永远都不会执行，这是为了避免 PyCharm 警告“缺少超类调用”
             # 实际上并不需要调用 super().__init__()
             super().__init__()
 
+        key: bytes | None = kwargs.get('key')
+        cipher_type: Literal['dynamic_map', 'rc4'] = kwargs.get('cipher_type', 'dynamic_map')
+
         if filething is None:
             if cipher_type.lower() == 'dynamic_map':
                 if key is None:
                     cipher_key = utils.gen_random_string(256).encode()
-                # elif len(key) != 256:
-                #     raise ValueError(f'key length is too short (should be 256, got {len(key)}')
                 else:
                     cipher_key = key
                 self._cipher: DynamicMap | ModifiedRC4 | Key256Mask128 = DynamicMap(cipher_key)
             elif cipher_type.lower() == 'rc4':
                 if key is None:
                     cipher_key = utils.gen_random_string(512).encode()
-                # elif len(key) != 512:
-                #     raise ValueError(f'key length is too short (should be 512, got {len(key)}')
                 else:
                     cipher_key = key
                 self._cipher: DynamicMap | ModifiedRC4 | Key256Mask128 = ModifiedRC4(cipher_key)
@@ -198,7 +224,7 @@ class QMCv2(Crypter):
             self._songid: int | None = None
             self._qtag_unknown: bytes | None = None
         else:
-            self.load(filething, legacy_fallback)
+            self.load(filething, **kwargs)
 
     @classmethod
     def get_qtag(cls, fileobj: IO[bytes]) -> tuple[int, bytes, int, bytes]:
@@ -216,16 +242,25 @@ class QMCv2(Crypter):
 
         return audio_len, raw_key, int(songid), unknown
 
-    def load(self, filething: utils.FileThing, legacy_fallback: bool = False) -> None:
+    def load(self,
+             filething: utils.FileThing,
+             **kwargs
+             ) -> None:
         """将一个 QMCv2 文件加载到当前 QMCv2 对象中。
 
         Args:
             filething (file): 源 QMCv2 文件的路径或文件对象
-            legacy_fallback (bool): 如果无法找到可用的密钥，是否尝试使用后备方案，默认为 False
+        Keyword Args:
+            legacy_fallback (bool): 如果无法找到可用的密钥，
+                是否尝试使用后备方案，默认为 False
         Raises:
             FileTypeMismatchError: ``filething`` 不是一个 QMCv2 格式文件
             UnsupportedFileType: ``filething`` 是一个 QMCv2 文件，但其格式不受支持
+
+        所有未知的关键字参数都会被忽略。
         """
+        legacy_fallback: bool = kwargs.get('legacy_fallback', False)
+
         if utils.is_filepath(filething):
             fileobj: IO[bytes] = open(filething, 'rb')  # type: ignore
             self._name: str | None = fileobj.name
@@ -283,7 +318,10 @@ class QMCv2(Crypter):
         self._songid = songid
         self._qtag_unknown = unknown
 
-    def save(self, filething: utils.FileThing | None = None) -> None:
+    def save(self,
+             filething: utils.FileThing | None = None,
+             **kwargs
+             ) -> None:
         """将当前 QMCv2 对象保存为一个 QMCv2 格式文件。
 
         警告：目前不支持保存到文件；尝试调用本方法会引发 ``NotImplementedError``

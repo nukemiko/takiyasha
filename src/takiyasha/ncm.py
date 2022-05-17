@@ -83,16 +83,24 @@ class NCM(Crypter):
             b'CTENFDAM\x01a': 'NCM'
         }
 
-    def __init__(self, filething: utils.FileThing | None = None, key: bytes | None = None) -> None:
+    def __init__(self,
+                 filething: utils.FileThing | None = None,
+                 **kwargs
+                 ) -> None:
         """读写网易云音乐 NCM 格式的文件。
 
         Args:
             filething (file): 源 NCM 文件的路径或文件对象；留空则视为创建一个空 NCM 文件
-            key (bytes): 加/解密数据所需的密钥；留空则会随机生成一个"""
+        Keyword Args:
+            key (bytes): 加/解密数据所需的密钥；留空则会随机生成一个
+
+        所有未知的关键字参数都会被忽略。
+        """
         if filething is None:
             self._raw = BytesIO()
             self._name = None
 
+            key: bytes | None = kwargs.get('key', None)
             if key is not None:
                 self._cipher: NCMRC4Cipher = NCMRC4Cipher(key)
             else:
@@ -106,16 +114,25 @@ class NCM(Crypter):
             self._tagdata = {}
             self.coverdata = b''
         else:
-            super().__init__(filething)
+            super().__init__(filething, **kwargs)
 
-    def load(self, filething: utils.FileThing, skip_tagdata: bool = False) -> None:
+    def load(self,
+             filething: utils.FileThing,
+             **kwargs
+             ) -> None:
         """将一个 NCM 文件加载到当前 NCM 对象中。
 
         Args:
             filething (file): 源 NCM 文件的路径或文件对象
+        Keyword Args:
             skip_tagdata (bool): 加载文件时跳过加载标签信息和封面数据，默认为 ``False``
         Raises:
-            FileTypeMismatchError: ``filething`` 不是一个 NCM 格式文件"""
+            FileTypeMismatchError: ``filething`` 不是一个 NCM 格式文件
+
+        所有未知的关键字参数都会被忽略。
+        """
+        skip_tagdata: bool = kwargs.get('skip_tagdata', False)
+
         if utils.is_filepath(filething):
             fileobj: IO[bytes] = open(filething, 'rb')  # type: ignore
             self._name = fileobj.name
@@ -174,8 +191,7 @@ class NCM(Crypter):
 
     def save(self,
              filething: utils.FileThing | None = None,
-             tagdata: dict | None = None,
-             coverdata: bytes | None = None
+             **kwargs
              ) -> None:
         """将当前 NCM 对象保存为一个 NCM 格式文件。
 
@@ -183,10 +199,17 @@ class NCM(Crypter):
             filething (file): 目标 NCM 文件的路径或文件对象，
                 留空则尝试使用 ``self.name``；如果两者都为空，
                 抛出 ``ValueError``
+        Keyword Args:
             tagdata (dict): 向目标文件写入的标签信息；留空则使用 ``self.tagdata``
             coverdata (bytes): 向目标文件写入的封面数据；留空则使用 ``self.coverdata``
         Raises:
-            ValueError: 同时缺少参数 ``filething`` 和属性 ``self.name``"""
+            ValueError: 同时缺少参数 ``filething`` 和属性 ``self.name``
+
+        所有未知的关键字参数都会被忽略。
+        """
+        tagdata: dict | None = kwargs.get('tagdata', None)
+        coverdata: bytes | None = kwargs.get('coverdata', None)
+
         if filething:
             if utils.is_filepath(filething):
                 fileobj: IO[bytes] = open(filething, 'wb')  # type: ignore

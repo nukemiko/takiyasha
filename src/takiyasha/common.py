@@ -51,15 +51,15 @@ Ciphers = Union[KeylessCipher, Cipher]
 
 
 class Crypter(IOBase, IO[bytes]):
-    def __init__(self, filething: FileThing | None = None) -> None:
+    def __init__(self, filething: FileThing | None = None, **kwargs) -> None:
         if filething is None:
             self._raw = BytesIO()
             self._cipher: Ciphers = KeylessCipher()
             self._name: str | None = None
         else:
-            self.load(filething)
+            self.load(filething, **kwargs)
 
-    def load(self, filething: FileThing) -> None:
+    def load(self, filething: FileThing, **kwargs) -> None:
         if is_filepath(filething):
             fileobj: IO[bytes] = open(filething, 'rb')  # type: ignore
             self._name: str | None = fileobj.name
@@ -74,7 +74,7 @@ class Crypter(IOBase, IO[bytes]):
             fileobj.close()
         self._cipher: Ciphers = KeylessCipher()
 
-    def save(self, filething: FileThing | None = None) -> None:
+    def save(self, filething: FileThing | None = None, **kwargs) -> None:
         if filething:
             if is_filepath(filething):
                 fileobj: IO[bytes] = open(filething, 'wb')  # type: ignore

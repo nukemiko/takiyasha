@@ -16,15 +16,21 @@ class NCMCacheCipher(KeylessCipher):
 
 
 class NCMCache(Crypter):
-    def __init__(self, filething: FileThing | None = None):
+    def __init__(self,
+                 filething: FileThing | None = None,
+                 **kwargs
+                 ):
         if filething is None:
             self._raw = BytesIO()
             self._cipher: NCMCacheCipher = NCMCacheCipher()
             self._name: str | None = None
         else:
-            super().__init__(filething)
+            super().__init__(filething, **kwargs)
 
-    def load(self, filething: FileThing) -> None:
+    def load(self,
+             filething: FileThing,
+             **kwargs
+             ) -> None:
         if is_filepath(filething):
             fileobj: IO[bytes] = open(filething, 'rb')  # type: ignore
             self._name = fileobj.name
