@@ -47,11 +47,11 @@ class StaticMap(KeylessCipher):
 
 
 class DynamicMap(Cipher):
-    def yield_mask(self, data: bytes, offset: int):
+    def yield_mask(self, data_offset: int, data_len: int):
         key: bytes = self._key
         key_len = len(key)
 
-        for i in range(offset, offset + len(data)):
+        for i in range(data_offset, data_offset + data_len):
             if i > 0x7fff:
                 i %= 0x7fff
             idx = (i ** 2 + 71214) % key_len
@@ -62,7 +62,7 @@ class DynamicMap(Cipher):
             yield ((value << rotate) % 256) | ((value >> rotate) % 256)
 
     def decrypt(self, cipherdata: bytes, start_offset: int = 0) -> bytes:
-        keystream = bytes(self.yield_mask(cipherdata, start_offset))
+        keystream = bytes(self.yield_mask(start_offset, len(cipherdata)))
         return bytesxor(cipherdata, keystream)
 
 
