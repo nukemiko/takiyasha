@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from io import UnsupportedOperation
-from os import PathLike
+from os import path, PathLike
 from random import choices as random_choices
 from string import ascii_letters, digits as strdigits
 from typing import Any, Callable, IO, Type, Union
@@ -96,3 +96,8 @@ def gen_random_string(length: int,
                       recipe: str = strdigits + ascii_letters
                       ) -> str:
     return ''.join(random_choices(recipe, k=length))
+
+
+def get_filename_ext(filename: FilePath) -> str:
+    stem, ext = path.splitext(path.basename(filename))
+    return str(ext).lower()
