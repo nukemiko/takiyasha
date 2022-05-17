@@ -3,8 +3,8 @@ from __future__ import annotations
 from io import BytesIO
 from typing import IO, Literal
 
-from .ciphers.keycryption import QMCv2Key
-from .ciphers.legacy import OldStaticMap
+from .ciphers.keycryption import find_mflac_mask, find_mgg_mask, QMCv2Key
+from .ciphers.legacy import Key256Mask128, OldStaticMap
 from .ciphers.modern import DynamicMap, ModifiedRC4, StaticMap
 from .. import utils
 from ..common import Crypter
@@ -120,6 +120,15 @@ class QMCv2(Crypter):
 
     >>> qmcv2file = QMCv2('./test.mflac')
     >>> data = qmcv2file.read()
+    
+    读取没有可用密钥的 QMCv2 格式文件：
+    
+    >>> try:
+    ...     qmcv2file_nokey = QMCv2('./test_nokey.mflac')
+    ... except UnsupportedFileType:
+    ...     qmcv2file_nokey = QMCv2('./test_nokey.flac', legacy_fallback=True)
+    ...
+    >>>
 
     写入：
 
@@ -131,7 +140,7 @@ class QMCv2(Crypter):
     >>> empty_qmcv2file.write(b'Writted bytes')
     >>>
 
-    目前不支持保存到文件。
+    目前不支持保存为 QMCv2 文件。
     """
 
     @staticmethod
@@ -145,7 +154,7 @@ class QMCv2(Crypter):
                  filething: utils.FileThing | None = None,
                  key: bytes | None = None,
                  cipher_type: Literal['dynamic_map', 'rc4'] = 'dynamic_map',
-                 try_legacy: bool = False
+                 legacy_fallback: bool = False
                  ) -> None:
         """读取 QQ 音乐 QMCv2 格式的文件。
 
@@ -153,17 +162,16 @@ class QMCv2(Crypter):
 
         部分 QMCv2 格式文件目前无法读写，可从它们末尾四个字节的十六进制值判断：
 
-        - ``25 02 00 00``：来自版本 18.57 及以上的 QQ 音乐 PC 客户端，其密钥使用了新的加密方案
+        - ``25 02 00 00``：来自版本 18.57 及以上的 QQ 音乐 PC 客户端，密钥使用了新的加密方案
         - ``53 54 61 67`` （``STag``）：来自版本 11.5.5 及以上的 QQ 音乐 Android 客户端，没有内置密钥
 
-        尽管如此，如果使用后备方案（指定 ``try_legacy=True``，等待实现），
-        仍然有可能读取以上不支持的文件。
+        尽管如此，如果使用后备方案（指定 ``try_legacy=True``），仍然有可能读取以上不支持的文件。
 
         Args:
             filething (file): 指向源文件的路径或文件对象；留空则视为创建一个空的 QMCv2 文件
             key (bytes): 加/解密数据所需的密钥；留空则会随机创建一个；仅在 ``filething`` 为空时有效
             cipher_type (str): 加密类型，可选值：``dynamic_map``、``rc4``；仅在 ``filething`` 为空时有效
-            try_legacy (bool): 如果无法找到可用的密钥，是否尝试使用后备方案，默认为 False
+            legacy_fallback (bool): 如果无法找到可用的密钥，是否尝试使用后备方案，默认为 False
         Raises:
             ValueError: 为参数 ``cipher_type`` 指定了不支持的值
         """
@@ -180,7 +188,7 @@ class QMCv2(Crypter):
                 #     raise ValueError(f'key length is too short (should be 256, got {len(key)}')
                 else:
                     cipher_key = key
-                self._cipher: DynamicMap | ModifiedRC4 = DynamicMap(cipher_key)
+                self._cipher: DynamicMap | ModifiedRC4 | Key256Mask128 = DynamicMap(cipher_key)
             elif cipher_type.lower() == 'rc4':
                 if key is None:
                     cipher_key = utils.gen_random_string(512).encode()
@@ -188,7 +196,7 @@ class QMCv2(Crypter):
                 #     raise ValueError(f'key length is too short (should be 512, got {len(key)}')
                 else:
                     cipher_key = key
-                self._cipher: DynamicMap | ModifiedRC4 = ModifiedRC4(cipher_key)
+                self._cipher: DynamicMap | ModifiedRC4 | Key256Mask128 = ModifiedRC4(cipher_key)
             else:
                 raise ValueError(f"'cipher_type' must be str 'dynamic_map' or 'rc4'")
             self._raw = BytesIO()
@@ -196,7 +204,7 @@ class QMCv2(Crypter):
             self._songid: int | None = None
             self._qtag_unknown: bytes | None = None
         else:
-            self.load(filething, try_legacy)
+            self.load(filething, legacy_fallback)
 
     @classmethod
     def get_qtag(cls, fileobj: IO[bytes]) -> tuple[int, bytes, int, bytes]:
@@ -214,12 +222,12 @@ class QMCv2(Crypter):
 
         return audio_len, raw_key, int(songid), unknown
 
-    def load(self, filething: utils.FileThing, try_legacy: bool = False) -> None:
+    def load(self, filething: utils.FileThing, legacy_fallback: bool = False) -> None:
         """将一个 QMCv2 文件加载到当前 QMCv2 对象中。
 
         Args:
             filething (file): 源 QMCv2 文件的路径或文件对象
-            try_legacy (bool): 如果无法找到可用的密钥，是否尝试使用后备方案，默认为 False
+            legacy_fallback (bool): 如果无法找到可用的密钥，是否尝试使用后备方案，默认为 False
         Raises:
             FileTypeMismatchError: ``filething`` 不是一个 QMCv2 格式文件
             UnsupportedFileType: ``filething`` 是一个 QMCv2 文件，但其格式不受支持
@@ -236,9 +244,22 @@ class QMCv2(Crypter):
         fileobj.seek(-4, 2)
         tail = fileobj.read(4)
         if tail in self.unsupported_file_tailer():
-            if try_legacy:
-                raise NotImplementedError('coming soon: use legacy method as fallback')
-            raise UnsupportedFileType(f'unsupported qmc file format: {self.unsupported_file_tailer()[tail]}')
+            if legacy_fallback:
+                if tail == b'\x25\x02\x00\x00':
+                    audio_len = fileobj.seek(-(4 + int.from_bytes(tail, 'little')), 2)
+                else:
+                    audio_len = fileobj.seek(-4, 2)
+                raw_keydata: bytes | None = find_mflac_mask(fileobj) or find_mgg_mask(fileobj)
+                songid = None
+                unknown = None
+                if not raw_keydata:
+                    raise UnsupportedFileType(f'all attempt of decrypt failed: '
+                                              f'{self.unsupported_file_tailer()[tail]}'
+                                              )
+            else:
+                raise UnsupportedFileType(f'unsupported QMCv2 format: '
+                                          f'{self.unsupported_file_tailer()[tail]}'
+                                          )
         elif tail == b'QTag':
             audio_len, raw_keydata, songid, unknown = self.get_qtag(fileobj)
         else:
@@ -250,13 +271,17 @@ class QMCv2(Crypter):
                 songid = None
                 unknown = None
             else:
-                raise FileTypeMismatchError('not a QMCv2 file: unknown file tail and key not found')
+                raise FileTypeMismatchError('not a QMCv2 file: unknown file tail or key not found')
 
-        key = QMCv2Key().decrypt(raw_keydata)
-        if 0 < len(key) < 300:
-            self._cipher: DynamicMap | ModifiedRC4 = DynamicMap(key)
+        if tail in self.unsupported_file_tailer() and legacy_fallback:
+            key = raw_keydata
+            self._cipher: DynamicMap | ModifiedRC4 | Key256Mask128 = Key256Mask128(key)
         else:
-            self._cipher: DynamicMap | ModifiedRC4 = ModifiedRC4(key)
+            key = QMCv2Key().decrypt(raw_keydata)
+            if 0 < len(key) < 300:
+                self._cipher: DynamicMap | ModifiedRC4 | Key256Mask128 = DynamicMap(key)
+            else:
+                self._cipher: DynamicMap | ModifiedRC4 | Key256Mask128 = ModifiedRC4(key)
 
         fileobj.seek(0, 0)
         self._raw = BytesIO(fileobj.read(audio_len))
@@ -282,7 +307,7 @@ class QMCv2(Crypter):
             raise NotImplementedError
 
     @property
-    def cipher(self) -> DynamicMap | ModifiedRC4:
+    def cipher(self) -> DynamicMap | ModifiedRC4 | Key256Mask128:
         return self._cipher
 
     @property
