@@ -50,7 +50,7 @@ class Cipher(KeylessCipher):
 Ciphers = Union[KeylessCipher, Cipher]
 
 
-class Crypter(IOBase):
+class Crypter(IOBase, IO[bytes]):
     def __init__(self, filething: FileThing | None = None) -> None:
         if filething is None:
             self._raw = BytesIO()
