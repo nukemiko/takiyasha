@@ -80,7 +80,7 @@ class NCM(Crypter):
     @staticmethod
     def file_headers() -> dict[bytes, str]:
         return {
-            b'CTENFDAM\x01a': 'NCM'
+            b'CTENFDAM': 'NCM'
         }
 
     def __init__(self,
@@ -231,7 +231,7 @@ class NCM(Crypter):
 
         fileobj.seek(0, 0)
 
-        fileobj.write(b'CTENFDAM\x01a')
+        fileobj.write(b'CTENFDAM\x00\x00')
 
         # 加密并写入主密钥
         masterkey = b'neteasecloudmusic' + self._cipher.key
