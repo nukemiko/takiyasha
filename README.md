@@ -29,8 +29,8 @@ Takiyasha 的设计灵感，以及部分解密方案，来源于 [Unlock Music P
 - [x] 作为 Python 库使用时，支持解密和反向加密（实验性功能，仅支持部分加密类型）
 - [x] 命令行调用方式（仅限解密）
 - [x] 自动根据文件内容探测文件的加密类型
+- [x] 多文件并行处理（实验性功能）
 - [ ] 自动补充解密后文件的标签信息（包括封面）
-- [ ] 多文件并行处理
 
 ## <span id="supported_formats">支持的加密文件格式</span>
 
@@ -50,7 +50,8 @@ Takiyasha 的设计灵感，以及部分解密方案，来源于 [Unlock Music P
 Python 版本需求：大于等于 3.8
 
 需要的依赖项：
-- [`pyaes`](https://pypi.org/project/pyaes/)：AES 加解密支持
+
+- [pyaes](https://pypi.org/project/pyaes/)：AES 加解密支持
 
 ### 从 Pypi 安装（推荐）
 
@@ -76,6 +77,10 @@ Python 版本需求：大于等于 3.8
 简单易用：
 
 `python -m takiyasha 1.ncm 2.qmcflac 3.mflac 4.mgg ...`
+
+并行处理多文件（实验性功能，使用 `-p` 选项）：
+
+`python -m takiyasha -p 1.ncm 2.qmcflac 3.mflac 4.mgg ...`
 
 如果尝试解密“[仅部分支持](#supported_formats)”的文件：
 
