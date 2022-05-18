@@ -5,13 +5,30 @@ import sys
 from pathlib import Path
 from uuid import UUID, uuid4
 
-from takiyasha import openfile, sniff_audio_file
+from takiyasha import get_version, openfile, sniff_audio_file
 
 PROGNAME = Path(__file__).parent.name
+DESCRIPTION = f'{PROGNAME} - Python 版本的音乐解密工具'
+
+
+class ShowSupportedFormatsAndExit(argparse.Action):
+    @staticmethod
+    def show() -> None:
+        print('目前支持的加密类型（使用正则表达式表示）：\n\n'
+              '    NCM:   *.ncm *.uc!\n'
+              '    QMCv1: *.qmc[0-9] *.qmcflac *.qmcogg\n'
+              '    QMCv2: *.mflac[0-9a-zA-Z]? *.mgg[0-9a-zA-Z]?'
+              )
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        self.show()
+        exit()
+
 
 ap = argparse.ArgumentParser(prog=PROGNAME,
                              add_help=False,
-                             formatter_class=argparse.ArgumentDefaultsHelpFormatter
+                             formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+                             description=DESCRIPTION
                              )
 positional_args = ap.add_argument_group(title='必要的位置参数')
 positional_args.add_argument('srcpaths',
@@ -20,11 +37,23 @@ positional_args.add_argument('srcpaths',
                              type=Path,
                              help='源文件或目录的路径'
                              )
+help_options = ap.add_argument_group(title='帮助信息')
+help_options.add_argument('-h', '--help',
+                          action='help',
+                          help='显示帮助信息并退出'
+                          )
+help_options.add_argument('-V', '--version',
+                          action='version',
+                          version=f'%(prog)s {get_version()}',
+                          help='显示版本信息并退出'
+                          )
+help_options.add_argument('--formats',
+                          dest='show_formats',
+                          nargs=0,
+                          action=ShowSupportedFormatsAndExit,
+                          help='显示支持的加密类型，然后退出'
+                          )
 options = ap.add_argument_group(title='可选参数')
-options.add_argument('-h', '--help',
-                     action='help',
-                     help='显示帮助信息并退出'
-                     )
 destdir_options = options.add_mutually_exclusive_group()
 destdir_options.add_argument('-d', '--dest',
                              metavar='DESTPATH',
@@ -85,7 +114,7 @@ def gen_srcs_dsts(*srcpaths: Path,
     filepaths: list[Path] = []
     for path in srcpaths:
         if not path.exists():
-            print_stderr(f"警告：输入路径 '{path}'：路径不存在，跳过")
+            print_stdout(f"警告：输入路径 '{path}'：路径不存在，跳过")
             continue
         if path.is_file():
             filepaths.append(path)
@@ -93,10 +122,10 @@ def gen_srcs_dsts(*srcpaths: Path,
             if recursive:
                 filepaths.extend(p for p in path.iterdir() if p.is_file())
             else:
-                print_stderr(f"警告：输入路径 '{path}'：是一个目录，跳过")
+                print_stdout(f"警告：输入路径 '{path}'：是一个目录，跳过")
                 continue
         else:
-            print_stderr(f"警告：输入路径 '{path}'：无法判断其状态，跳过")
+            print_stdout(f"警告：输入路径 '{path}'：无法判断其状态，跳过")
             continue
 
     filepaths.sort()
@@ -106,15 +135,15 @@ def gen_srcs_dsts(*srcpaths: Path,
     else:
         if destdir.exists():
             if destdir.is_file():
-                print_stderr(f"错误：输出路径 '{destdir}'：是一个文件")
+                print_stdout(f"错误：输出路径 '{destdir}'：是一个文件")
                 exit(1)
             elif destdir.is_dir():
                 return [(p, destdir) for p in filepaths]
             else:
-                print_stderr(f"错误：输出路径 '{destdir}'：无法判断其状态")
+                print_stdout(f"错误：输出路径 '{destdir}'：无法判断其状态")
                 exit(1)
         else:
-            print_stderr(f"错误：输出路径 '{destdir}'：路径不存在")
+            print_stdout(f"错误：输出路径 '{destdir}'：路径不存在")
             exit(1)
 
 
@@ -122,16 +151,16 @@ def task(srcfile: Path, destdir: Path, show_details: bool, **kwargs) -> None:
     try:
         crypter = openfile(srcfile, **kwargs)
     except Exception as exc:
-        print_stderr(f"警告：未能解密 '{srcfile}'：'{exc}'，跳过")
+        print_stdout(f"警告：未能解密 '{srcfile}'：'{exc}'，跳过")
         return
     else:
         if crypter is None:
-            print_stderr(f"警告：'{srcfile}'：非已知加密类型，跳过")
+            print_stdout(f"警告：'{srcfile}'：非已知加密类型，跳过")
             return
 
         audio_ext = sniff_audio_file(crypter)
         if not audio_ext:
-            print_stderr(f"警告：'{srcfile}' 的解密结果未知")
+            print_stdout(f"警告：'{srcfile}' 的解密结果未知")
             audio_ext = 'unknown'
         crypter.seek(0, 0)
 
@@ -140,7 +169,7 @@ def task(srcfile: Path, destdir: Path, show_details: bool, **kwargs) -> None:
         if show_details:
             print(f"任务 ID：{task_uuid}\n"
                   f"输入文件：'{srcfile}'\n"
-                  f"加密类型：{crypter.cipher.cipher_name()}\n"
+                  f"加密类型：{type(crypter).__name__} ({crypter.cipher.cipher_name()})\n"
                   f"预计输出格式：{audio_ext.upper()}\n"
                   f"输出到：'{destfile}'"
                   )
@@ -149,7 +178,7 @@ def task(srcfile: Path, destdir: Path, show_details: bool, **kwargs) -> None:
             if show_details:
                 print_stdout(f"完成：{task_uuid} ('{srcfile}' -> '{destfile}')")
             else:
-                print_stderr(f"'{srcfile}' -> '{destfile}'")
+                print_stdout(f"'{srcfile}' -> '{destfile}'")
 
 
 if __name__ == '__main__':
@@ -160,8 +189,6 @@ if __name__ == '__main__':
     destdir_is_srcdir: bool = openfile_kwargs.pop('destdir_is_srcdir')
     recursive: bool = openfile_kwargs.pop('recursive')
     show_details: bool = openfile_kwargs.pop('show_details')
-
-    # print(openfile_kwargs)
 
     tasked_paths = gen_srcs_dsts(*srcpaths,
                                  destdir=destdir,
