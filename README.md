@@ -1,4 +1,4 @@
-# Takiyasha ![](https://img.shields.io/badge/Python-3.8+-blue)
+# Takiyasha ![](https://img.shields.io/badge/Python-3.8+-red)
 
 Takiyasha 是一个用来解密多种加密音乐文件的工具。
 
@@ -12,11 +12,11 @@ Takiyasha 的设计灵感，以及部分解密方案，来源于 [Unlock Music P
 
 ## 重要事项
 
-自此版本开始（v0.6.0.dev1），包的结构已经发生了翻天覆地的变化，因此不再兼容为之前的版本编写的工具。
+在此分支中，包的结构和行为已经发生了翻天覆地的变化，因此不再兼容为之前的版本编写的工具。
 
-**从此版本开始，暂时移除了命令行调用方式。如果你有正常使用的需求，请谨慎升级。**
+**此分支中的版本，相较于之前版本，命令行调用参数有了重大变化。如果你有正常使用的需求，请谨慎升级。**
 
-目前最新的稳定版本：v0.4.2，如果你不小心更新到了此版本，按照以下步骤回滚：
+如果你不小心更新到了从此分支发布的版本，按照以下步骤回滚至最后一个稳定版本 v0.4.2：
 
 1. 卸载：`pip uninstall takiyasha`
 2. 安装 v0.4.2：`pip install -U takiyasha==0.4.2`
@@ -26,9 +26,9 @@ Takiyasha 的设计灵感，以及部分解密方案，来源于 [Unlock Music P
 - 跨平台：使用 Python 3 编写，只要系统中存在 Python 3.8 及以上环境，以及任意包管理器，就能安装并使用
 - [x] 支持多种加密音乐文件格式，[点击此处查看详情](#supported_formats)
 - [x] 针对主要功能，有完善的代码内文档
-- [x] 可任意读写已打开的加密音乐文件（但对部分格式的修改是不可保存的）
-- [ ] 命令行调用方式（仅解密）
-- [ ] 自动探测文件的加密类型
+- [x] 作为 Python 库使用时，支持解密和反向加密（实验性功能，仅支持部分加密类型）
+- [x] 命令行调用方式（仅限解密）
+- [x] 自动根据文件内容探测文件的加密类型
 - [ ] 自动补充解密后文件的标签信息（包括封面）
 - [ ] 多文件并行处理
 
@@ -58,12 +58,13 @@ Python 版本需求：大于等于 3.8
 
 ### 从本仓库安装
 
-由于此版本的代码位于一个分支上，此方法目前不可用。
+执行命令：`pip install -U git+https://github.com/nukemiko/takiyasha@remaked`
 
 ### 安装最新发布版本
 
 1. 进入[此页面](https://github.com/nukemiko/takiyasha/releases/latest)，下载最新版本
-    - 如果要下载其他版本，请直接[前往发布页](https://github.com/nukemiko/takiyasha/releases)
+    - 如果要下载其他版本（包括预发布版本），请直接前往[历史发布页面](https://github.com/nukemiko/takiyasha/releases)寻找和下载
+    - 从本分支发布的版本全都是预发布版本，只能在[历史发布页面](https://github.com/nukemiko/takiyasha/releases)下找到
 2. 下载 Wheel 安装包（扩展名为 `.whl` 的文件）
 3. 下载完毕后，执行命令：
     `pip install -U /path/to/package.whl`
@@ -72,11 +73,21 @@ Python 版本需求：大于等于 3.8
 
 ### 命令行环境
 
-暂不支持。
+简单易用：
 
-### 作为 Python 库调用
+`takiyasha 1.ncm 2.qmcflac 3.mflac 4.mgg ...`
 
-一个简单的示例（请确保自己的屏幕足够宽）：
+如果尝试解密“[仅部分支持](#supported_formats)”的文件：
+
+`takiyasha --lf hell.mflac damn.mgg`
+
+如果不加其他参数，解密成功的文件将会在当前工作目录下产生。
+
+使用 `-h, --help` 获取完整的帮助信息。
+
+### 作为 Python 库使用
+
+示例：
 
 ```python
 import takiyasha
