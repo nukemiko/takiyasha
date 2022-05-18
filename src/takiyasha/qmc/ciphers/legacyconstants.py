@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from typing import Final
 
-__all__ = []
+__all__ = ['key256mapping_all', 'key256mapping_128to44', 'ogg_public_header1',
+           'ogg_public_header2', 'ogg_public_confidence1', 'ogg_public_confidence2',
+           'default_key256_mask44']
 
 # key256mapping_all = [[]] * 256
 # key256mapping_128to44 = [float('nan')] * 128
