@@ -8,7 +8,9 @@ from uuid import UUID, uuid4
 from takiyasha import get_version, openfile, sniff_audio_file
 
 PROGNAME = Path(__file__).parent.name
-DESCRIPTION = f'{PROGNAME} - Python 版本的音乐解密工具'
+DESCRIPTION = f'  {PROGNAME} - Python 版本的音乐解密工具'
+EPILOG = f'{PROGNAME} 对输出数据的可用性（是否可以识别、播放等）不做任何保证。\n\n' \
+         f'项目地址：https://github.com/nukemiko/takiyasha/tree/remaked'
 
 
 class ShowSupportedFormatsAndExit(argparse.Action):
@@ -27,8 +29,9 @@ class ShowSupportedFormatsAndExit(argparse.Action):
 
 ap = argparse.ArgumentParser(prog=PROGNAME,
                              add_help=False,
-                             formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-                             description=DESCRIPTION
+                             formatter_class=argparse.RawDescriptionHelpFormatter,
+                             description=DESCRIPTION,
+                             epilog=EPILOG
                              )
 positional_args = ap.add_argument_group(title='必要的位置参数')
 positional_args.add_argument('srcpaths',
@@ -48,7 +51,6 @@ help_options.add_argument('-V', '--version',
                           help='显示版本信息并退出'
                           )
 help_options.add_argument('--formats',
-                          dest='show_formats',
                           nargs=0,
                           action=ShowSupportedFormatsAndExit,
                           help='显示支持的加密类型，然后退出'
@@ -78,10 +80,10 @@ options.add_argument('-v', '--details',
                      help='显示每一个输入文件的细节（加密类型、预期输出格式等）'
                      )
 decrypt_options = ap.add_argument_group(title='解密相关选项')
-decrypt_options.add_argument('-c', '--detect-content',
+decrypt_options.add_argument('-s', '--fast',
                              dest='detect_content',
-                             action='store_true',
-                             help='根据文件内容探测加密类型'
+                             action='store_false',
+                             help='仅根据文件名判断文件类型'
                              )
 decrypt_options.add_argument('--lf', '--use-legacy-as-fallback',
                              dest='legacy_fallback',
@@ -148,6 +150,8 @@ def gen_srcs_dsts(*srcpaths: Path,
 
 
 def task(srcfile: Path, destdir: Path, show_details: bool, **kwargs) -> None:
+    if not kwargs['detect_content']:
+        print_stdout(f"提示：将仅通过文件名判断 '{srcfile}' 的加密类型")
     try:
         crypter = openfile(srcfile, **kwargs)
     except Exception as exc:
@@ -167,18 +171,23 @@ def task(srcfile: Path, destdir: Path, show_details: bool, **kwargs) -> None:
         task_uuid: UUID = uuid4()
         destfile = destdir / (srcfile.stem + f'.{audio_ext}')
         if show_details:
-            print(f"任务 ID：{task_uuid}\n"
+            print(f"=============================================\n"
+                  f"任务 ID：{task_uuid}\n"
                   f"输入文件：'{srcfile}'\n"
                   f"加密类型：{type(crypter).__name__} ({crypter.cipher.cipher_name()})\n"
                   f"预计输出格式：{audio_ext.upper()}\n"
-                  f"输出到：'{destfile}'"
+                  f"输出到：'{destfile}'\n"
+                  f"============================================="
                   )
+        if destfile.exists():
+            print_stdout(f"警告：'{destfile}'：路径已存在，跳过")
+            return
         with open(destfile, 'wb') as f:
             f.write(crypter.read())
             if show_details:
                 print_stdout(f"完成：{task_uuid} ('{srcfile}' -> '{destfile}')")
             else:
-                print_stdout(f"'{srcfile}' -> '{destfile}'")
+                print_stdout(f"完成：'{srcfile}' -> '{destfile}'")
 
 
 if __name__ == '__main__':
