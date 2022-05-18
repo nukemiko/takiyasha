@@ -11,6 +11,10 @@ __all__ = ['Key256Mask128', 'OldStaticMap']
 
 class OldStaticMap(KeylessCipher):
     @staticmethod
+    def cipher_name() -> str:
+        return 'Slower Static Mapping'
+
+    @staticmethod
     def masks() -> bytes:
         return bytes(
             [
@@ -65,6 +69,10 @@ class OldStaticMap(KeylessCipher):
 
 
 class Key256Mask128(Cipher):
+    @staticmethod
+    def cipher_name() -> str:
+        return 'Dynamic Mapping (from Mask-128 or Mask-44)'
+
     def __init__(self, mask: bytes):
         if len(mask) == 44:
             # 从 44 位转换为 128 位
