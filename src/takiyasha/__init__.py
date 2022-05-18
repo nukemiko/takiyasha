@@ -13,9 +13,13 @@ from .sniff import sniff_audio_file
 __VERSION__ = '0.6.0.dev1'
 
 __all__ = ['openfile', 'SupportsCrypters', 'NCM', 'NCMCache', 'QMCv1', 'QMCv2',
-           'sniff_audio_file', 'TakiyashaException']
+           'sniff_audio_file', 'TakiyashaException', 'get_version']
 
 SupportsCrypters = Union[NCM, NCMCache, QMCv1, QMCv2]
+
+
+def get_version() -> str:
+    return __VERSION__
 
 
 def extensions_crypters() -> dict[str, Type[SupportsCrypters]]:
