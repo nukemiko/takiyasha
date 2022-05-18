@@ -75,11 +75,11 @@ Python 版本需求：大于等于 3.8
 
 简单易用：
 
-`takiyasha 1.ncm 2.qmcflac 3.mflac 4.mgg ...`
+`python -m takiyasha 1.ncm 2.qmcflac 3.mflac 4.mgg ...`
 
 如果尝试解密“[仅部分支持](#supported_formats)”的文件：
 
-`takiyasha --lf hell.mflac damn.mgg`
+`python -m takiyasha --lf hell.mflac damn.mgg`
 
 如果不加其他参数，解密成功的文件将会在当前工作目录下产生。
 
