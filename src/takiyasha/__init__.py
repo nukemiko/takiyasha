@@ -62,10 +62,7 @@ def openfile(filething: utils.FileThing, detect_content: bool = False, **kwargs)
         if crypter_cls is None:
             crypter: SupportsCrypters | None = None
         else:
-            try:
-                crypter: SupportsCrypters | None = crypter_cls(filething, **kwargs)
-            except TakiyashaException:
-                return
+            crypter: SupportsCrypters | None = crypter_cls(filething, **kwargs)
     else:
         crypter: SupportsCrypters | None = None
 
