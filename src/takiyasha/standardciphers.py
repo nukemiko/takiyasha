@@ -13,6 +13,10 @@ __all__ = ['AES_MODE_ECB', 'TEA']
 
 
 class AES_MODE_ECB(Cipher):
+    @staticmethod
+    def cipher_name() -> str:
+        return 'AES (Mode ECB)'
+
     def __init__(self, key) -> None:
         super().__init__(key)
 
@@ -46,6 +50,10 @@ class AES_MODE_ECB(Cipher):
 
 
 class TEA(Cipher):
+    @staticmethod
+    def cipher_name() -> str:
+        return 'TEA'
+
     def __init__(self, key: bytes, rounds: int = 64, magic_number: int = 0x9e3779b9) -> None:
         if len(key) != self.blocksize():
             raise ValueError(f"incorrect key length {len(key)} (should be {self.blocksize()})")

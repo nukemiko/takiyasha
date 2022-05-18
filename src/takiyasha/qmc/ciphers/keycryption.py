@@ -18,6 +18,10 @@ class ValidationError(DecryptException):
 
 
 class QMCv2Key(KeylessCipher):
+    @staticmethod
+    def cipher_name() -> str:
+        return 'TEA (Mode ECB) Based Block Cipher'
+
     @property
     def support_offset(self) -> bool:
         return False

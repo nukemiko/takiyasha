@@ -17,6 +17,10 @@ __all__ = ['NCM', 'NCMRC4Cipher']
 
 
 class NCMRC4Cipher(Cipher):
+    @staticmethod
+    def cipher_name() -> str:
+        return 'RC4'
+
     def __init__(self, key: bytes) -> None:
         super().__init__(key)
 

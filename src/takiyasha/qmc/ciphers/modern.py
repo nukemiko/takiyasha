@@ -21,6 +21,10 @@ def load_segment_file() -> None:
 
 
 class StaticMap(KeylessCipher):
+    @staticmethod
+    def cipher_name() -> str:
+        return 'Static Mapping'
+
     def __init__(self):
         load_segment_file()
 
@@ -49,6 +53,10 @@ class StaticMap(KeylessCipher):
 
 
 class DynamicMap(Cipher):
+    @staticmethod
+    def cipher_name() -> str:
+        return 'Dynamic Mapping'
+
     def yield_mask(self, data_offset: int, data_len: int):
         key: bytes = self._key
         key_len = len(key)
@@ -69,6 +77,10 @@ class DynamicMap(Cipher):
 
 
 class ModifiedRC4(Cipher):
+    @staticmethod
+    def cipher_name() -> str:
+        return 'Modified RC4'
+
     @staticmethod
     def first_segsize() -> int:
         return 128

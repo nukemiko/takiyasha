@@ -9,6 +9,10 @@ __all__ = ['Cipher', 'Ciphers', 'Crypter', 'KeylessCipher']
 
 
 class KeylessCipher:
+    @staticmethod
+    def cipher_name() -> str:
+        return 'No-op Keyless Cipher'
+
     @property
     def support_offset(self) -> bool:
         """指示 Cipher 实现是否可以根据源数据在文件中的位置，对源数据进行加/解密
@@ -41,6 +45,10 @@ class Cipher(KeylessCipher):
             self._key = bytes(key)
         else:
             self._key = key
+
+    @staticmethod
+    def cipher_name() -> str:
+        return 'No-op Cipher'
 
     @property
     def key(self) -> bytes:

@@ -10,6 +10,10 @@ __all__ = ['NCMCache', 'NCMCacheCipher']
 
 
 class NCMCacheCipher(KeylessCipher):
+    @staticmethod
+    def cipher_name() -> str:
+        return 'XOR Only (with integer 163)'
+
     def decrypt(self, cipherdata: bytes, start_offset: int = 0) -> bytes:
         bool(start_offset)
         return bytes(b ^ 163 for b in cipherdata)
