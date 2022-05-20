@@ -40,7 +40,7 @@ def choose_crypter(filename: utils.FilePath) -> Type[SupportsCrypters] | None:
             return crypter_cls
 
 
-def openfile(filething: utils.FileThing, detect_content: bool = False, **kwargs) -> SupportsCrypters | None:
+def openfile(filething: utils.FileThing, probe_content: bool = True, **kwargs) -> SupportsCrypters | None:
     """返回一个 ``Crypter`` 对象，可通过其操作加密的音频文件。
 
     在返回 ``Crypter`` 对象之前，会先探测文件的加密格式：
@@ -59,8 +59,8 @@ def openfile(filething: utils.FileThing, detect_content: bool = False, **kwargs)
 
     Args:
         filething (file): 指向源文件的路径或文件对象，必须可读、可跳转
-        detect_content (file): 当 ``filething`` 为路径时，是否根据文件内容判断加密格式，
-            默认为 ``False``"""
+        probe_content (file): 当 ``filething`` 为路径时，是否根据文件内容判断加密格式，
+            默认为 ``True``"""
     if utils.is_filepath(filething):
         crypter_cls = choose_crypter(filething)  # type: ignore
         if crypter_cls is None:
@@ -71,7 +71,7 @@ def openfile(filething: utils.FileThing, detect_content: bool = False, **kwargs)
         crypter: SupportsCrypters | None = None
 
     if crypter is None:
-        if not utils.is_filepath(filething) or detect_content:
+        if not utils.is_filepath(filething) or probe_content:
             for crypter_cls in tuple(set(extensions_crypters().values())):
                 try:
                     crypter = crypter_cls(filething, **kwargs)

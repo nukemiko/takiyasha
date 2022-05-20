@@ -87,9 +87,9 @@ options.add_argument('-p', '--parallel',
                      )
 decrypt_options = ap.add_argument_group(title='解密相关选项')
 decrypt_options.add_argument('-s', '--fast',
-                             dest='detect_content',
+                             dest='probe_content',
                              action='store_false',
-                             help='仅根据文件名判断文件类型'
+                             help='跳过文件内容，仅根据文件名判断文件类型'
                              )
 decrypt_options.add_argument('--lf', '--use-legacy-as-fallback',
                              dest='legacy_fallback',
@@ -156,7 +156,7 @@ def gen_srcs_dsts(*srcpaths: Path,
 
 
 def task(srcfile: Path, destdir: Path, show_details: bool, **kwargs) -> None:
-    if not kwargs['detect_content']:
+    if not kwargs['probe_content']:
         print_stdout(f"提示：将仅通过文件名判断 '{srcfile}' 的加密类型")
     try:
         crypter = openfile(srcfile, **kwargs)
