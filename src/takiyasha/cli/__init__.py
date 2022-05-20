@@ -5,7 +5,8 @@ import sys
 from pathlib import Path
 from uuid import UUID, uuid4
 
-from takiyasha import get_version, openfile, sniff_audio_file
+from .. import get_version, openfile
+from ..sniff import sniff_audio_file
 
 PROGNAME = Path(__file__).parent.name
 DESCRIPTION = f'  {PROGNAME} - Python 版本的音乐解密工具'
