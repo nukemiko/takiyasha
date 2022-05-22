@@ -8,7 +8,7 @@ from uuid import UUID, uuid4
 from .. import get_version, openfile
 from ..sniff import sniff_audio_file
 
-PROGNAME = Path(__file__).parent.name
+PROGNAME = Path(__file__).parent.parent.name
 DESCRIPTION = f'  {PROGNAME} - Python 版本的音乐解密工具'
 EPILOG = f'{PROGNAME} 对输出数据的可用性（是否可以识别、播放等）不做任何保证。\n\n' \
          f'项目地址：https://github.com/nukemiko/takiyasha/tree/remaked'
@@ -64,12 +64,12 @@ destdir_options.add_argument('-d', '--dest',
                              action='store',
                              type=Path,
                              default=Path.cwd(),
-                             help='将输出文件放置在指定目录下；与“--ds, --dest-source”冲突'
+                             help="将输出文件放置在指定目录下；与 '--ds, --dest-source' 冲突"
                              )
 destdir_options.add_argument('--ds', '--dest-source',
                              dest='destdir_is_srcdir',
                              action='store_true',
-                             help='将输出文件放置在源文件所在目录下；与“-d, --dest”冲突'
+                             help="将输出文件放置在源文件所在目录下；与 '-d, --dest' 冲突"
                              )
 options.add_argument('-r', '--recursive',
                      action='store_true',
@@ -86,15 +86,15 @@ options.add_argument('-p', '--parallel',
                      help='启用并行处理模式（实验性功能）'
                      )
 decrypt_options = ap.add_argument_group(title='解密相关选项')
-decrypt_options.add_argument('-s', '--fast',
+decrypt_options.add_argument('--faster',
                              dest='probe_content',
                              action='store_false',
-                             help='跳过文件内容，仅根据文件名判断文件类型'
+                             help='跳过文件内容，仅根据文件名判断加密类型'
                              )
-decrypt_options.add_argument('--lf', '--use-legacy-as-fallback',
-                             dest='legacy_fallback',
+decrypt_options.add_argument('-f', '--try-fallback',
+                             dest='try_fallback',
                              action='store_true',
-                             help='针对 QMCv2 文件，在首次尝试失败时，使用旧方案再次尝试（有几率成功）'
+                             help='针对部分支持的加密类型，在首次解密失败时，使用旧方案再次尝试（有几率成功）'
                              )
 
 
@@ -156,8 +156,6 @@ def gen_srcs_dsts(*srcpaths: Path,
 
 
 def task(srcfile: Path, destdir: Path, show_details: bool, **kwargs) -> None:
-    if not kwargs['probe_content']:
-        print_stdout(f"提示：将仅通过文件名判断 '{srcfile}' 的加密类型")
     try:
         crypter = openfile(srcfile, **kwargs)
     except Exception as exc:
