@@ -83,7 +83,7 @@ options.add_argument('-v', '--details',
 options.add_argument('-p', '--parallel',
                      dest='enable_multiprocessing',
                      action='store_true',
-                     help='启用并行处理模式（实验性功能）'
+                     help='使用多进程并行解密输入文件（实验性功能）'
                      )
 decrypt_options = ap.add_argument_group(title='解密相关选项')
 decrypt_options.add_argument('--faster',
