@@ -7,14 +7,10 @@ from . import legacyconstants
 from .legacy import Key256Mask128
 from ... import utils
 from ...common import KeylessCipher
-from ...exceptions import DecryptException, InvalidDataError
+from ...exceptions import InvalidDataError
 from ...standardciphers import TEAWithModeECB
 
-__all__ = ['find_mflac_mask', 'find_mgg_mask', 'Tencent_TEA_MODE_CBC', 'ValidationError']
-
-
-class ValidationError(DecryptException):
-    pass
+__all__ = ['find_mflac_mask', 'find_mgg_mask', 'Tencent_TEA_MODE_CBC']
 
 
 class Tencent_TEA_MODE_CBC(KeylessCipher):

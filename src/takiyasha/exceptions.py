@@ -19,3 +19,7 @@ class UnsupportedFileType(TakiyashaException):
 
 class InvalidDataError(DecryptException):
     pass
+
+
+class ValidationError(DecryptException):
+    pass
