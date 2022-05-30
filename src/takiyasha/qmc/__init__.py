@@ -3,7 +3,7 @@ from __future__ import annotations
 from io import BytesIO
 from typing import IO, Literal
 
-from .ciphers.keycryption import find_mflac_mask, find_mgg_mask, QMCv2Key
+from .ciphers.keycryption import find_mflac_mask, find_mgg_mask, Tencent_TEA_MODE_CBC
 from .ciphers.legacy import Key256Mask128, OldStaticMap
 from .ciphers.modern import DynamicMap, ModifiedRC4, StaticMap
 from .. import utils
@@ -312,7 +312,7 @@ class QMCv2(Crypter):
             key = raw_keydata
             self._cipher: DynamicMap | ModifiedRC4 | Key256Mask128 = Key256Mask128(key)
         else:
-            key = QMCv2Key().decrypt(raw_keydata)
+            key = Tencent_TEA_MODE_CBC().decrypt(raw_keydata)
             if 0 < len(key) < 300:
                 self._cipher: DynamicMap | ModifiedRC4 | Key256Mask128 = DynamicMap(key)
             else:
@@ -340,7 +340,7 @@ class QMCv2(Crypter):
             NotImplementedError: 在调用本方法时引发；此异常将在未来加入功能后移除"""
         key = self._cipher.key
         bool(key)
-        key_cipher = QMCv2Key()
+        key_cipher = Tencent_TEA_MODE_CBC()
         if not key_cipher.support_encrypt:
             raise NotImplementedError
 

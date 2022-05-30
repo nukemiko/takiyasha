@@ -10,17 +10,17 @@ from ...common import KeylessCipher
 from ...exceptions import DecryptException, InvalidDataError
 from ...standardciphers import TEA
 
-__all__ = ['find_mflac_mask', 'find_mgg_mask', 'QMCv2Key', 'ValidationError']
+__all__ = ['find_mflac_mask', 'find_mgg_mask', 'Tencent_TEA_MODE_CBC', 'ValidationError']
 
 
 class ValidationError(DecryptException):
     pass
 
 
-class QMCv2Key(KeylessCipher):
+class Tencent_TEA_MODE_CBC(KeylessCipher):
     @staticmethod
     def cipher_name() -> str:
-        return 'TEA (Mode ECB) Based Block Cipher'
+        return 'TEA Tencent Edition (Mode CBC)'
 
     @property
     def support_offset(self) -> bool:
