@@ -7,9 +7,11 @@ from typing import Generator
 from pyaes import AESModeOfOperationECB
 from pyaes.util import append_PKCS7_padding, strip_PKCS7_padding
 
+from . import utils
 from .common import Cipher
+from .exceptions import InvalidDataError, ValidationError
 
-__all__ = ['StreamedAESWithModeECB', 'TEAWithModeECB']
+__all__ = ['StreamedAESWithModeECB', 'TEAWithModeECB', 'TencentTEAWithModeCBC']
 
 
 class StreamedAESWithModeECB(Cipher):
@@ -117,3 +119,181 @@ class TEAWithModeECB(Cipher):
             v1 &= 0xffffffff
 
         return v0.to_bytes(4, 'big') + v1.to_bytes(4, 'big')
+
+
+class TencentTEAWithModeCBC(Cipher):
+    @staticmethod
+    def cipher_name() -> str:
+        return "Tencent TEA Block Cipher (Mode CBC)"
+
+    def support_encrypt(self) -> bool:
+        return False
+
+    def support_offset(self) -> bool:
+        return False
+
+    @classmethod
+    def from_recipe(cls,
+                    recipe: bytes,
+                    simple_key: bytes = b'\x69\x56\x46\x38\x2b\x20\x15\x0b',
+                    rounds: int = 64,
+                    magic_number: int = 0x9e3779b9,
+                    ):
+        """根据 ``recipe`` 和 ``simple_key`` 组装一个密钥，
+        并使用此密钥初始化和返回一个 TencentTEAWithModeCBC 对象。
+
+        ``simple_key`` 的默认值为 ``b'\\x69\\x56\\x46\\x38\\x2b\\x20\\x15\\x0b'``，
+        是使用以下方式计算的：
+
+        >>> from math import tan
+        >>> salt = 106
+        >>> length = 8
+        >>> # 以下是计算的过程和结果（储存在 key_buf 中）
+        >>> key_buf = bytearray(length)
+        >>> for i in range(length):
+        ...     tan_result = tan(salt + i * 0.1)
+        ...     key_buf[i] = int(abs(tan_result * 100))
+        >>>
+
+        Args:
+            recipe: 组装密钥所需的原料，长度必须等于 8
+            simple_key: 组装密钥需要的简单密钥（不等同于密钥！），长度必须等于 8
+            rounds: 加/解密的轮转次数，必须为偶数
+            magic_number: 加/解密使用的魔数
+
+        Returns:
+            一个 TencentTEAWithModeCBC 对象
+        """
+        if len(recipe) != cls.blocksize():
+            raise ValueError(f"incorrect recipe length {len(recipe)}"
+                             f" (should be {cls.blocksize()})"
+                             )
+        if len(simple_key) != cls.blocksize():
+            raise ValueError(f"incorrect simple key length {len(simple_key)}"
+                             f" (should be {cls.blocksize()})"
+                             )
+
+        tea_key_buf = bytearray(cls.keysize())
+        for i in range(cls.blocksize()):
+            tea_key_buf[i << 1] = simple_key[i]
+            tea_key_buf[(i << 1) + 1] = recipe[i]
+
+        return cls(bytes(tea_key_buf), rounds, magic_number)
+
+    def __init__(self,
+                 key: bytes,
+                 rounds: int = 64,
+                 magic_number: int = 0x9e3779b9,
+                 ) -> None:
+        """初始化一个 TencentTEAWithModeCBC 对象。
+
+        Args:
+            key: 密钥，长度必须等于 16
+            rounds: 加/解密的轮转次数，必须为偶数
+            magic_number: 加/解密使用的魔数
+        """
+        if len(key) != self.keysize():
+            raise ValueError(f"incorrect key length {len(key)} (should be {self.keysize()})")
+        if rounds % 2 != 0:
+            raise ValueError(f"'rounds' must be an even integer (got {rounds})")
+
+        super().__init__(key)
+        self._cipher_per_block = TEAWithModeECB(key, rounds, magic_number)
+        self._salt_len = 2
+        self._zero_len = 7
+
+    @staticmethod
+    def keysize() -> int:
+        return 16
+
+    @staticmethod
+    def blocksize() -> int:
+        return 8
+
+    def decrypt(self,
+                cipherdata: bytes,
+                start_offset: int = 0,
+                *,
+                zero_check=False
+                ) -> bytes:
+        """
+        Args:
+            cipherdata: 密文
+            start_offset: 密文在源数据中的起始位置；此参数在此方法中会被忽略
+            zero_check: （未完成）是否在解密过程的最后进行零值校验，默认为 ``False``
+        """
+        blksize = self.blocksize()
+        salt_len = self._salt_len
+        zero_len = self._zero_len
+
+        if len(cipherdata) % blksize != 0:
+            raise ValueError(f"encrypted key size ({len(cipherdata)}) "
+                             f"is not a multiple of the block size ({blksize})"
+                             )
+        if len(cipherdata) < blksize * 2:
+            raise ValueError(f"encrypted keydata length is too short "
+                             f"(should be >= {blksize * 2}, got {len(cipherdata)})"
+                             )
+
+        blkcipher = self._cipher_per_block
+        dest_buf = bytearray(blkcipher.decrypt(cipherdata))
+        pad_len = dest_buf[0] & 0x7
+        out_buf_len = len(cipherdata) - pad_len - salt_len - zero_len - 1
+        if pad_len + salt_len != 8:
+            raise InvalidDataError(f'invalid pad length {pad_len}')
+        out_buf = bytearray(out_buf_len)
+
+        iv_previous = bytearray(8)
+        iv_current = bytearray(cipherdata[:8])
+
+        cipherdata_pos = 8
+        dest_idx = 1 + pad_len
+
+        def crypt_block() -> None:
+            nonlocal cipherdata_pos
+            iv_previous[:] = iv_current[:]
+            iv_current[:] = cipherdata[cipherdata_pos:cipherdata_pos + 8]
+            dest_buf[:] = blkcipher.decrypt(utils.bytesxor(dest_buf[:8], iv_current[:8]))
+            cipherdata_pos += 8
+
+        i = 1
+        while i <= salt_len:
+            if dest_idx < 8:
+                dest_idx += 1
+                i += 1
+            elif dest_idx == 8:
+                crypt_block()
+                dest_idx = 0
+
+        out_buf_pos = 0
+        while out_buf_pos < out_buf_len:
+            if dest_idx < 8:
+                out_buf[out_buf_pos] = dest_buf[dest_idx] ^ iv_previous[dest_idx]
+                dest_idx += 1
+                out_buf_pos += 1
+            elif dest_idx == 8:
+                crypt_block()
+                dest_idx = 0
+
+        if zero_check:
+            for i in range(1, zero_len):
+                if dest_idx < 8:
+                    if dest_buf[dest_idx] ^ iv_previous[dest_idx] != 0:
+                        raise ValidationError('zero check failed')
+                    dest_idx += 1
+                elif dest_idx == 8:
+                    crypt_block()
+                    dest_idx = 0
+
+        return bytes(out_buf)
+
+    def encrypt(self, plaindata: bytes, start_offset: int = 0) -> bytes:
+        raise NotImplementedError
+
+    def get_encrypt_result_len(self, plaindata: bytes) -> int:
+        pad_salt_body_zero_len = (len(plaindata) + self._salt_len + self._zero_len + 1)
+        pad_len = pad_salt_body_zero_len % self.blocksize()
+        if pad_len != 0:
+            pad_len = self.blocksize() - pad_len
+
+        return pad_salt_body_zero_len + pad_len
