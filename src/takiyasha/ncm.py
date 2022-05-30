@@ -11,7 +11,7 @@ from typing import Generator, IO
 from . import utils
 from .common import Cipher, Crypter
 from .exceptions import FileTypeMismatchError
-from .standardciphers import AES_MODE_ECB
+from .standardciphers import StreamedAESWithModeECB
 
 __all__ = ['NCM', 'NCMRC4Cipher']
 
@@ -158,7 +158,7 @@ class NCM(Crypter):
         # 获取加密的主密钥数据
         encrypted_masterkey_len = int.from_bytes(fileobj.read(4), 'little')
         encrypted_masterkey = bytes(b ^ 0x64 for b in fileobj.read(encrypted_masterkey_len))
-        masterkey_cipher = AES_MODE_ECB(self.core_key())
+        masterkey_cipher = StreamedAESWithModeECB(self.core_key())
         masterkey = masterkey_cipher.decrypt(encrypted_masterkey)[17:]  # 去除密钥开头的 b'neteasecloudmusic'
 
         # 获取加密的标签信息
@@ -172,7 +172,7 @@ class NCM(Crypter):
             )
             encrypted_tagdata = b64decode(raw_encrypted_tagdata[22:], validate=True)  # 在 b64decode 之前，去除原始数据开头的 b"163 key(Don't modify):"
             identifier = raw_encrypted_tagdata
-            tagdata_cipher = AES_MODE_ECB(self.meta_key())
+            tagdata_cipher = StreamedAESWithModeECB(self.meta_key())
             tagdata.update(json.loads(tagdata_cipher.decrypt(encrypted_tagdata)[6:]))  # 在 JSON 反序列化之前，去除字节串开头的 b'music:'
             tagdata['identifier'] = identifier
 
@@ -239,7 +239,7 @@ class NCM(Crypter):
 
         # 加密并写入主密钥
         masterkey = b'neteasecloudmusic' + self._cipher.key
-        masterkey_cipher = AES_MODE_ECB(self.core_key())
+        masterkey_cipher = StreamedAESWithModeECB(self.core_key())
         encrypted_masterkey = bytes(b ^ 0x64 for b in masterkey_cipher.encrypt(masterkey))
         fileobj.write(len(encrypted_masterkey).to_bytes(4, 'little'))
         fileobj.write(encrypted_masterkey)
@@ -247,7 +247,7 @@ class NCM(Crypter):
         # 加密并写入标签信息
         tagdata.pop('identifier', None)
         plain_tagdata = b'music:' + json.dumps(tagdata).encode()
-        tagdata_cipher = AES_MODE_ECB(self.meta_key())
+        tagdata_cipher = StreamedAESWithModeECB(self.meta_key())
         encrypted_tagdata = tagdata_cipher.encrypt(plain_tagdata)
         raw_encrypted_tagdata = bytes(b ^ 0x63 for b in b"163 key(Don't modify):" + b64encode(encrypted_tagdata))
         fileobj.write(len(raw_encrypted_tagdata).to_bytes(4, 'little'))

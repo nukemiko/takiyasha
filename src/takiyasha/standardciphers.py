@@ -9,13 +9,13 @@ from pyaes.util import append_PKCS7_padding, strip_PKCS7_padding
 
 from .common import Cipher
 
-__all__ = ['AES_MODE_ECB', 'TEA']
+__all__ = ['StreamedAESWithModeECB', 'TEAWithModeECB']
 
 
-class AES_MODE_ECB(Cipher):
+class StreamedAESWithModeECB(Cipher):
     @staticmethod
     def cipher_name() -> str:
-        return 'AES (Mode ECB)'
+        return 'Streamed AES Block Cipher (Mode ECB)'
 
     def __init__(self, key) -> None:
         super().__init__(key)
@@ -49,10 +49,10 @@ class AES_MODE_ECB(Cipher):
         )
 
 
-class TEA(Cipher):
+class TEAWithModeECB(Cipher):
     @staticmethod
     def cipher_name() -> str:
-        return 'TEA'
+        return 'TEA Block Cipher (Mode ECB)'
 
     def __init__(self, key: bytes, rounds: int = 64, magic_number: int = 0x9e3779b9) -> None:
         if len(key) != self.blocksize():

@@ -8,7 +8,7 @@ from .legacy import Key256Mask128
 from ... import utils
 from ...common import KeylessCipher
 from ...exceptions import DecryptException, InvalidDataError
-from ...standardciphers import TEA
+from ...standardciphers import TEAWithModeECB
 
 __all__ = ['find_mflac_mask', 'find_mgg_mask', 'Tencent_TEA_MODE_CBC', 'ValidationError']
 
@@ -75,13 +75,13 @@ class Tencent_TEA_MODE_CBC(KeylessCipher):
         in_buf = bytearray(encrypted_keydata)
         if len(in_buf) % 8 != 0:
             raise ValueError(f"encrypted key size ({len(in_buf)}) "
-                             f"is not a multiple of the block size ({TEA.blocksize()})"
+                             f"is not a multiple of the block size ({TEAWithModeECB.blocksize()})"
                              )
         if len(in_buf) < 16:
             raise ValueError(f"encrypted keydata length is too short "
                              f"(should be >= 16, got {len(in_buf)})"
                              )
-        tea_blk = TEA(tea_key, rounds=32)
+        tea_blk = TEAWithModeECB(tea_key, rounds=32)
 
         dest_buf = bytearray(tea_blk.decrypt(in_buf))
         pad_len = dest_buf[0] & 0x7
