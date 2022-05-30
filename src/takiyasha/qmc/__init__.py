@@ -142,7 +142,7 @@ class QMCv2(Crypter):
     >>> try:
     ...     qmcv2file_nokey = QMCv2('./test_nokey.mflac')
     ... except UnsupportedFileType:
-    ...     qmcv2file_nokey = QMCv2('./test_nokey.flac', legacy_fallback=True)
+    ...     qmcv2file_nokey = QMCv2('./test_nokey.flac', try_fallback=True)
     ...
     >>>
 
@@ -180,7 +180,7 @@ class QMCv2(Crypter):
         - ``25 02 00 00``：来自版本 18.57 及以上的 QQ 音乐 PC 客户端，密钥使用了新的加密方案
         - ``53 54 61 67`` （``STag``）：来自版本 11.5.5 及以上的 QQ 音乐 Android 客户端，没有内置密钥
 
-        可以尝试使用后备方案（指定 ``legacy_fallback=True``）读取无可用密钥的文件，
+        可以尝试使用后备方案（指定 ``try_fallback=True``）读取无可用密钥的文件，
         但后备方案针对这些文件并不一定总是有效。
 
         Args:
@@ -190,7 +190,7 @@ class QMCv2(Crypter):
                 仅在 ``filething`` 为空时有效
             cipher_type (str): 加密类型，仅在 ``filething`` 为空时有效；
                 支持：``dynamic_map``、``rc4``；
-            legacy_fallback (bool): 如果无法找到可用的密钥，是否尝试使用后备方案，
+            try_fallback (bool): 如果无法找到可用的密钥，是否尝试使用后备方案，
                 默认为 False
         Raises:
             ValueError: 为参数 ``cipher_type`` 指定了不支持的值
@@ -250,14 +250,14 @@ class QMCv2(Crypter):
         """将一个 QMCv2 文件加载到当前 QMCv2 对象中。
 
         在此过程中需要先找到文件中可用的密钥；如果没有可用的密钥，
-        可加上参数 ``legacy_fallback=True`` 使用后备方案再次尝试。
+        可加上参数 ``try_fallback=True`` 使用后备方案再次尝试。
 
         后备方案针对无可用密钥的文件并不一定总是有效。
 
         Args:
             filething (file): 源 QMCv2 文件的路径或文件对象
         Keyword Args:
-            legacy_fallback (bool): 如果无法找到可用的密钥，
+            try_fallback (bool): 如果无法找到可用的密钥，
                 是否尝试使用后备方案，默认为 False
         Raises:
             FileTypeMismatchError: ``filething`` 不是一个 QMCv2 格式文件
@@ -265,7 +265,7 @@ class QMCv2(Crypter):
 
         所有未知的关键字参数都会被忽略。
         """
-        legacy_fallback: bool = kwargs.get('legacy_fallback', False)
+        try_fallback: bool = kwargs.get('try_fallback', False)
 
         if utils.is_filepath(filething):
             fileobj: IO[bytes] = open(filething, 'rb')  # type: ignore
@@ -279,7 +279,7 @@ class QMCv2(Crypter):
         fileobj.seek(-4, 2)
         tail = fileobj.read(4)
         if tail in self.unsupported_file_tailer():
-            if legacy_fallback:
+            if try_fallback:
                 if tail == b'\x25\x02\x00\x00':
                     audio_len = fileobj.seek(-(4 + int.from_bytes(tail, 'little')), 2)
                 else:

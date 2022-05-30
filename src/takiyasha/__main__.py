@@ -35,7 +35,7 @@ if __name__ == '__main__':
         cli.print_stdout('可能会导致部分文件无法识别和解密')
 
     fallback_params = {
-        'legacy_fallback': True
+        'try_fallback': True
     }
     if try_fallback:
         cli.print_stdout("提示：您添加了 '-f' 或 '--try-fallback' 选项")
