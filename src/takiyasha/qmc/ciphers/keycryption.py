@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from base64 import b64decode
+from base64 import b64decode, b64encode
 from typing import IO
 
 from . import legacyconstants
@@ -11,14 +11,25 @@ from ...standardciphers import TencentTEAWithModeCBC
 __all__ = ['decrypt_QMCv2_key', 'find_mflac_mask', 'find_mgg_mask']
 
 
-def decrypt_QMCv2_key(raw_key: bytes) -> bytes:
-    decoded_raw_key = b64decode(raw_key, validate=True)
+def decrypt_QMCv2_key(ciphered_keydata: bytes) -> bytes:
+    decoded_raw_key = b64decode(ciphered_keydata, validate=True)
     tea_key_recipe = decoded_raw_key[:8]
     ciphered_segment = decoded_raw_key[8:]
 
     cipher = TencentTEAWithModeCBC.from_recipe(tea_key_recipe, rounds=32)
 
     return tea_key_recipe + cipher.decrypt(ciphered_segment, zero_check=True)
+
+
+def encrypt_QMCv2_key(plain_keydata: bytes) -> bytes:
+    tea_key_recipe = plain_keydata[:8]
+    plain_segment = plain_keydata[8:]
+
+    cipher = TencentTEAWithModeCBC.from_recipe(tea_key_recipe, rounds=32)
+
+    ciphered_keydata = tea_key_recipe + cipher.encrypt(plain_segment)
+
+    return b64encode(ciphered_keydata)
 
 
 def find_mflac_mask(fileobj: IO[bytes]) -> bytes | None:
