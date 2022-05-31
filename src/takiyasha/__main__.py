@@ -17,6 +17,7 @@ if __name__ == '__main__':
     show_details: bool = openfile_kwargs.pop('show_details')
     enable_multiprocessing: bool = openfile_kwargs.pop('enable_multiprocessing')
     try_fallback: bool = openfile_kwargs.pop('try_fallback')
+    dont_decrypt: bool = openfile_kwargs.pop('dont_decrypt')
 
     tasked_paths = cli.gen_srcs_dsts(*srcpaths,
                                      destdir=destdir,
@@ -43,10 +44,15 @@ if __name__ == '__main__':
         cli.print_stdout('（仅限部分支持的加密类型，且不保证成功）')
         openfile_kwargs.update(fallback_params)
 
+    if dont_decrypt:
+        cli.print_stdout("提示：您添加了 '-t' 或 '--test' 选项")
+        cli.print_stdout('将仅测试输入文件是否受支持，如果不支持将会发出警告')
+        cli.print_stdout('不会解密任何输入文件，也不会产生任何输出文件')
+
     if enable_multiprocessing:
         cli.print_stdout("提示：您添加了 '-p' 或 '--parallel' 选项")
-        cli.print_stdout('将会使用多进程并行解密所有输入文件')
-        cli.print_stdout('可能会消耗大量 CPU 资源！')
+        cli.print_stdout('将会使用多进程并行处理所有输入文件')
+        cli.print_stdout('可能会消耗大量 CPU 和运行内存资源！')
 
         task_procs: list[mp.Process] = []
         for cursrcfile, curdstdir in tasked_paths:
@@ -54,6 +60,7 @@ if __name__ == '__main__':
                 'srcfile': cursrcfile,
                 'destdir': curdstdir,
                 'show_details': show_details,
+                'dont_decrypt': dont_decrypt
             }
             params.update(openfile_kwargs)
 
@@ -75,7 +82,8 @@ if __name__ == '__main__':
                 p.kill()
             sys.exit(130)
         else:
-            cli.print_stdout('所有文件均已解密完毕')
+            if not dont_decrypt:
+                cli.print_stdout('所有文件均已解密完毕')
             sys.exit()
     else:
         try:
@@ -84,6 +92,7 @@ if __name__ == '__main__':
                     'srcfile': cursrcfile,
                     'destdir': curdstdir,
                     'show_details': show_details,
+                    'dont_decrypt': dont_decrypt
                 }
                 params.update(openfile_kwargs)
 
@@ -93,5 +102,6 @@ if __name__ == '__main__':
             cli.print_stderr('过程被用户终止')
             sys.exit(130)
         else:
-            cli.print_stdout('所有文件均已解密完毕')
+            if not dont_decrypt:
+                cli.print_stdout('所有文件均已解密完毕')
             sys.exit()

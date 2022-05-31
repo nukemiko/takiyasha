@@ -64,12 +64,12 @@ destdir_options.add_argument('-d', '--dest',
                              action='store',
                              type=Path,
                              default=Path.cwd(),
-                             help="将输出文件放置在指定目录下；与 '--ds, --dest-source' 冲突"
+                             help="将所有输出文件放置在指定目录下；与 '--ds, --dest-source' 冲突"
                              )
 destdir_options.add_argument('--ds', '--dest-source',
                              dest='destdir_is_srcdir',
                              action='store_true',
-                             help="将输出文件放置在源文件所在目录下；与 '-d, --dest' 冲突"
+                             help="将每一个输出文件放置在源文件所在目录下；与 '-d, --dest' 冲突"
                              )
 options.add_argument('-r', '--recursive',
                      action='store_true',
@@ -84,6 +84,11 @@ options.add_argument('-p', '--parallel',
                      dest='enable_multiprocessing',
                      action='store_true',
                      help='使用多进程并行解密输入文件（实验性功能）'
+                     )
+options.add_argument('-t', '--test',
+                     dest='dont_decrypt',
+                     action='store_true',
+                     help='仅测试输入文件是否受支持，不进行解密'
                      )
 decrypt_options = ap.add_argument_group(title='解密相关选项')
 decrypt_options.add_argument('--faster',
@@ -155,7 +160,7 @@ def gen_srcs_dsts(*srcpaths: Path,
             sys.exit(1)
 
 
-def task(srcfile: Path, destdir: Path, show_details: bool, **kwargs) -> None:
+def task(srcfile: Path, destdir: Path, show_details: bool, dont_decrypt: bool, **kwargs) -> None:
     try:
         crypter = openfile(srcfile, **kwargs)
     except Exception as exc:
@@ -175,14 +180,31 @@ def task(srcfile: Path, destdir: Path, show_details: bool, **kwargs) -> None:
         task_uuid: UUID = uuid4()
         destfile = destdir / (srcfile.stem + f'.{audio_ext}')
         if show_details:
-            print(f"=============================================\n"
-                  f"任务 ID：{task_uuid}\n"
-                  f"输入文件：'{srcfile}'\n"
-                  f"加密类型：{type(crypter).__name__} ({crypter.cipher.cipher_name()})\n"
-                  f"预计输出格式：{audio_ext.upper()}\n"
-                  f"输出到：'{destfile}'\n"
-                  f"============================================="
-                  )
+            print_to_stdouts = [
+                f"=============================================",
+                f"任务 ID：{task_uuid}",
+                f"输入文件：'{srcfile}'",
+                f"加密类型：{type(crypter).__name__} ({crypter.cipher.cipher_name()})",
+                f"预计输出格式：{audio_ext.upper()}",
+                f"输出到：'{destfile}'",
+                f"============================================="
+            ]
+            if dont_decrypt:
+                del print_to_stdouts[-2]
+                del print_to_stdouts[1]
+            # print(f"=============================================\n"
+            #       f"任务 ID：{task_uuid}\n"
+            #       f"输入文件：'{srcfile}'\n"
+            #       f"加密类型：{type(crypter).__name__} ({crypter.cipher.cipher_name()})\n"
+            #       f"预计输出格式：{audio_ext.upper()}\n"
+            #       f"输出到：'{destfile}'\n"
+            #       f"============================================="
+            #       )
+
+            print('\n'.join(print_to_stdouts))
+
+        if dont_decrypt:
+            return
         if destfile.exists():
             print_stdout(f"警告：'{destfile}'：路径已存在，跳过")
             return
