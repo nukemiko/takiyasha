@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 from functools import partial
 from io import BytesIO
 from typing import Generator
@@ -12,6 +13,11 @@ from .common import Cipher
 from .exceptions import InvalidDataError, ValidationError
 
 __all__ = ['StreamedAESWithModeECB', 'TEAWithModeECB', 'TencentTEAWithModeCBC']
+
+# 为 TencentTEAWithModeCBC 的加密初始化随机数生成器
+random.seed()
+
+rand = partial(random.randint, 0, 255)
 
 
 class StreamedAESWithModeECB(Cipher):
@@ -125,9 +131,6 @@ class TencentTEAWithModeCBC(Cipher):
     @staticmethod
     def cipher_name() -> str:
         return "Tencent TEA Block Cipher (Mode CBC)"
-
-    def support_encrypt(self) -> bool:
-        return False
 
     def support_offset(self) -> bool:
         return False
@@ -288,12 +291,104 @@ class TencentTEAWithModeCBC(Cipher):
         return bytes(out_buf)
 
     def encrypt(self, plaindata: bytes, start_offset: int = 0) -> bytes:
-        raise NotImplementedError
+        blksize = self.blocksize()  # 此值应当为 8
+
+        # 根据 plaindata 长度计算 pad_len，最小长度必须为8的整数倍
+        pad_salt_body_zero_len = (len(plaindata) + self._salt_len + self._zero_len + 1)
+        pad_len = pad_salt_body_zero_len % blksize
+        if pad_len != 0:
+            # 模8余0需补0，余1补7，余2补6，...，余7补1
+            pad_len = blksize - pad_len
+
+        src_buf = bytearray(blksize)
+
+        # 加密第一块数据（8个字节）
+        src_buf[0] = (rand() & 0xf8)  # 最低三位存 pad_len，清零
+        src_buf[0] |= pad_len
+        src_idx = 1  # src_idx 指向 src_buf 下一个位置
+
+        # 填充
+        while pad_len > 0:
+            src_buf[src_idx] = rand()
+            src_idx += 1
+            pad_len -= 1
+
+        # 到此处为止，src_idx 必须小于8
+
+        iv_plain = bytearray(blksize)
+        iv_crypt = iv_plain[:]  # 制造一个空初始向量
+
+        # 获取加密结果预期长度，并据此创建一个空数组
+        out_buf_len = self.get_encrypt_result_len(plaindata)
+        out_buf = bytearray(out_buf_len)
+        out_buf_pos = 0
+
+        blkcipher = self._cipher_per_block
+
+        def crypt_block():  # CBC 加密操作流程
+            nonlocal src_idx, out_buf_pos
+            # 加密前异或前8个字节的密文（iv_crypt 指向的）
+            src_buf[:] = utils.bytesxor(src_buf, iv_crypt)
+
+            # 使用 TEA ECB 模式加密
+            out_buf[out_buf_pos:out_buf_pos + blksize] = blkcipher.encrypt(src_buf)
+
+            # 加密后异或前8个字节的密文（iv_crypt 指向的）
+            out_buf[out_buf_pos:out_buf_pos + blksize] = utils.bytesxor(
+                out_buf[out_buf_pos:out_buf_pos + blksize], iv_plain
+            )
+
+            # 保存当前的 iv_plain
+            iv_plain[:] = src_buf[:]
+
+            # 更新 iv_crypt
+            iv_crypt[:] = out_buf[out_buf_pos:out_buf_pos + blksize]
+            out_buf_pos += blksize
+
+        # 填充2个字节的 Salt
+        i = 1
+        while i <= self._salt_len:
+            if src_idx < blksize:
+                src_buf[src_idx] = rand()
+                src_idx += 1
+                i += 1
+            if src_idx == blksize:
+                crypt_block()
+                src_idx = 0
+
+        # src_idx 指向 src_buf 下一个位置
+
+        plaindata_pos = 0
+        while plaindata_pos < len(plaindata):
+            if src_idx < blksize:
+                src_buf[src_idx] = plaindata[plaindata_pos]
+                src_idx += 1
+                plaindata_pos += 1
+            if src_idx == blksize:
+                crypt_block()
+                src_idx = 0
+
+        # src_idx 指向 src_buf 下一个位置
+
+        i = 1
+        while i <= self._zero_len:
+            if src_idx < 8:
+                src_buf[src_idx] = 0
+                src_idx += 1
+                i += 1
+            if src_idx == 8:
+                crypt_block()
+                src_idx = 0
+
+        return bytes(out_buf)
 
     def get_encrypt_result_len(self, plaindata: bytes) -> int:
+        # 根据 plaindata 长度计算 pad_len ，最小长度必须为8的整数倍
         pad_salt_body_zero_len = (len(plaindata) + self._salt_len + self._zero_len + 1)
         pad_len = pad_salt_body_zero_len % self.blocksize()
         if pad_len != 0:
+            # 模8余0需补0，余1补7，余2补6，...，余7补1
             pad_len = self.blocksize() - pad_len
 
+        # 返回的是加密结果预期的长度
         return pad_salt_body_zero_len + pad_len
