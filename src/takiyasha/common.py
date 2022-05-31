@@ -11,6 +11,7 @@ __all__ = ['Cipher', 'Ciphers', 'Crypter', 'KeylessCipher']
 class KeylessCipher:
     @staticmethod
     def cipher_name() -> str:
+        """Cipher 实现的名字。"""
         return 'No-op Keyless Cipher'
 
     @property
