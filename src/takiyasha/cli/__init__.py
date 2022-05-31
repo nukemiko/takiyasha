@@ -192,19 +192,11 @@ def task(srcfile: Path, destdir: Path, show_details: bool, dont_decrypt: bool, *
             if dont_decrypt:
                 del print_to_stdouts[-2]
                 del print_to_stdouts[1]
-            # print(f"=============================================\n"
-            #       f"任务 ID：{task_uuid}\n"
-            #       f"输入文件：'{srcfile}'\n"
-            #       f"加密类型：{type(crypter).__name__} ({crypter.cipher.cipher_name()})\n"
-            #       f"预计输出格式：{audio_ext.upper()}\n"
-            #       f"输出到：'{destfile}'\n"
-            #       f"============================================="
-            #       )
-
             print('\n'.join(print_to_stdouts))
 
         if dont_decrypt:
             return
+
         if destfile.exists():
             print_stdout(f"警告：'{destfile}'：路径已存在，跳过")
             return
