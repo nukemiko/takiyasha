@@ -8,13 +8,13 @@ from .legacy import Key256Mask128
 from ... import utils
 from ...standardciphers import TencentTEAWithModeCBC
 
-__all__ = ['decrypt_QMCv2_key', 'find_mflac_mask', 'find_mgg_mask']
+__all__ = ['decrypt_QMCv2_key', 'encrypt_QMCv2_key', 'find_mflac_mask', 'find_mgg_mask']
 
 
 def decrypt_QMCv2_key(ciphered_keydata: bytes) -> bytes:
-    decoded_raw_key = b64decode(ciphered_keydata, validate=True)
-    tea_key_recipe = decoded_raw_key[:8]
-    ciphered_segment = decoded_raw_key[8:]
+    decoded_ciphered_keydata = b64decode(ciphered_keydata, validate=True)
+    tea_key_recipe = decoded_ciphered_keydata[:8]
+    ciphered_segment = decoded_ciphered_keydata[8:]
 
     cipher = TencentTEAWithModeCBC.from_recipe(tea_key_recipe, rounds=32)
 
