@@ -2,111 +2,131 @@ from __future__ import annotations
 
 import multiprocessing as mp
 import sys
+from argparse import ArgumentError
 from pathlib import Path
-from time import sleep
 
+from . import utils
 from .argdefs import ap
-from .core import gen_srcs_dsts, task
-from .utils import print_stderr, print_stdout
+from .core import gen_pending_paths, mainflow
 
 
-def main() -> None:
-    mp.set_start_method('spawn')
+def main() -> int:
+    if sys.platform.startswith('linux'):
+        mp.set_start_method('fork')
+    else:
+        mp.set_start_method('spawn')
 
-    openfile_kwargs = vars(ap.parse_args())
+    try:
+        openfile_kwargs = vars(ap.parse_args())
+    except ArgumentError as exc:
+        utils.fatal(f'无法解析命令行参数：{exc}')
+        return 2
 
-    srcpaths: list[Path] = openfile_kwargs.pop('srcpaths')
-    destdir: Path = openfile_kwargs.pop('destdir')
-    destdir_is_srcdir: bool = openfile_kwargs.pop('destdir_is_srcdir')
+    srcfilepaths: list[Path] = openfile_kwargs.pop('srcfilepaths')
+    destdirpath_: Path = openfile_kwargs.pop('destdirpath')
+    destdirpath_is_srcfiledirpath: bool = openfile_kwargs.pop('destdirpath_is_srcfiledirpath')
     recursive: bool = openfile_kwargs.pop('recursive')
-    show_details: bool = openfile_kwargs.pop('show_details')
     enable_multiprocessing: bool = openfile_kwargs.pop('enable_multiprocessing')
     try_fallback: bool = openfile_kwargs.pop('try_fallback')
-    dont_decrypt: bool = openfile_kwargs.pop('dont_decrypt')
+    probe_only: bool = openfile_kwargs.pop('probe_only')
+    keep_quiet: bool = openfile_kwargs.pop('keep_quiet')
+    with_tag: bool = openfile_kwargs.pop('with_tag')
+    search_tag: bool = openfile_kwargs.pop('search_tag')
+    search_tag_from: str = openfile_kwargs.pop('search_tag_from')
 
-    tasked_paths = gen_srcs_dsts(*srcpaths,
-                                 destdir=destdir,
-                                 destdir_is_srcdir=destdir_is_srcdir,
-                                 recursive=recursive
-                                 )
+    utils.DISABLE_PRINT_FUNCS = keep_quiet
 
-    if len(tasked_paths) == 0:
-        print_stdout('错误：输入路径中没有任何受支持的文件')
-        print_stdout("提示：如果输入路径中存在目录，您应当加上 '-r' 或 '--recursive' 选项")
-        sys.exit(1)
-
-    if not openfile_kwargs['probe_content']:
-        print_stdout("警告：您添加了 '--faster' 选项")
-        print_stdout('将会跳过文件内容，仅根据文件名判断加密类型')
-        print_stdout('可能会导致部分文件无法识别和解密')
-
-    fallback_params = {
-        'try_fallback': True
-    }
     if try_fallback:
-        print_stdout("提示：您添加了 '-f' 或 '--try-fallback' 选项")
-        print_stdout('将在单个文件首次解密失败时，使用旧方案再次尝试')
-        print_stdout('（仅限部分支持的加密类型，且不保证成功）')
-        openfile_kwargs.update(fallback_params)
+        openfile_kwargs.update({
+            'try_fallback': True
+        }
+        )
 
-    if dont_decrypt:
-        print_stdout("提示：您添加了 '-t' 或 '--test' 选项")
-        print_stdout('将仅测试输入文件是否受支持，如果不支持将会发出警告')
-        print_stdout('不会解密任何输入文件，也不会产生任何输出文件')
+    try:
+        if destdirpath_is_srcfiledirpath:
+            pending_paths: list[tuple[Path, Path]] = list(
+                gen_pending_paths(srcfilepaths=srcfilepaths,
+                                  destdirpath=None,
+                                  recursive=recursive
+                                  )
+            )
+        else:
+            pending_paths: list[tuple[Path, Path]] = list(
+                gen_pending_paths(srcfilepaths, destdirpath_, recursive)
+            )
+    except (FileNotFoundError, NotADirectoryError):
+        return 1
+
+    if len(pending_paths) == 0:
+        utils.warn("未找到任何支持的输入文件。或许你忘了添加 '-r, --recursive' 选项？")
+        return 0
 
     if enable_multiprocessing:
-        print_stdout("提示：您添加了 '-p' 或 '--parallel' 选项")
-        print_stdout('将会使用多进程并行处理所有输入文件')
-        print_stdout('可能会消耗大量 CPU 和运行内存资源！')
+        utils.warn("您正处于并行处理模式，"
+                   "这可能导致 CPU、RAM 等系统资源消耗急剧上升！"
+                   )
 
-        task_procs: list[mp.Process] = []
-        for cursrcfile, curdstdir in tasked_paths:
-            params = {
-                'srcfile': cursrcfile,
-                'destdir': curdstdir,
-                'show_details': show_details,
-                'dont_decrypt': dont_decrypt
-            }
-            params.update(openfile_kwargs)
-
-            p = mp.Process(target=task, kwargs=params, name=str(cursrcfile))
-            p.start()
-            task_procs.append(p)
-
-        try:
-            while len(task_procs) > 0:
-                sleep(0.001)
-                for p in task_procs:
-                    if not p.is_alive():
-                        task_procs.remove(p)
-                        break
-        except KeyboardInterrupt:
-            print()
-            print_stderr('过程被用户终止')
-            for p in task_procs:
-                p.kill()
-            sys.exit(130)
-        else:
-            if not dont_decrypt:
-                print_stdout('所有文件均已解密完毕')
-            sys.exit()
-    else:
-        try:
-            for cursrcfile, curdstdir in tasked_paths:
-                params = {
-                    'srcfile': cursrcfile,
-                    'destdir': curdstdir,
-                    'show_details': show_details,
-                    'dont_decrypt': dont_decrypt
+        with mp.Manager() as mgr:
+            status_pool: list[bool] = mgr.list()
+            procs = []
+            for srcfilepath_, destdirpath_ in pending_paths:
+                mainflow_kwargs = {
+                    'srcfilepath': srcfilepath_,
+                    'destdirpath': destdirpath_,
+                    'probe_only': probe_only,
+                    'with_tag': with_tag,
+                    'search_tag': search_tag,
+                    'search_tag_from': search_tag_from,
+                    'status_pool': status_pool
                 }
-                params.update(openfile_kwargs)
+                mainflow_kwargs.update(openfile_kwargs)
 
-                task(**params)
-        except KeyboardInterrupt:
-            print()
-            print_stderr('过程被用户终止')
-            sys.exit(130)
+                p = mp.Process(target=mainflow, kwargs=mainflow_kwargs)
+                p.start()
+                procs.append(p)
+
+            try:
+                for p in procs:
+                    p.join()
+            except KeyboardInterrupt:
+                utils.fatal('用户使用 Ctrl+C 或 SIGINT 终止了操作')
+                for p in procs:
+                    p.terminate()
+                return 130
+
+            if all(status_pool):
+                utils.info('所有操作均已完成')
+                return 0
+            else:
+                utils.info(f'有 {status_pool.count(False)} 个操作未能完成，但没有致命错误')
+                return 0
+    else:
+        utils.warn("您添加了 '--np, --no-parallel' 选项，将不会使用并行处理进行解密，"
+                   "这会增加您的等待时间"
+                   )
+
+        status_pool: list[bool] = []
+        for srcfilepath_, destdirpath_ in pending_paths:
+            mainflow_kwargs = {
+                'srcfilepath': srcfilepath_,
+                'destdirpath': destdirpath_,
+                'probe_only': probe_only,
+                'with_tag': with_tag,
+                'search_tag': search_tag,
+                'search_from': search_tag_from,
+                'status_pool': status_pool
+            }
+            mainflow_kwargs.update(openfile_kwargs)
+
+            try:
+                mainflow(**mainflow_kwargs)
+            except KeyboardInterrupt:
+                utils.fatal('用户使用 Ctrl+C 或 SIGINT 终止了操作')
+                return 130
+
+        if all(status_pool):
+            utils.info('所有操作均已完成')
+            return 0
         else:
-            if not dont_decrypt:
-                print_stdout('所有文件均已解密完毕')
-            sys.exit()
+            utils.info(f'有 {status_pool.count(False)} 个操作未能完成，但没有致命错误')
+            return 0

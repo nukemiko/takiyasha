@@ -12,17 +12,17 @@ from .sniff import sniff_audio_file
 
 __VERSION__ = '0.6.0.dev4'
 
-__all__ = ['openfile', 'SupportsCrypters', 'NCM', 'NCMCache', 'QMCv1', 'QMCv2',
+__all__ = ['openfile', 'SupportsCrypter', 'NCM', 'NCMCache', 'QMCv1', 'QMCv2',
            'sniff_audio_file', 'TakiyashaException', 'get_version']
 
-SupportsCrypters = Union[NCM, NCMCache, QMCv1, QMCv2]
+SupportsCrypter = Union[NCM, NCMCache, QMCv1, QMCv2]
 
 
 def get_version() -> str:
     return __VERSION__
 
 
-def extensions_crypters() -> dict[str, Type[SupportsCrypters]]:
+def extensions_crypters() -> dict[str, Type[SupportsCrypter]]:
     return {
         r'^\.qmc[\da-z]{1,4}$': QMCv1,
         r'^\.mflac[\da-z]?$': QMCv2,
@@ -32,7 +32,7 @@ def extensions_crypters() -> dict[str, Type[SupportsCrypters]]:
     }
 
 
-def choose_crypter(filename: utils.FilePath) -> Type[SupportsCrypters] | None:
+def choose_crypter(filename: utils.FilePath) -> Type[SupportsCrypter] | None:
     ext = utils.get_filename_ext(filename)
 
     for regex, crypter_cls in extensions_crypters().items():
@@ -40,7 +40,7 @@ def choose_crypter(filename: utils.FilePath) -> Type[SupportsCrypters] | None:
             return crypter_cls
 
 
-def openfile(filething: utils.FileThing, probe_content: bool = True, **kwargs) -> SupportsCrypters | None:
+def openfile(filething: utils.FileThing, probe_content: bool = True, **kwargs) -> SupportsCrypter | None:
     """返回一个 ``Crypter`` 对象，可通过其操作加密的音频文件。
 
     在返回 ``Crypter`` 对象之前，会先探测文件的加密格式：
@@ -64,11 +64,11 @@ def openfile(filething: utils.FileThing, probe_content: bool = True, **kwargs) -
     if utils.is_filepath(filething):
         crypter_cls = choose_crypter(filething)  # type: ignore
         if crypter_cls is None:
-            crypter: SupportsCrypters | None = None
+            crypter: SupportsCrypter | None = None
         else:
-            crypter: SupportsCrypters | None = crypter_cls(filething, **kwargs)
+            crypter: SupportsCrypter | None = crypter_cls(filething, **kwargs)
     else:
-        crypter: SupportsCrypters | None = None
+        crypter: SupportsCrypter | None = None
 
     if crypter is None:
         if not utils.is_filepath(filething) or probe_content:
