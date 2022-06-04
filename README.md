@@ -48,7 +48,8 @@ Python 版本需求：大于等于 3.8
 
 需要的依赖项：
 
-- [pyaes](https://pypi.org/project/pyaes/)：AES 加解密支持
+- [pyaes](https://pypi.org/project/pyaes) - AES 加解密支持
+- [colorama](https://pypi.org/project/colorama) - 命令行输出中的颜色
 
 ### 从 Pypi 安装（推荐）
 
