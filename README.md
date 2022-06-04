@@ -24,26 +24,23 @@ Takiyasha 的设计灵感，以及部分解密方案，来源于 [Unlock Music P
 ## 特性
 
 - 跨平台：使用 Python 3 编写，只要系统中存在 Python 3.8 及以上环境，以及任意包管理器，就能安装并使用
-- [x] 支持多种加密音乐文件格式，[点击此处查看详情](#supported_formats)
-- [x] 针对主要功能，有完善的代码内文档
+- [x] <span id="supported_formats">支持的加密音乐文件格式</span>：
+    - QQ 音乐
+        - `.qmc*`
+        - `.mflac*`
+        - `.mgg*`
+        - 为以下加密文件提供部分支持：
+            - 从版本 18.57 及之后的 QQ 音乐 PC 客户端下载的 `.mflac*`/`.mgg*` 文件
+            - 从版本 11.5.5 及之后的 QQ 音乐 Android 客户端下载的 `.mflac*`/`.mgg*` 文件
+    - 网易云音乐
+        - `.ncm`
+        - `.uc!` （网易云音乐客户端的加密缓存文件）
+- [x] 作为 Python 库使用时，针对主要功能，有完善的 docstring
 - [x] 作为 Python 库使用时，支持解密和实验性的反向加密
 - [x] 命令行调用方式（仅限解密，不支持反向加密）
 - [x] 自动根据文件内容探测文件的加密类型
-- [x] 基于多进程的多文件并行处理（实验性功能）
+- [x] 基于多进程的多文件并行处理（已成为默认行为）
 - [ ] 自动补充解密后文件的标签信息（包括封面）
-
-## <span id="supported_formats">支持的加密文件格式</span>
-
-- QQ 音乐
-    - `.qmc*`
-    - `.mflac*`
-    - `.mgg*`
-    - 为以下加密文件提供部分支持：
-        - 从版本 18.57 及之后的 QQ 音乐 PC 客户端下载的 `.mflac*`/`.mgg*` 文件
-        - 从版本 11.5.5 及之后的 QQ 音乐 Android 客户端下载的 `.mflac*`/`.mgg*` 文件
-- 网易云音乐
-    - `.ncm`
-    - `.uc!` （网易云音乐客户端的加密缓存文件）
 
 ## 如何安装
 
@@ -78,23 +75,15 @@ Python 版本需求：大于等于 3.8
 
 `python -m takiyasha 1.ncm 2.qmcflac 3.mflac 4.mgg ...`
 
-使用 `-v, --details` 查看每一个输入文件的详细信息：
-
-`python -m takiyasha -v 1.ncm 2.qmcflac 3.mflac 4.mgg ...`
-
-使用 `-t, --test`，配合 `-v, --details` 查看输入文件信息但不解密：
+使用 `-t, --test`，只查看输入文件信息但不解密：
 
 `python -m takiyasha -vt 1.ncm 2.qmcflac 3.mflac 4.mgg ...`
-
-使用 `-p` 启用多文件并行处理特性（实验性功能）：
-
-`python -m takiyasha -p 1.ncm 2.qmcflac 3.mflac 4.mgg ...`
 
 使用 `-f, --try-fallback` 尝试解密“[仅部分支持](#supported_formats)”的文件：
 
 `python -m takiyasha -f hell.mflac damn.mgg`
 
-如果不加其他参数，解密成功的文件将会在当前工作目录下产生。
+如果不加其他参数，解密成功的文件将会在当前工作目录（`pwd` 或 `os.getcwd()` 的值）下产生。
 
 使用 `-h, --help` 获取完整的帮助信息。
 
