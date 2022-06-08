@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Generator, IO
+from typing import Generator, IO, Literal
 
 from . import utils
 from .. import openfile, SupportsCrypter
@@ -132,7 +132,7 @@ def mainflow(srcfilepath: Path,
              probe_only: bool = False,
              with_tag: bool = True,
              search_tag: bool = True,
-             search_tag_from: str = 'auto',
+             search_tag_from: Literal['auto', 'cloudmusic', 'qqmusic'] = 'auto',
              status_pool: list[bool] | None = None,
              **kwargs
              ) -> None:
