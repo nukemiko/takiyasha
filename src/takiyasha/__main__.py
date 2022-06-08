@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import sys
 
-from .cli.entry import main
-from .cli.utils import fatal
+from .entry import main
+from .utils import fatal
 
 if __name__ == '__main__':
     try:

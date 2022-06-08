@@ -1,103 +1,103 @@
 from __future__ import annotations
 
-from io import UnsupportedOperation
-from os import path, PathLike
-from random import choices as random_choices
-from string import ascii_letters, digits as strdigits
-from typing import Any, Callable, IO, Type, Union
+import sys
 
-FilePath = Union[str, bytes, PathLike]
-FileObject = Union[IO[str], IO[bytes]]
-FileThing = Union[FilePath, FileObject]
+import colorama
 
+from .constants import PROGNAME
+from libtakiyasha import SupportsCrypter
 
-def is_filepath(obj: Any) -> bool:
-    return isinstance(obj, (str, bytes)) or hasattr(obj, '__fspath__')
+DISABLE_PRINT_FUNCS: bool = False
+
+colorama.init()
 
 
-def verify_fileobj_readable(fileobj: IO,
-                            iotype: Type[str | bytes] | None = None
-                            ) -> None:
-    if iotype is None:
-        io_type: Type[str | bytes] = bytes
+def print_stderr(*values: object,
+                 sep: str | None = None,
+                 end: str | None = None,
+                 flush: bool = False,
+                 header: str | None = None
+                 ) -> None:
+    topheader = f'[{colorama.Fore.CYAN}{PROGNAME}{colorama.Fore.RESET}]'
+    if header:
+        topheader += header
+    if not DISABLE_PRINT_FUNCS:
+        print(topheader, *values, sep=sep, end=end, flush=flush, file=sys.stderr)
+
+
+def print_stdout(*values: object,
+                 sep: str | None = None,
+                 end: str | None = None,
+                 flush: bool = False,
+                 header: str | None = None
+                 ) -> None:
+    topheader = f'[{colorama.Fore.CYAN}{PROGNAME}{colorama.Fore.RESET}]'
+    if header:
+        topheader += header
+    if not DISABLE_PRINT_FUNCS:
+        print(topheader, *values, sep=sep, end=end, flush=flush)
+
+
+# 在打印一般信息时使用
+def info(*values: object,
+         sep: str | None = None,
+         end: str | None = None,
+         flush: bool = False
+         ) -> None:
+    print_stderr(*values,
+                 sep=sep,
+                 end=end,
+                 flush=flush,
+                 header=f'[INFO]'
+                 )
+
+
+# 在警告使用者可能出现的情况时使用
+def warn(*values: object,
+         sep: str | None = None,
+         end: str | None = None,
+         flush: bool = False
+         ) -> None:
+    print_stderr(*values,
+                 sep=sep,
+                 end=end,
+                 flush=flush,
+                 header=f'[{colorama.Fore.YELLOW}WARN{colorama.Fore.RESET}]'
+                 )
+
+
+# 在单个文件的探测/解密过程中出错时使用
+def error(*values: object,
+          sep: str | None = None,
+          end: str | None = None,
+          flush: bool = False
+          ) -> None:
+    print_stderr(*values,
+                 sep=sep,
+                 end=end,
+                 flush=flush,
+                 header=f'[{colorama.Fore.RED}ERROR{colorama.Fore.RESET}]'
+                 )
+
+
+# 出现要使程序立即退出的致命错误时使用
+def fatal(*values: object,
+          sep: str | None = None,
+          end: str | None = None,
+          flush: bool = False
+          ) -> None:
+    if sep is None:
+        sep = f' '
+    if end is None:
+        end = f'{colorama.Fore.RESET}{colorama.Back.RESET}\n'
     else:
-        io_type: Type[str | bytes] = iotype
-
-    readable_attr: Callable[[], bool] | bool | None = getattr(fileobj, 'readable', None)
-    if callable(readable_attr):
-        is_readable: bool = readable_attr()
-    elif isinstance(readable_attr, bool):
-        is_readable: bool = readable_attr
-    else:
-        is_readable: bool = True
-
-    if not is_readable:
-        raise UnsupportedOperation('read')
-
-    readresult: io_type = fileobj.read(0)
-    if not isinstance(readresult, io_type):
-        raise ValueError(f'result type of read() mismatch '
-                         f'({type(readresult).__name__} != {io_type.__name__})'
-                         )
+        end = f'{colorama.Fore.RESET}{colorama.Back.RESET}{end}'
+    print_stderr(colorama.Back.RED + colorama.Fore.WHITE + sep.join((str(_) for _ in values)),
+                 end=end,
+                 flush=flush,
+                 header=f'[{colorama.Fore.LIGHTRED_EX}FATAL{colorama.Fore.RESET}]'
+                 )
 
 
-def verify_fileobj_seekable(fileobj: IO) -> None:
-    seekable_attr: Callable[[], bool] | bool | None = getattr(fileobj, 'seekable', None)
-    if callable(seekable_attr):
-        is_seekable: bool = seekable_attr()
-    elif isinstance(seekable_attr, bool):
-        is_seekable: bool = seekable_attr
-    else:
-        is_seekable: bool = True
-
-    if not is_seekable:
-        raise UnsupportedOperation('seek')
-
-    fileobj.seek(0, 1)
-
-
-def verify_fileobj_writable(fileobj: IO,
-                            iotype: Type[str | bytes] | None = None
-                            ) -> None:
-    if iotype is None:
-        io_type: Type[str | bytes] = bytes
-    else:
-        io_type: Type[str | bytes] = iotype
-
-    writable_attr: Callable[[], bool] | bool | None = getattr(fileobj, 'writable', None)
-    if callable(writable_attr):
-        is_writable: bool = writable_attr()
-    elif isinstance(writable_attr, bool):
-        is_writable: bool = writable_attr
-    else:
-        is_writable: bool = True
-
-    if not is_writable:
-        raise UnsupportedOperation('write')
-
-    fileobj.write(io_type())
-
-
-def bytesxor(term1: bytes, term2: bytes) -> bytes:
-    segment1 = bytes(term1)
-    segment2 = bytes(term2)
-
-    if len(segment1) != len(segment2):
-        raise ValueError('only byte strings of equal length can be xored')
-
-    def xor():
-        for b1, b2 in zip(segment1, segment2):
-            yield b1 ^ b2
-
-    return bytes(xor())
-
-
-def gen_random_string(length: int,
-                      recipe: str = strdigits + ascii_letters
-                      ) -> str:
-    return ''.join(random_choices(recipe, k=length))
-
-
-def get_filename_ext(filename: FilePath) -> str:
-    stem, ext = path.splitext(path.basename(filename))
-    return str(ext).lower()
+def get_encryption_name(crypter: SupportsCrypter) -> str:
+    return f'{type(crypter).__name__} ({crypter.cipher.cipher_name()})'

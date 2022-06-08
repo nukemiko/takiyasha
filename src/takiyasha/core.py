@@ -5,8 +5,8 @@ from pathlib import Path
 from typing import Generator, IO, Literal
 
 from . import utils
-from .. import openfile, SupportsCrypter
-from ..sniff import sniff_audio_file
+from libtakiyasha import openfile, SupportsCrypter
+from libtakiyasha.sniff import sniff_audio_file
 
 
 def gen_pending_paths(srcfilepaths: list[Path],

@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 from .constants import DESCRIPTION, EPILOG, PROGNAME
-from .. import get_version
+from libtakiyasha import get_version
 
 
 class ShowSupportedFormatsAndExit(argparse.Action):
