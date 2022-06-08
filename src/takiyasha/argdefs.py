@@ -4,8 +4,8 @@ import argparse
 import sys
 from pathlib import Path
 
-from .constants import DESCRIPTION, EPILOG, PROGNAME
 from libtakiyasha import get_version
+from .constants import DESCRIPTION, EPILOG, PROGNAME
 
 
 class ShowSupportedFormatsAndExit(argparse.Action):
@@ -99,7 +99,7 @@ decrypt_options.add_argument('-f', '--try-fallback',
                                   '使用后备方案再次尝试（有几率成功）'
                              )
 
-tag_options = ap.add_argument_group(title='标签相关选项')
+tag_options = ap.add_argument_group(title='标签信息和封面相关选项（目前没有作用）')
 tag_options.add_argument('--notag',
                          dest='with_tag',
                          action='store_false',
@@ -108,13 +108,14 @@ tag_options.add_argument('--notag',
 tag_options.add_argument('--avoid-search-tag',
                          dest='search_tag',
                          action='store_false',
-                         help="不要从网络上查找缺失的标签；仅在未添加 '--notag' 选项时有效"
+                         help="不要从网络上查找缺失的标签；\n"
+                              "仅在未添加 '--notag' 选项时有效"
                          )
 tag_options.add_argument('--search-tag-from',
                          dest='search_tag_from',
                          action='store',
                          choices=('auto', 'cloudmusic', 'qqmusic'),
                          default='auto',
-                         help="在哪里查找缺失的标签，默认为自动选择；\n"
+                         help="在哪里查找缺失的标签，默认为根据加密类型自动选择；\n"
                               "仅在未添加 '--notag' 和 '--avoid-search-tag' 选项时有效"
                          )
