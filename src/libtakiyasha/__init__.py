@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-__VERSION__ = '0.6.0.dev4'
+__VERSION__ = '0.6.0.dev5'
 
 import re
 from typing import Type, Union
