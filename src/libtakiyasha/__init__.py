@@ -37,7 +37,7 @@ def choose_crypter(filename: utils.FilePath) -> Type[SupportsCrypter] | None:
             return crypter_cls
 
 
-def openfile(filething: utils.FileThing, probe_content: bool = True, **kwargs) -> SupportsCrypter | None:
+def openfile(filething: utils.FileThing, probe_content: bool = True, **crypter_kwargs) -> SupportsCrypter | None:
     """返回一个 ``Crypter`` 对象，可通过其操作加密的音频文件。
 
     在返回 ``Crypter`` 对象之前，会先探测文件的加密格式：
@@ -63,7 +63,7 @@ def openfile(filething: utils.FileThing, probe_content: bool = True, **kwargs) -
         if crypter_cls is None:
             crypter: SupportsCrypter | None = None
         else:
-            crypter: SupportsCrypter | None = crypter_cls(filething, **kwargs)
+            crypter: SupportsCrypter | None = crypter_cls(filething, **crypter_kwargs)
     else:
         crypter: SupportsCrypter | None = None
 
@@ -71,7 +71,7 @@ def openfile(filething: utils.FileThing, probe_content: bool = True, **kwargs) -
         if not utils.is_filepath(filething) or probe_content:
             for crypter_cls in tuple(set(extensions_crypters().values())):
                 try:
-                    crypter = crypter_cls(filething, **kwargs)
+                    crypter = crypter_cls(filething, **crypter_kwargs)
                 except TakiyashaException:
                     pass
                 else:
