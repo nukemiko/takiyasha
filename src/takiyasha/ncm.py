@@ -174,7 +174,7 @@ class NCM(Crypter):
             identifier = raw_encrypted_tagdata
             tagdata_cipher = StreamedAESWithModeECB(self.meta_key())
             tagdata.update(json.loads(tagdata_cipher.decrypt(encrypted_tagdata)[6:]))  # 在 JSON 反序列化之前，去除字节串开头的 b'music:'
-            tagdata['identifier'] = identifier
+            tagdata['identifier'] = identifier.decode()
 
         fileobj.seek(5, 1)
 
