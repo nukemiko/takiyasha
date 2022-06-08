@@ -3,7 +3,7 @@ from __future__ import annotations
 from io import BytesIO, IOBase, UnsupportedOperation
 from typing import IO, Union
 
-from .utils import FileThing, is_filepath, verify_fileobj_readable, verify_fileobj_seekable, verify_fileobj_writable
+from . import utils
 
 __all__ = ['Cipher', 'Ciphers', 'Crypter', 'KeylessCipher']
 
@@ -60,7 +60,7 @@ Ciphers = Union[KeylessCipher, Cipher]
 
 
 class Crypter(IOBase, IO[bytes]):
-    def __init__(self, filething: FileThing | None = None, **kwargs) -> None:
+    def __init__(self, filething: utils.FileThing | None = None, **kwargs) -> None:
         if filething is None:
             self._raw = BytesIO()
             self._cipher: Ciphers = KeylessCipher()
@@ -68,29 +68,29 @@ class Crypter(IOBase, IO[bytes]):
         else:
             self.load(filething, **kwargs)
 
-    def load(self, filething: FileThing, **kwargs) -> None:
-        if is_filepath(filething):
+    def load(self, filething: utils.FileThing, **kwargs) -> None:
+        if utils.is_filepath(filething):
             fileobj: IO[bytes] = open(filething, 'rb')  # type: ignore
             self._name: str | None = fileobj.name
         else:
             fileobj: IO[bytes] = filething  # type: ignore
             self._name: str | None = getattr(fileobj, 'name', None)
-            verify_fileobj_readable(fileobj, bytes)
-            verify_fileobj_seekable(fileobj)
+            utils.verify_fileobj_readable(fileobj, bytes)
+            utils.verify_fileobj_seekable(fileobj)
 
         fileobj.seek(0, 0)
         self._raw = BytesIO(fileobj.read())
-        if is_filepath(filething):
+        if utils.is_filepath(filething):
             fileobj.close()
         self._cipher: Ciphers = KeylessCipher()
 
-    def save(self, filething: FileThing | None = None, **kwargs) -> None:
+    def save(self, filething: utils.FileThing | None = None, **kwargs) -> None:
         if filething:
-            if is_filepath(filething):
+            if utils.is_filepath(filething):
                 fileobj: IO[bytes] = open(filething, 'wb')  # type: ignore
             else:
                 fileobj: IO[bytes] = filething  # type: ignore
-                verify_fileobj_writable(fileobj, bytes)
+                utils.verify_fileobj_writable(fileobj, bytes)
         elif self._name:
             fileobj: IO[bytes] = open(self._name, 'wb')
         else:
@@ -98,7 +98,7 @@ class Crypter(IOBase, IO[bytes]):
 
         self._raw.seek(0, 0)
         fileobj.write(self._raw.read())
-        if is_filepath(filething):
+        if utils.is_filepath(filething):
             fileobj.close()
 
     @property

@@ -3,7 +3,7 @@ from __future__ import annotations
 from io import BytesIO
 from typing import IO, Literal
 
-from .ciphers.keycryption import decrypt_QMCv2_key, encrypt_QMCv2_key, find_mflac_mask, find_mgg_mask
+from .ciphers import keycryption
 from .ciphers.legacy import Key256Mask128, OldStaticMap
 from .ciphers.modern import DynamicMap, ModifiedRC4, StaticMap
 from .. import utils
@@ -295,7 +295,7 @@ class QMCv2(Crypter):
                     audio_len = fileobj.seek(-(4 + int.from_bytes(tail, 'little')), 2)
                 else:
                     audio_len = fileobj.seek(-4, 2)
-                b64encoded_ciphered_keydata: bytes | None = find_mflac_mask(fileobj) or find_mgg_mask(fileobj)
+                b64encoded_ciphered_keydata: bytes | None = keycryption.find_mflac_mask(fileobj) or keycryption.find_mgg_mask(fileobj)
                 songid = None
                 unknown = None
                 if not b64encoded_ciphered_keydata:
@@ -322,7 +322,7 @@ class QMCv2(Crypter):
         if tail in self.unsupported_file_tailer() and try_fallback:
             self._cipher: DynamicMap | ModifiedRC4 | Key256Mask128 = Key256Mask128(b64encoded_ciphered_keydata)
         else:
-            key = decrypt_QMCv2_key(b64encoded_ciphered_keydata)
+            key = keycryption.decrypt_QMCv2_key(b64encoded_ciphered_keydata)
             if 0 < len(key) < 300:
                 self._cipher: DynamicMap | ModifiedRC4 | Key256Mask128 = DynamicMap(key)
             else:
@@ -353,7 +353,7 @@ class QMCv2(Crypter):
         """
         use_qtag: bool = kwargs.get('use_qtag', False)
 
-        encoded_encrypted_keydata = encrypt_QMCv2_key(self._cipher.key)
+        encoded_encrypted_keydata = keycryption.encrypt_QMCv2_key(self._cipher.key)
 
         if use_qtag:
             songid: int | None = kwargs.get('songid', self._songid)
