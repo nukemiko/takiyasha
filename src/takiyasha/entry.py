@@ -78,7 +78,6 @@ def main(argv: list[str] | None = None) -> int:
                     'probe_only': probe_only,
                     'with_tag': with_tag,
                     'search_tag': search_tag,
-                    'search_tag_from': search_tag_from,
                     'status_pool': status_pool
                 }
                 mainflow_kwargs.update(openfile_kwargs)
@@ -115,7 +114,6 @@ def main(argv: list[str] | None = None) -> int:
                 'probe_only': probe_only,
                 'with_tag': with_tag,
                 'search_tag': search_tag,
-                'search_from': search_tag_from,
                 'status_pool': status_pool
             }
             mainflow_kwargs.update(openfile_kwargs)
