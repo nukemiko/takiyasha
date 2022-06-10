@@ -111,11 +111,3 @@ tag_options.add_argument('--avoid-search-tag',
                          help="不要从网络上查找缺失的标签；\n"
                               "仅在未添加 '--notag' 选项时有效"
                          )
-tag_options.add_argument('--search-tag-from',
-                         dest='search_tag_from',
-                         action='store',
-                         choices=('auto', 'cloudmusic', 'qqmusic'),
-                         default='auto',
-                         help="在哪里查找缺失的标签，默认为根据加密类型自动选择；\n"
-                              "仅在未添加 '--notag' 和 '--avoid-search-tag' 选项时有效"
-                         )

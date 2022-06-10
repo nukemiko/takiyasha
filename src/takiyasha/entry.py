@@ -32,7 +32,6 @@ def main() -> int:
     keep_quiet: bool = openfile_kwargs.pop('keep_quiet')
     with_tag: bool = openfile_kwargs.pop('with_tag')
     search_tag: bool = openfile_kwargs.pop('search_tag')
-    search_tag_from: str = openfile_kwargs.pop('search_tag_from')
 
     utils.DISABLE_PRINT_FUNCS = keep_quiet
 

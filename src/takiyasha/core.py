@@ -132,7 +132,6 @@ def mainflow(srcfilepath: Path,
              probe_only: bool = False,
              with_tag: bool = True,
              search_tag: bool = True,
-             search_tag_from: Literal['auto', 'cloudmusic', 'qqmusic'] = 'auto',
              status_pool: list[bool] | None = None,
              **kwargs
              ) -> None:
