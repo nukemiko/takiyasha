@@ -22,13 +22,21 @@ class ShowSupportedFormatsAndExit(argparse.Action):
         sys.exit()
 
 
-ap = argparse.ArgumentParser(prog=PROGNAME,
-                             add_help=False,
-                             formatter_class=argparse.RawTextHelpFormatter,
-                             description=DESCRIPTION,
-                             epilog=EPILOG,
-                             exit_on_error=False
-                             )
+try:
+    ap = argparse.ArgumentParser(prog=PROGNAME,
+                                 add_help=False,
+                                 formatter_class=argparse.RawTextHelpFormatter,
+                                 description=DESCRIPTION,
+                                 epilog=EPILOG,
+                                 exit_on_error=False
+                                 )
+except TypeError:
+    ap = argparse.ArgumentParser(prog=PROGNAME,
+                                 add_help=False,
+                                 formatter_class=argparse.RawTextHelpFormatter,
+                                 description=DESCRIPTION,
+                                 epilog=EPILOG
+                                 )
 
 positional_args = ap.add_argument_group(title='必要的位置参数')
 positional_args.add_argument('srcfilepaths',

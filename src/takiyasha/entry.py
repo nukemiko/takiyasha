@@ -10,14 +10,17 @@ from .argdefs import ap
 from .core import gen_pending_paths, mainflow
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     if sys.platform.startswith('linux'):
         mp.set_start_method('fork')
     else:
         mp.set_start_method('spawn')
 
     try:
-        openfile_kwargs = vars(ap.parse_args())
+        if argv:
+            openfile_kwargs = vars(ap.parse_args(argv))
+        else:
+            openfile_kwargs = vars(ap.parse_args())
     except ArgumentError as exc:
         utils.fatal(f'无法解析命令行参数：{exc}')
         return 2
