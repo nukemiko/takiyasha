@@ -12,11 +12,11 @@ Takiyasha 的设计灵感，以及部分解密方案，来源于 [Unlock Music P
 
 ## 重要事项
 
-在此分支中，包的结构和行为已经发生了翻天覆地的变化，因此不再兼容为之前的版本编写的工具。
+在 v0.4.2 之后的版本中，包的结构、行为、命令行调用等已经发生了翻天覆地的变化。
 
-**此分支中的版本，相较于之前版本，命令行调用参数有了重大变化。如果你有正常使用的需求，请谨慎升级。**
+如果你曾针对 v0.4.2 或者之前的版本制作过脚本或工具，那么它们已经不再适用于当前版本（v0.6.0.dev1 及之后）。
 
-如果你不小心更新到了从此分支发布的版本，按照以下步骤回滚至最后一个稳定版本 v0.4.2：
+如果你有使用 v0.4.2 的需求，按照以下步骤回滚：
 
 1. 卸载：`pip uninstall takiyasha`
 2. 安装 v0.4.2：`pip install -U takiyasha==0.4.2`
@@ -29,7 +29,7 @@ Takiyasha 的设计灵感，以及部分解密方案，来源于 [Unlock Music P
         - `.qmc*`
         - `.mflac*`
         - `.mgg*`
-        - 为以下加密文件提供部分支持：
+        - 为以下加密文件提供部分支持，但不保证能成功解密：
             - 从版本 18.57 及之后的 QQ 音乐 PC 客户端下载的 `.mflac*`/`.mgg*` 文件
             - 从版本 11.5.5 及之后的 QQ 音乐 Android 客户端下载的 `.mflac*`/`.mgg*` 文件
     - 网易云音乐
@@ -40,7 +40,7 @@ Takiyasha 的设计灵感，以及部分解密方案，来源于 [Unlock Music P
 - [x] 命令行调用方式（仅限解密，不支持反向加密）
 - [x] 自动根据文件内容探测文件的加密类型
 - [x] 基于多进程的多文件并行处理（已成为默认行为）
-- [ ] 自动补充解密后文件的标签信息（包括封面）
+- [x] 自动补充解密后文件的标签信息（包括封面）
 
 ## 如何安装
 
@@ -50,6 +50,10 @@ Python 版本需求：大于等于 3.8
 
 - [pyaes](https://pypi.org/project/pyaes) - AES 加解密支持
 - [colorama](https://pypi.org/project/colorama) - 命令行输出中的颜色
+- [mutagen](https://pypi.org/project/mutagen) - 为输出文件写入标签和封面
+- [MusicTagFindUtils](https://pypi.org/project/MusicTagFindUtils) - 从网易云音乐和 QQ 音乐查找输出文件的标签信息和封面
+    - 版本号必须大于等于 v0.1.2
+- [requests](https://pypi.org/project/requests) - 网络请求库，用于下载封面信息
 
 ### 从 Pypi 安装（推荐）
 
@@ -57,13 +61,12 @@ Python 版本需求：大于等于 3.8
 
 ### 从本仓库安装
 
-执行命令：`pip install -U git+https://github.com/nukemiko/takiyasha@remaked`
+执行命令：`pip install -U git+https://github.com/nukemiko/takiyasha`
 
 ### 安装最新发布版本
 
 1. 进入[此页面](https://github.com/nukemiko/takiyasha/releases/latest)，下载最新版本
     - 如果要下载其他版本（包括预发布版本），请直接前往[历史发布页面](https://github.com/nukemiko/takiyasha/releases)寻找和下载
-    - 从本分支发布的版本全都是预发布版本，只能在[历史发布页面](https://github.com/nukemiko/takiyasha/releases)下找到
 2. 下载 Wheel 安装包（扩展名为 `.whl` 的文件）
 3. 下载完毕后，执行命令：
     `pip install -U /path/to/package.whl`
@@ -87,7 +90,3 @@ Python 版本需求：大于等于 3.8
 如果不加其他参数，解密成功的文件将会在当前工作目录（`pwd` 或 `os.getcwd()` 的值）下产生。
 
 使用 `-h, --help` 获取完整的帮助信息。
-
-### 作为 Python 库使用
-
-> 敬请期待
