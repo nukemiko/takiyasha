@@ -107,7 +107,7 @@ decrypt_options.add_argument('-f', '--try-fallback',
                                   '使用后备方案再次尝试（有几率成功）'
                              )
 
-tag_options = ap.add_argument_group(title='标签信息和封面相关选项（目前没有作用）')
+tag_options = ap.add_argument_group(title='标签信息和封面相关选项')
 tag_options.add_argument('--notag',
                          dest='with_tag',
                          action='store_false',

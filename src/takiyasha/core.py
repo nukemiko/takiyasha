@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Generator, IO, Literal
+from typing import Generator, IO
 
-from . import utils
-from libtakiyasha import openfile, SupportsCrypter
+from libtakiyasha import NCM, openfile, QMCv1, QMCv2, SupportsCrypter
 from libtakiyasha.sniff import sniff_audio_file
+from . import utils
+from .tag.complete import complete_from_cloudmusic, complete_from_qqmusic
 
 
 def gen_pending_paths(srcfilepaths: list[Path],
@@ -27,10 +28,6 @@ def gen_pending_paths(srcfilepaths: list[Path],
         if not destdirpath.is_dir():
             utils.fatal(f"输出路径 '{destdirpath}' 不是目录，退出")
             raise NotADirectoryError
-
-    # 去除 srcfilepaths 中经过解析后的重复路径
-    # _ = {p.resolve() for p in srcfilepaths}
-    # srcfilepaths = sorted(list(_))
 
     for srcfilepath in srcfilepaths:
         if srcfilepath.exists():
@@ -175,9 +172,14 @@ def mainflow(srcfilepath: Path,
 
     # 补充标签信息
     if with_tag:
-        bool(search_tag)
-        bool(search_tag_from)
-        utils.warn('补充标签信息的功能尚未实现，敬请期待')
+        if isinstance(crypter, NCM):
+            complete_from_cloudmusic(
+                destfile, crypter.tagdata, crypter.coverdata, search_tag=search_tag
+            )
+        elif isinstance(crypter, (QMCv1, QMCv2)):
+            complete_from_qqmusic(destfile, search_tag=search_tag)
+
+    destfile.close()
 
     return_handler(True)
     return
