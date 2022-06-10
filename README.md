@@ -1,176 +1,92 @@
-# Takiyasha ![](https://img.shields.io/badge/Python-3.8+-blue)
+# Takiyasha ![](https://img.shields.io/badge/Python-3.8+-red)
 
-Takiyasha 是用来解锁被加密的音乐文件的工具，支持多种加密格式。
+Takiyasha 是一个用来解密多种加密音乐文件的工具。
 
-**Takiyasha 项目是以学习和技术研究的初衷创建的，修改、再分发时请遵循 [License](https://github.com/nukemiko/takiyasha/blob/master/LICENSE)。**
+[Github](https://github.com/nukemiko/takiyasha/tree/remaked) | [Notabug](https://notabug.org/MiketsuSmasher/takiyasha/src/remaked)
 
-Takiyasha 解锁部分加密格式文件的能力，来源于此项目：[Unlock Music Project - CLI Edition](https://github.com/unlock-music/cli)
+**本项目是以学习和技术研究的初衷创建的，修改、再分发时请遵循 [License](https://github.com/nukemiko/takiyasha/blob/remaked/LICENSE)。**
 
-也可以看看：[此项目位于 Notabug 上的备份](https://notabug.org/MiketsuSmasher/takiyasha)
+Takiyasha 的设计灵感，以及部分解密方案，来源于 [Unlock Music Project - CLI Edition](https://github.com/unlock-music/cli)。
 
-## [预览版](https://github.com/nukemiko/takiyasha/tree/remaked)
+**Takiyasha 对输出数据的可用性（是否可以识别、播放等）不做任何保证。**
 
-**Takiyasha 的最新预览版本已经有了重大变化：**
+## 重要事项
 
-- 重写了命令行入口
-- 基于多进程的多文件并行处理
-- 支持解密**部分**[现有稳定版本不支持的文件](#supported_encrypt_format)
-- 支持反向加密（仅限作为 Python 库被调用时，命令行无此功能）
+在 v0.4.2 之后的版本中，包的结构、行为、命令行调用等已经发生了翻天覆地的变化。
 
-目前的最新预览版本：[v0.6.0.dev4](https://github.com/nukemiko/takiyasha/releases/tag/v0.6.0.dev4)
+如果你曾针对 v0.4.2 或者之前的版本制作过脚本或工具，那么它们已经不再适用于当前版本（v0.6.0.dev1 及之后）。
 
-由于已发布的预览版全都是预发布版本，因此你需要前往[发布页面](https://github.com/nukemiko/takiyasha/releases)自行寻找。
+如果你有使用 v0.4.2 的需求，按照以下步骤回滚：
+
+1. 卸载：`pip uninstall takiyasha`
+2. 安装 v0.4.2：`pip install -U takiyasha==0.4.2`
 
 ## 特性
 
-- 使用 Python 3 编写
-- 跨平台：只要系统上可以运行 Python 3 和使用 pip，就可以安装和使用
-- [支持多种加密格式](#supported_encrypt_format)
-- 可自动识别并解锁没有扩展名的加密文件
-- 支持为解锁后的文件补全元数据（包括封面，仅限`.ncm`/`.qmc*`/`.mflac*`/`.mgg*`）
+- 跨平台：使用 Python 3 编写，只要系统中存在 Python 3.8 及以上环境，以及任意包管理器，就能安装并使用
+- [x] <span id="supported_formats">支持的加密音乐文件格式</span>：
+    - QQ 音乐
+        - `.qmc*`
+        - `.mflac*`
+        - `.mgg*`
+        - 为以下加密文件提供部分支持，但不保证能成功解密：
+            - 从版本 18.57 及之后的 QQ 音乐 PC 客户端下载的 `.mflac*`/`.mgg*` 文件
+            - 从版本 11.5.5 及之后的 QQ 音乐 Android 客户端下载的 `.mflac*`/`.mgg*` 文件
+    - 网易云音乐
+        - `.ncm`
+        - `.uc!` （网易云音乐客户端的加密缓存文件）
+- [x] 作为 Python 库使用时，针对主要功能，有完善的 docstring
+- [x] 作为 Python 库使用时，支持解密和实验性的反向加密
+- [x] 命令行调用方式（仅限解密，不支持反向加密）
+- [x] 自动根据文件内容探测文件的加密类型
+- [x] 基于多进程的多文件并行处理（已成为默认行为）
+- [x] 自动补充解密后文件的标签信息（包括封面）
 
-### <span id="supported_encrypt_format">支持的加密格式</span>
+## 如何安装
 
-- 文件扩展名中含有 `.qmc`、`.mflac`、`.mgg`、`.ncm`、`.kgm`、`.vpr` 字样的文件。
-    - 可在安装后使用 `takiyasha --formats` 查看所有支持的加密格式。
-- **目前（截至2022-05-31），稳定版不支持解锁以下来源的加密文件：**
-    - 版本 1857 及以上的 QQ 音乐 PC 客户端（`.mflac*`、`.mgg*`）
-    - 版本 11.55 及以上的 QQ 音乐 Android 客户端（`.mflac*`、`.mgg*`）
-    - Apple Music/Spotify 等流媒体平台（在可预见的未来没有可能支持）
+Python 版本需求：大于等于 3.8
 
-如果您想解锁这些文件，可以尝试[预览版](https://github.com/nukemiko/takiyasha/tree/remaked)。
+需要的依赖项：
 
-### 适用群体
+- [pyaes](https://pypi.org/project/pyaes) - AES 加解密支持
+- [colorama](https://pypi.org/project/colorama) - 命令行输出中的颜色
+- [mutagen](https://pypi.org/project/mutagen) - 为输出文件写入标签和封面
+- [MusicTagFindUtils](https://pypi.org/project/MusicTagFindUtils) - 从网易云音乐和 QQ 音乐查找输出文件的标签信息和封面
+    - 版本号必须大于等于 v0.1.2
+- [requests](https://pypi.org/project/requests) - 网络请求库，用于下载封面信息
 
-- 经常批量下载和解锁加密格式的用户
-- 重视结果大于重视过程的用户
-    - 受限于 Python 的语言特性，解锁过程很慢
-    - 我们的测试结果表明，在 Pyston 环境下，平均解锁速度提高了36%。因此，如果有条件，可以使用 [Pyston](https://github.com/pyston/pyston) 替代 Python 以加速解锁
-- 想要研究算法和提升自己技术水平的开发者
+### 从 Pypi 安装（推荐）
 
-## <span id="how_to_install">如何安装</span>
+执行命令：`pip install -U takiyasha`
 
-- 所需运行环境
-    - Python 版本：大于或等于 3.8
-- 所需依赖
-    - Python 包：[click](https://pypi.org/project/click/) - 提供命令行界面
-    - Python 包：[mutagen](https://pypi.org/project/mutagen/) - 向输出文件写入歌曲信息
-    - Python 包：[pycryptodomex](https://pypi.org/project/pycryptodomex/) - 部分加密格式的解锁支持
-    - Python 包：[requests](https://pypi.org/project/requests/) - 为缺失封面的已解锁文件下载封面
+### 从本仓库安装
 
-### （推荐）从 Pypi 安装
+执行命令：`pip install -U git+https://github.com/nukemiko/takiyasha`
 
-使用命令：`pip install -U takiyasha`
+### 安装最新发布版本
 
-### 通过已发布的 wheel (.whl) 包文件安装
-
-- 前往发布页面
-    - [Github](https://github.com/nukemiko/takiyasha/releases)
-    - [Notabug](https://notabug.org/MiketsuSmasher/takiyasha/releases)
-- 找到你需要的版本（一般是最新版本）
-- 按照发布说明进行下载和安装
-
-### （不推荐）直接从仓库安装
-
-使用命令：
-
-Github: `pip install -U git+https://github.com/nukemiko/takiyasha`
-
-Notabug: `pip install -U git+https://notabug.org/MiketsuSmasher/takiyasha`
-
-需要你先安装`git`。
+1. 进入[此页面](https://github.com/nukemiko/takiyasha/releases/latest)，下载最新版本
+    - 如果要下载其他版本（包括预发布版本），请直接前往[历史发布页面](https://github.com/nukemiko/takiyasha/releases)寻找和下载
+2. 下载 Wheel 安装包（扩展名为 `.whl` 的文件）
+3. 下载完毕后，执行命令：
+    `pip install -U /path/to/package.whl`
 
 ## 如何使用
 
-### 命令行（CMD/Powershell/Terminal 等）
+### 命令行环境
 
-Takiyasha 提供了 3 个命令入口：
-- `takiyasha`
-- `unlocker`
-- `takiyasha-unlocker`
+简单易用：
 
-它们只存在命令长度上的区别。
+`python -m takiyasha 1.ncm 2.qmcflac 3.mflac 4.mgg ...`
 
-- 直接执行命令：
-    - `takiyasha file1 file2 dir1 ...`
-    - `unlocker file3 file4 dir2 ...`
-- 直接运行模块：`python -m takiyasha file5 file6 dir3 dir4 ...`
+使用 `-t, --test`，只查看输入文件信息但不解密：
 
-无论怎样运行，都可以使用 `-h/--help` 选项获得更多帮助信息。
+`python -m takiyasha -vt 1.ncm 2.qmcflac 3.mflac 4.mgg ...`
 
-### 作为 Python 模块导入使用
+使用 `-f, --try-fallback` 尝试解密“[仅部分支持](#supported_formats)”的文件：
 
-1. 创建一个 Decoder 对象：
+`python -m takiyasha -f hell.mflac damn.mgg`
 
-    ```python
-    from takiyasha import new_decoder
+如果不加其他参数，解密成功的文件将会在当前工作目录（`pwd` 或 `os.getcwd()` 的值）下产生。
 
-    qmcflac_dec = new_decoder('test.qmcflac')
-    mflac_dec = new_decoder('test.mflac')
-    ncm_dec = new_decoder('test.ncm')
-    noop_dec = new_decoder('test.kv2')  # “test.kv2”是扩展名为“kv2”的 mp3 文件
-
-    print(qmcflac_dec, mflac_dec, ncm_dec, noop_dec, end='\n')
-    ```
-
-    输出:
-
-    ```text
-    <QMCFormatDecoder at 0x7fdbf2057760 name='test.qmcflac'>  # QMCv1 加密
-    <QMCFormatDecoder at 0x7fdbf2ac1090 name='test.mflac'>  # QMCv2 加密
-    <NCMFormatDecoder at 0x7fdbf15622f0 name='test.ncm'>  # NCM 加密
-    <NoOperationDecoder at 0x7fdbf1563400 name='test.kv2'>  # 无需解锁操作
-    ```
-
-2. 执行解锁操作并保存到文件：
-
-    ```python建议重新下载和解锁。io_format
-        save_filename = f'test{idx}.{audio_format}'
-
-        with open(save_filename, 'wb') as f:
-            for block in decoder:
-                f.write(block)
-
-        print('Saved:', save_filename)
-    ```
-
-    输出：
-
-    ```text
-    Saved: test0.flac
-    Saved: test1.flac
-    Saved: test2.flac
-    Saved: test3.mp3
-    ```
-
-    使用 `file` 命令验证输出文件是否正确：
-
-    ```text
-    > file test0.flac test1.flac test2.flac test3.mp3
-    test0.flac: FLAC audio bitstream data, 16 bit, stereo, 44.1 kHz, 13379940 samples
-    test1.flac: FLAC audio bitstream data, 16 bit, stereo, 44.1 kHz, 16585716 samples
-    test2.flac: FLAC audio bitstream data, 16 bit, stereo, 44.1 kHz, 10222154 samples
-    test3.mp3:  Audio file with ID3 version 2.4.0, contains: MPEG ADTS, layer III, v1, 320 kbps, 44.1 kHz, Stereo
-    ```
-
-3. 针对一些内嵌封面等元数据的加密格式（例如 NCM），还可将其嵌入解锁后的文件：
-
-    ```python
-    from takiyasha import new_tag
-
-    with open('text2.flac', 'rb') as ncmfile:
-        tag = new_tag(ncm_decrypted_file)
-        # 上文中的 NCMFormatDecoder 对象已经储存了找到的元数据
-        tag.title = ncm_dec.music_title
-        tag.artist = ncm_dec.music_artists
-        tag.album = ncm_dec.music_album
-        tag.comment = ncm_dec.music_identifier
-        tag.cover = ncm_dec.music_cover_data
-
-        ncm_decrypted_file.seek(0, 0)
-        tag.save(ncm_decrypted_file)
-    ```
-
-## 常见问题、提示和错误信息
-
-请查看相关 Wiki 页面：[问题解决](https://github.com/nukemiko/takiyasha/wiki/%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3)
+使用 `-h, --help` 获取完整的帮助信息。
