@@ -2,9 +2,9 @@
 
 Takiyasha 是一个用来解密多种加密音乐文件的工具。
 
-[Github](https://github.com/nukemiko/takiyasha/tree/remaked) | [Notabug](https://notabug.org/MiketsuSmasher/takiyasha/src/remaked)
+[Github](https://github.com/nukemiko/takiyasha) | [Notabug](https://notabug.org/MiketsuSmasher/takiyasha)
 
-**本项目是以学习和技术研究的初衷创建的，修改、再分发时请遵循 [License](https://github.com/nukemiko/takiyasha/blob/remaked/LICENSE)。**
+**本项目是以学习和技术研究的初衷创建的，修改、再分发时请遵循 [License](https://github.com/nukemiko/takiyasha/blob/master/LICENSE)。**
 
 Takiyasha 的设计灵感，以及部分解密方案，来源于 [Unlock Music Project - CLI Edition](https://github.com/unlock-music/cli)。
 
