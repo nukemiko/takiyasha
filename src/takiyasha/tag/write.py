@@ -4,7 +4,7 @@ from base64 import b64decode, b64encode
 from functools import partial
 from typing import IO
 
-from mutagen import flac, id3, mp3, oggvorbis
+from mutagen import File as MutagenOpenFile, flac, id3, mp3, oggvorbis
 
 from .utils import sniff_image_ext_mimetype
 
@@ -19,15 +19,8 @@ def write_values(fileobj: IO[bytes],
                  description: list[str] | None = None,
                  cover_data: bytes | None = None
                  ) -> None:
-    for tagtype in flac.FLAC, mp3.MP3, oggvorbis.OggVorbis:
-        fileobj.seek(0, 0)
-        try:
-            tag = tagtype(fileobj)
-            break
-        except (flac.error, mp3.error, oggvorbis.error):
-            pass
-    else:
-        return
+    fileobj.seek(0, 0)
+    tag = MutagenOpenFile(fileobj)
 
     kws = {
         'title': title,
