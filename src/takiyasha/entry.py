@@ -10,7 +10,7 @@ from .argdefs import ap
 from .core import gen_pending_paths, mainflow
 
 
-def main(argv: list[str] | None = None) -> int:
+def entry(argv: list[str] | None = None) -> int:
     if sys.platform.startswith('linux'):
         mp.set_start_method('fork')
     else:
