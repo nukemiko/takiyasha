@@ -96,7 +96,7 @@ options.add_argument('-t', '--test',
 options.add_argument('-q', '--quiet',
                      dest='keep_quiet',
                      action='store_true',
-                     help='不显示任何信息，程序退出即为完成'
+                     help='不显示任何信息，仅根据退出状态码表示运行结果'
                      )
 
 decrypt_options = ap.add_argument_group(title='解密相关选项')
@@ -104,18 +104,18 @@ decrypt_options.add_argument('-f', '--try-fallback',
                              dest='try_fallback',
                              action='store_true',
                              help='针对部分支持的加密类型，在首次解密失败时，\n'
-                                  '使用后备方案再次尝试（有几率成功）'
+                                  '使用后备方案再次尝试，但不保证成功率'
                              )
 
 tag_options = ap.add_argument_group(title='标签信息和封面相关选项')
 tag_options.add_argument('--notag',
                          dest='with_tag',
                          action='store_false',
-                         help='为部分输出文件补上缺失的标签'
+                         help='不要为输出文件补充缺失的标签'
                          )
 tag_options.add_argument('--avoid-search-tag',
                          dest='search_tag',
                          action='store_false',
-                         help="不要从网络上查找缺失的标签；\n"
+                         help="不要在网络上查找缺失的标签和封面信息；\n"
                               "仅在未添加 '--notag' 选项时有效"
                          )
