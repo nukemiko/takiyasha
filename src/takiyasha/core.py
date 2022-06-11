@@ -172,12 +172,19 @@ def mainflow(srcfilepath: Path,
 
     # 补充标签信息
     if with_tag:
-        if isinstance(crypter, NCM):
-            complete_from_cloudmusic(
-                destfile, crypter.tagdata, crypter.coverdata, search_tag=search_tag
-            )
-        elif isinstance(crypter, (QMCv1, QMCv2)):
-            complete_from_qqmusic(destfile, search_tag=search_tag)
+        if destfilepath_ext == 'unknown':
+            utils.warn(f"由于输入文件 '{srcfilepath}' 的输出文件格式未知，跳过补充标签信息和封面")
+        else:
+            if isinstance(crypter, NCM):
+                if complete_from_cloudmusic(
+                        destfile, crypter.tagdata, crypter.coverdata, search_tag=search_tag
+                ):
+                    utils.info(f"为输出文件 '{destfilepath}' 补充了来自网易云音乐的标签信息和封面")
+            elif isinstance(crypter, (QMCv1, QMCv2)):
+                if complete_from_qqmusic(destfile, search_tag=search_tag):
+                    utils.info(f"为输出文件 '{destfilepath}' 补充了来自 QQ 音乐的标签信息和封面")
+            else:
+                utils.info(f"目前不支持为输出文件 '{destfilepath}' 补充标签信息和封面，请自行完成")
 
     destfile.close()
 
