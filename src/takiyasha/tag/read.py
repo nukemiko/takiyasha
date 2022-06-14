@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+import re
 from base64 import b64decode
 from typing import IO
 
 from mutagen import File as MutagenOpenFile, flac, id3, mp3, oggvorbis
+
+REMOVABLE_PATTERNS = [
+    re.compile(' ?- ?[Ss][Ii][Nn][Gg][Ll][Ee]$')
+]
 
 
 def read_values(fileobj: IO[bytes]) -> tuple[dict[str, list[str]], bytes | None]:
@@ -11,7 +16,7 @@ def read_values(fileobj: IO[bytes]) -> tuple[dict[str, list[str]], bytes | None]
     tag = MutagenOpenFile(fileobj)
 
     if isinstance(tag, (flac.FLAC, oggvorbis.OggVorbis)):
-        kws = {
+        kws: dict[str, list[str]] = {
             'title': tag.get('title'),
             'artists': tag.get('artist'),
             'album': tag.get('album'),
@@ -21,7 +26,7 @@ def read_values(fileobj: IO[bytes]) -> tuple[dict[str, list[str]], bytes | None]
             'description': tag.get('description'),
         }
     elif isinstance(tag, mp3.MP3):
-        kws = {}
+        kws: dict[str, list[str]] = {}
         for kws_k, tag_k_seg in [('title', 'TIT2'), ('artists', 'TPE1'), ('album', 'TALB'),
                                  ('date', 'TDRC'), ('label', 'TXXX::LABEL'), ('genre', 'TCON'),
                                  ('description', 'COMM::')]:
@@ -36,7 +41,16 @@ def read_values(fileobj: IO[bytes]) -> tuple[dict[str, list[str]], bytes | None]
     else:
         return {}, None
 
-    ret = {k: v for k, v in kws.items() if v}
+    ret: dict[str, list[str]] = {k: v for k, v in kws.items() if v}
+
+    title = ret.get('title')
+    if title:
+        new_title = ret['title'][:]
+        for idx, i in enumerate(new_title):
+            for pattern in REMOVABLE_PATTERNS:
+                i = pattern.sub('', i)
+            new_title[idx] = i
+        ret['title'] = new_title
 
     return ret, extract_cover_data(tag)
 
