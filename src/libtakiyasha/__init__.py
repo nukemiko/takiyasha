@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-__VERSION__ = '0.6.3'
-
 import re
 from typing import Type, Union
 
@@ -15,17 +13,13 @@ from .sniff import sniff_audio_file
 SupportsCrypter = Union[NCM, NCMCache, QMCv1, QMCv2]
 
 
-def get_version() -> str:
-    return __VERSION__
-
-
 def extensions_crypters() -> dict[str, Type[SupportsCrypter]]:
     return {
         r'^\.qmc[\da-z]{1,4}$': QMCv1,
-        r'^\.mflac[\da-z]?$': QMCv2,
-        r'^\.mgg[\da-z]?$': QMCv2,
-        r'^\.ncm$': NCM,
-        r'^\.uc!$': NCMCache
+        r'^\.mflac[\da-z]?$'  : QMCv2,
+        r'^\.mgg[\da-z]?$'    : QMCv2,
+        r'^\.ncm$'            : NCM,
+        r'^\.uc!$'            : NCMCache
     }
 
 

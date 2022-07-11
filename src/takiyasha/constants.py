@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+__VERSION__ = '0.6.3'
+
 PROGNAME = Path(__file__).parent.name
 DESCRIPTION = f'  将加密音乐文件的内容输出到指定的目录。\n' \
               f'  如果未指定输出目录，输出文件将会在当前工作目录下产生。\n' \

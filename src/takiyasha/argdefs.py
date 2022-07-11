@@ -4,8 +4,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from libtakiyasha import get_version
-from .constants import DESCRIPTION, EPILOG, PROGNAME
+from .constants import DESCRIPTION, EPILOG, PROGNAME, __VERSION__
 
 
 class ShowSupportedFormatsAndExit(argparse.Action):
@@ -52,7 +51,7 @@ help_options.add_argument('-h', '--help',
                           )
 help_options.add_argument('-V', '--version',
                           action='version',
-                          version=f'%(prog)s {get_version()}',
+                          version=f'%(prog)s {__VERSION__}',
                           help='显示版本信息并退出'
                           )
 help_options.add_argument('--formats',
