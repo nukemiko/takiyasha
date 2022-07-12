@@ -4,7 +4,7 @@ dynamic = ["version"]
 authors = [
     { name = "nukemiko" },
 ]
-description = "Python 音乐解密工具库"
+description = "Python 音乐解密工具"
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.8"
@@ -13,7 +13,7 @@ dependencies = [
     "MusicTagFindUtils>=0.1.2",
     "colorama",
     "requests",
-    "libtakiyasha>=1,<2"
+    "libtakiyasha"
 ]
 classifiers = [
     "License :: OSI Approved :: MIT License",
