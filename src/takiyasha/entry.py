@@ -30,19 +30,12 @@ def entry(argv: list[str] | None = None) -> int:
     destdirpath_is_srcfiledirpath: bool = openfile_kwargs.pop('destdirpath_is_srcfiledirpath')
     recursive: bool = openfile_kwargs.pop('recursive')
     enable_multiprocessing: bool = openfile_kwargs.pop('enable_multiprocessing')
-    try_fallback: bool = openfile_kwargs.pop('try_fallback')
     probe_only: bool = openfile_kwargs.pop('probe_only')
     keep_quiet: bool = openfile_kwargs.pop('keep_quiet')
     with_tag: bool = openfile_kwargs.pop('with_tag')
     search_tag: bool = openfile_kwargs.pop('search_tag')
 
     utils.DISABLE_PRINT_FUNCS = keep_quiet
-
-    if try_fallback:
-        openfile_kwargs.update({
-            'try_fallback': True
-        }
-        )
 
     try:
         if destdirpath_is_srcfiledirpath:
@@ -75,9 +68,9 @@ def entry(argv: list[str] | None = None) -> int:
                 mainflow_kwargs = {
                     'srcfilepath': srcfilepath_,
                     'destdirpath': destdirpath_,
-                    'probe_only': probe_only,
-                    'with_tag': with_tag,
-                    'search_tag': search_tag,
+                    'probe_only' : probe_only,
+                    'with_tag'   : with_tag,
+                    'search_tag' : search_tag,
                     'status_pool': status_pool
                 }
                 mainflow_kwargs.update(openfile_kwargs)
@@ -111,9 +104,9 @@ def entry(argv: list[str] | None = None) -> int:
             mainflow_kwargs = {
                 'srcfilepath': srcfilepath_,
                 'destdirpath': destdirpath_,
-                'probe_only': probe_only,
-                'with_tag': with_tag,
-                'search_tag': search_tag,
+                'probe_only' : probe_only,
+                'with_tag'   : with_tag,
+                'search_tag' : search_tag,
                 'status_pool': status_pool
             }
             mainflow_kwargs.update(openfile_kwargs)

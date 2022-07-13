@@ -97,15 +97,6 @@ options.add_argument('-q', '--quiet',
                      action='store_true',
                      help='不显示任何信息，仅根据退出状态码表示运行结果'
                      )
-
-decrypt_options = ap.add_argument_group(title='解密相关选项')
-decrypt_options.add_argument('-f', '--try-fallback',
-                             dest='try_fallback',
-                             action='store_true',
-                             help='针对部分支持的加密类型，在首次解密失败时，\n'
-                                  '使用后备方案再次尝试，但不保证成功率'
-                             )
-
 tag_options = ap.add_argument_group(title='标签信息和封面相关选项')
 tag_options.add_argument('--notag',
                          dest='with_tag',
