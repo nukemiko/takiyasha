@@ -2,27 +2,47 @@
 
 Takiyasha 是一个用来解密多种加密音乐文件的工具。
 
-**本项目是以学习和技术研究的初衷创建的，修改、再分发时请遵循 [License](https://github.com/nukemiko/takiyasha/blob/master/LICENSE)。**
+**本项目是以学习和技术研究的初衷创建的，修改、再分发时请遵循 [License](LICENSE)。**
 
-Takiyasha 的设计灵感，以及部分解密方案，来源于 [Unlock Music Project - CLI Edition](https://github.com/unlock-music/cli)。
+Takiyasha 只是一个命令行工具，相当于 [LibTakiyasha](https://github.com/nukemiko/libtakiyasha) 的前端。
 
 **Takiyasha 对输出数据的可用性（是否可以识别、播放等）不做任何保证。**
 
-## 重要事项
+## 各个版本的变化
+
+### 版本 1.0.0（正在开发，在[这里](https://github.com/nukemiko/takiyasha/tree/1.x)跟踪进度）
+
+从此版本开始：
+
+-   解密不再是开箱即用的。**你需要根据提示，提供正确的解密所需的密钥。**
+    -   要输入密钥，你需要按照特定的格式，输入对应的命令行选项或设置对应的环境变量；也可以将密钥写入配置文件，一次配置，长期使用。
+    -   到哪里寻找密钥？
+        -   如果加密文件是你自己制造的，你自己应该知道密钥；
+        -   否则，请从内容提供者处获取，或者在它们的应用程序中寻找，或者寻求同类项目和他人的帮助。（作者是不会向你直接提供此类密钥的）
+-   并行任务模式的运行方式可能会产生变化（多进程 -> 异步？）
+-   对使用 V2 密钥加密的 QMCv2 加密文件的支持，这类文件通常来源于版本 18.57 及之后的 QQ 音乐 PC 客户端
+
+### [版本 0.7.0](https://github.com/nukemiko/takiyasha/releases/tag/0.7.0)
+
+从此版本开始：
+
+-   命令行部分和算法部分分离得更为彻底：
+    -   此仓库仅存储命令行部分 `takiyasha`；
+    -   [算法部分 `libtakiyasha`](https://github.com/nukemiko/libtakiyasha) 存储在一个独立仓库中，作为 `takiaysha` 包的依赖存在。
+
+本 README 后续所有内容都是基于此版本的。
+
+### [版本 v0.6.1](https://github.com/nukemiko/takiyasha/releases/tag/v0.6.1-1)
+
+从此版本开始：
+
+-   直到 [v0.6.3](https://github.com/nukemiko/takiyasha/releases/tag/v0.6.3)，命令行部分和算法部分被拆分为 2 个模块：`takiyasha` 和 `libtakiyasha`，但仍然存在于同一个包内，可以同时安装。
 
 ### [版本 v0.6.0.dev1](https://github.com/nukemiko/takiyasha/releases/tag/v0.6.0.dev1)
 
 从此版本开始，直到 v0.6.0.dev5，相较于 v0.4.2，包的结构、行为、命令行调用等已经发生了翻天覆地的变化。
 
 关于这些变化的详细信息，请参见[此处](https://github.com/nukemiko/takiyasha/releases/tag/v0.6.0.dev1)。
-
-### [版本 v0.6.1](https://github.com/nukemiko/takiyasha/releases/tag/v0.6.1-1)
-
-从此版本开始，直到 [v0.6.3](https://github.com/nukemiko/takiyasha/releases/tag/v0.6.3)，命令行部分和算法部分被拆分为 2 个模块：`takiyasha` 和 `libtakiyasha`，但仍然存在于同一个包内，可以同时安装。
-
-### [版本 0.7.0](https://github.com/nukemiko/takiyasha/releases/tag/0.7.0)
-
-从此版本开始，命令行部分和算法部分分离得更为彻底：此仓库仅存储命令行部分 `takiyasha`；[算法部分 `libtakiyasha`](https://github.com/nukemiko/libtakiyasha) 存储在一个独立仓库中，作为 `takiaysha` 包的依赖存在。
 
 ## 特性
 
