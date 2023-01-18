@@ -407,6 +407,41 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+# KDevelop: general
+apidocs
+.directory
+*.kdev4
+build
+*~
+*.patch
+*.diff
+*.bak
+*.orig
+*.pyc
+*.rej
+*.swp
+doxygen.log
+Doxyfile
+*.kdevelop
+*.kdevelop.filelist
+*.kdevelop.pcs
+*.kdevses
+.*kate-swp
+build/
+mem.log.*
+massif.*
+callgrind.*
+perf.data*
+
+# KDevelop: from kdiff3
+*.BACKUP.*
+*.BASE.*
+*.LOCAL.*
+*.REMOTE.*
+
+# KDevelop: do not ignore .kdev4 files from test data
+!projectmanagers/custom-buildsystem/tests/projects/**/.kdev4
+
 # audio files
 *.mp3
 *.flac
@@ -421,6 +456,9 @@ cython_debug/
 *.mgg*
 *.tkm*
 *.tm*
+*.kgm
+*.vpr
+*.kwm
 
 # miscellaneous
 /miscellaneous
