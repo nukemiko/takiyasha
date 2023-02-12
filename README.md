@@ -10,7 +10,7 @@ Takiyasha 只是一个命令行工具，相当于 [LibTakiyasha](https://github.
 
 ## 各个版本的变化
 
-### 版本 1.0.0（正在开发，在[这里](https://github.com/nukemiko/takiyasha/tree/1.x)跟踪进度）
+### 版本 1.0.0（正在开发，在[这里](https://github.com/nukemiko/takiyasha/tree/1.x-dev)跟踪进度）
 
 从此版本开始：
 
